@@ -1,24 +1,23 @@
 #!/bin/bash
 
-set -e
-
+PARTITION="/dev/sdc2"           # Encrypted external partition
 MOUNT_POINT="/media/veracrypt1" # VeraCrypt mount point
 SLOT=1                          # VeraCrypt slot
 
-# Check if partition is mounted
 if mount | grep -q "$MOUNT_POINT"; then
-  echo "Partition is mounted at $MOUNT_POINT. Proceeding to unmount..."
-
-  # Verify veracrypt-volume
-  if veracrypt -t -l | grep -q "$MOUNT_POINT"; then
-
-    sudo veracrypt --text --dismount "$MOUNT_POINT" --slot=$SLOT --non-interactive &&
-      echo "Partition successfully unmounted from $MOUNT_POINT" ||
-      echo "Failed to unmount partition from $MOUNT_POINT"
-  else
-    echo "Error: $MOUNT_POINT is not a VeraCrypt volume!"
-    exit 1
-  fi
+  echo "Partition is already mounted at $MOUNT_POINT"
+  exit 0
 else
-  echo "Partition is not mounted at $MOUNT_POINT"
+  echo -n "Enter VeraCrypt password: "
+  read -s PASSWORD
+  echo
+
+  echo "$PASSWORD" | sudo veracrypt --text --mount "$PARTITION" "$MOUNT_POINT" --slot=$SLOT --non-interactive --stdin
+fi
+
+if mount | grep -q "$MOUNT_POINT"; then
+  echo "Partition successfully mounted at $MOUNT_POINT"
+else
+  echo "Failed to mount partition"
+  exit 1
 fi

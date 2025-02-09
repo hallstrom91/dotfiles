@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Run mount script
-runwsx.sh || {
+"$HOME/.bin/mountwsx.sh" || {
   echo "Error: Failed to start runwsx.sh"
   exit 1
 }
@@ -14,7 +14,6 @@ while ! mount | grep -q "/media/veracrypt1"; do
   sleep 2
   ((COUNTER += 2))
 
-  # Om vi har väntat mer än TIMEOUT sekunder, avbryt
   if [[ $COUNTER -ge $TIMEOUT ]]; then
     echo "Error: Mount operation timed out after $TIMEOUT seconds."
     exit 1
@@ -28,5 +27,4 @@ cd /media/veracrypt1/ws || {
 }
 echo "Navigated to: /media/veracrypt1/ws"
 
-# Starta en ny Bash-session om detta inte redan körs i en interaktiv terminal
 [[ $- == *i* ]] || exec bash

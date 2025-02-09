@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e # Avsluta skriptet vid första felet
+set -e
 
 # verbose flag
 VERBOSE=false
