@@ -187,7 +187,7 @@ wezterm.on('gui-startup', function(cmd)
   local tab1, pane1, window1 = mux.spawn_window({
     workspace = 'Main',
     cwd = wezterm.home_dir .. '/.config/wezterm',
-    args = { '/usr/local/bin/runwsx_and_navigate.sh' },
+    args = { wezterm.home_dir .. '/.bin/mountwsx_and_navigate.sh' },
   })
 
   ------ Split vertical
