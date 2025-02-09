@@ -1,0 +1,33 @@
+# wezterm cache
+**/.wezterm.lua.bak
+**/.wezterm.log
+
+# kitty cache
+**/session.lock
+**/session.json
+
+# files
+**/*.swp
+**/*.swo
+**/*.bak
+**/*.tmp
+
+# bash
+**/.bash_history
+**/.bash_sessions
+**/.zsh_history
+**/.zsh_sessions
+
+# secrets
+**/secrets.yml
+**/secrets.json
+**/private.pem
+**/id_rsa
+**/id_rsa.pub
+**/ssh/config
+
+# dev
+**/__pycache__/
+**/*.pyc
+**/node_modules/
+
