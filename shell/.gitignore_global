@@ -1,0 +1,48 @@
+# Global Ignore 
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Bower
+bower_components/
+
+# VSC
+.vscode/
+*.code-workspace
+
+# Systemfiler
+.DS_Store
+Thumbs.db
+.Thumbs/
+
+# Temporära filer
+*~
+*.swp
+*.swo
+*.log
+*.bak
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Ruby
+*.gem
+.bundle/
+
+# Java
+*.class
+*.jar
+
+# Docker
+**/Dockerfile
+**/docker-compose.yml
+
+# Byggfiler
+dist/
+build/
+out/
+
