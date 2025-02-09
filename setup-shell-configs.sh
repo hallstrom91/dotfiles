@@ -10,7 +10,7 @@ CUSTOM_SCRIPTS="$SHELL_DIR/custom-scripts"
 HOME_BIN=~/.bin
 GPG_DIR=~/.gnupg
 
-echo "🔄 Setting up shell and bash configs..."
+echo "Setting up shell and bash configs..."
 
 mkdir -p "$HOME_BIN"
 
