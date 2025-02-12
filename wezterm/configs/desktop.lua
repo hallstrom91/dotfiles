@@ -9,7 +9,7 @@ local dimmer = { brightness = 0.1 }
 
 config.window_padding = {
   top = 2,
-  right = 3,
+  right = 12,
   bottom = 2,
   left = 2,
 }
@@ -17,7 +17,25 @@ config.window_padding = {
 ---------------------
 ---- Theme
 ---------------------
-config.color_scheme = 'farmhouse-dark'
+--config.color_scheme = 'Atelierdune (dark) (terminal.sexy)'
+--config.color_scheme = 'farmhouse-dark'
+--config.color_scheme = 'farmhouse-light'
+-- config.colors = {
+--   scrollbar_thumb = '#3f537d',
+--   visual_bell = '#777777', -- "bell" notifier color, instead of "beep" sound
+--   tab_bar = {
+--     new_tab = {
+--       bg_color = '#262420',
+--       fg_color = '#A68B6D',
+--       intensity = 'Normal',
+--     },
+--     new_tab_hover = {
+--       bg_color = '#3f537d',
+--       fg_color = '#E4C9AF',
+--       intensity = 'Bold',
+--     },
+--   },
+-- }
 
 ---------------------
 ---- Fonts
@@ -29,15 +47,11 @@ config.font_size = 10.0
 ---- Scrollbar
 ---------------------
 config.enable_scroll_bar = true
-config.colors = {
-  scrollbar_thumb = '#ffffff',
-  visual_bell = '#777777', -- "bell" notifier color, instead of "beep" sound
-}
 
 ---------------------
 ---- Performance
 ---------------------
-config.animation_fps = 60
+config.animation_fps = 144
 config.max_fps = 144
 config.front_end = 'OpenGL'
 config.webgpu_power_preference = 'HighPerformance'
@@ -50,6 +64,7 @@ config.default_cursor_style = 'SteadyBar'
 ---------------------
 ---- Tab bar
 ---------------------
+
 config.use_fancy_tab_bar = true
 config.enable_tab_bar = true
 config.tab_max_width = 60
@@ -74,14 +89,14 @@ config.visual_bell = {
 ---------------------
 
 config.enable_kitty_graphics = true
-config.background = {
-  {
-    source = {
-      File = '/home/simon/.config/wezterm/backgrounds/anonbgdark1920x1080.png',
-    },
-    hsb = dimmer,
-  },
-}
+-- config.background = {
+--   {
+--     source = {
+--       File = '/home/simon/.config/wezterm/backgrounds/anonbgdark1920x1080.png',
+--     },
+--     hsb = dimmer,
+--   },
+-- }
 
 ---------------------
 ---- Icons
@@ -110,6 +125,7 @@ local process_icons = {
   ['gh'] = wezterm.nerdfonts.dev_github_badge,
   ['node'] = wezterm.nerdfonts.dev_nodejs_small,
   ['dotnet'] = wezterm.nerdfonts.md_language_csharp,
+  ['ssh'] = wezterm.nerdfonts.md_connection,
 }
 
 local function get_process_icon(process_name)
@@ -118,7 +134,6 @@ local function get_process_icon(process_name)
   return icon .. ' ' .. clean_name
 end
 
-local SOLID_LEFT_ARROW = wezterm.nerdfonts.cod_arrow_swap
 local CPU_ICON = wezterm.nerdfonts.md_cpu_64_bit
 local RAM_ICON_LOW = wezterm.nerdfonts.md_speedometer_slow
 local RAM_ICON_MED = wezterm.nerdfonts.md_speedometer_medium
@@ -127,10 +142,12 @@ local TEMP_ICON_LOW = wezterm.nerdfonts.fae_thermometer_low
 local TEMP_ICON_MED = wezterm.nerdfonts.fae_thermometer
 local TEMP_ICON_HIGH = wezterm.nerdfonts.fae_thermometer_high
 local DEV_LINUX = wezterm.nerdfonts.dev_linux
-local DEBUG_DASH = wezterm.nerdfonts.cod_debug_pause
+local WARNING_ICON = wezterm.nerdfonts.cod_warning
+--local DEV_TERM_LINUX = wezterm.nerdfonts.cod_terminal_linux
+--local POPOS_ICON = wezterm.nerdfonts.linux_pop_os
 
 ---------------------
----- Format Tabs
+---- Tabs
 ---------------------
 
 local function get_last_folder_segment(uri)
@@ -147,20 +164,16 @@ wezterm.on('format-tab-title', function(tab)
   local pane_id = tostring(active_tab.pane_id)
   local process_name = active_tab.foreground_process_name or 'Shell'
 
-  -- icon + process
   local process_display = get_process_icon(process_name)
 
-  -- folder-icon + latest dir (cwd)
   local filepath_icon = wezterm.nerdfonts.oct_rel_file_path
   local folder_icon = wezterm.nerdfonts.cod_folder_opened
   local formatted_title = folder_icon .. ' ' .. filepath_icon .. get_last_folder_segment(active_tab.title)
 
-  -- 🎨 Dark-mode färger
   local process_fg = '#B0BEC5'
   local separator_fg = '#546E7A'
   local folder_fg = '#6a7fb5'
 
-  -- ✨ Skapa den formatterade fliken
   return wezterm.format({
     { Text = ' ' .. pane_id .. ': ' },
     { Attribute = { Intensity = 'Bold' } },
@@ -174,37 +187,55 @@ wezterm.on('format-tab-title', function(tab)
   })
 end)
 
+wezterm.on('update-status', function(window, pane)
+  local overrides = window:get_config_overrides() or {}
+  local process_name = pane:get_foreground_process_name()
+
+  if process_name and process_name:match('ssh') then
+    overrides.color_scheme = 'Fideloper'
+    overrides.background = {
+      {
+        source = {
+          File = wezterm.home_dir .. '/.config/wezterm/backgrounds/techpinguine1920x1080.png',
+        },
+        hsb = dimmer,
+      },
+    }
+  else
+    overrides.color_scheme = 'farmhouse-dark'
+    overrides.background = {
+      {
+        source = {
+          File = wezterm.home_dir .. '/.config/wezterm/backgrounds/anonbgdark1920x1080.png',
+        },
+        hsb = dimmer,
+      },
+    }
+  end
+
+  window:set_config_overrides(overrides)
+end)
+
 ---------------------
 ---- Format Panes
 ---------------------
 
-wezterm.on('gui-startup', function(cmd)
-  local args = {}
-  if cmd then
-    args = cmd.args
-  end
-
-  local tab1, pane1, window1 = mux.spawn_window({
+wezterm.on('gui-startup', function()
+  local _, pane, _ = mux.spawn_window({
     workspace = 'Main',
     cwd = wezterm.home_dir .. '/.config/wezterm',
     args = { wezterm.home_dir .. '/.bin/mountwsx_and_navigate.sh' },
   })
 
   ------ Split vertical
-  local system_info = pane1:split({
+  local system_info = pane:split({
     direction = 'Right',
     workspace = 'sysinfo',
-    size = 0.5,
+    size = 0.3,
   })
 
   system_info:send_text('fastfetch\n')
-
-  -- local tab2, pane2, window2 = mux.spawn_window({
-  --   workspace = 'Coding',
-  --   cwd = wezterm.home_dir,
-  -- })
-  --
-  -- pane2:send_text('Testing')
+  system_info:send_text('task project\n')
 
   mux.set_active_workspace('Main')
 end)
@@ -216,13 +247,12 @@ end)
 wezterm.on('update-right-status', function(window, _)
   local bg_color = '#2d2d2d'
   local fg_color = '#b7babd'
-  -- local accent_color = '#175ea0'
   local divider_color = '#3f537d'
   local header_color = '#619cff'
-  local ram_color = '#FFFFFF'
-  local cpu_colors = { '#6B705C', '#CB997E', '#DD6E42', '#B56576', '#FF5E5B' }
-  -- local ram_colors = { '#4CAF50', '#FFB74D', '#D32F2F' }
+  local cpu_colors = { '#4CAF50', '#FFB74D', '#D32F2F', '#B71C1C' }
+  local ram_colors = { '#4CAF50', '#FFB74D', '#D32F2F', '#B71C1C' }
 
+  --> Get CPU Temp
   local function get_temp(sensor_cmd, grep_pattern, awk_field)
     local success, temp_out, _ = pcall(wezterm.run_child_process, { 'sh', '-c', sensor_cmd })
     if not success or not temp_out then
@@ -239,6 +269,7 @@ wezterm.on('update-right-status', function(window, _)
 
   local cpu_temp = get_temp('sensors coretemp-isa-0000', 'Package id 0', 4)
 
+  --> Get CPU usage
   local cpuv = { total = 0, idle = 0, pct = 1 }
   local _, cpuout, _ = wezterm.run_child_process({ 'head', '-n1', '/proc/stat' })
   local vtotal, vidle, k = 0, 0, 1
@@ -259,9 +290,12 @@ wezterm.on('update-right-status', function(window, _)
   cpuv.pct = math.floor(0.5 + 100 * (dtotal - didle) / dtotal)
   cpuv.total, cpuv.idle = vtotal, vidle
 
-  local cpu_idx = math.min(math.ceil(cpuv.pct / 20), #cpu_colors)
-  local cpu_str = string.format(' %s %d%%', CPU_ICON, cpuv.pct)
+  --> CPU string with dynamic colors based on usage
+  local cpu_idx = (cpuv.pct < 30 and 1) or (cpuv.pct < 60 and 2) or (cpuv.pct < 80 and 3) or 4
+  local cpu_warning = (cpuv.pct >= 80) and WARNING_ICON or ''
+  local cpu_str = string.format('%s %d%% %s', CPU_ICON, cpuv.pct, cpu_warning)
 
+  --> Get RAM usage
   local memmb = { Total = 0, Available = 0 }
   local _, mmout, _ = wezterm.run_child_process({ 'head', '-n3', '/proc/meminfo' })
 
@@ -278,38 +312,45 @@ wezterm.on('update-right-status', function(window, _)
   update_memory_status(mmout, 'Available')
 
   local mem_usage_pct = 100 * (1 - (memmb.Available / memmb.Total))
-  local ram_icon = (mem_usage_pct >= 60 and RAM_ICON_HIGH) or (mem_usage_pct >= 25 and RAM_ICON_MED) or RAM_ICON_LOW
-  local ram_str = string.format(' %s %.1f%%', ram_icon, mem_usage_pct)
 
-  local divider = ' '
+  --> RAM % color based on usage
+  local ram_idx = (mem_usage_pct < 30 and 1) or (mem_usage_pct < 60 and 2) or (mem_usage_pct < 80 and 3) or 4
+  local ram_icon = (mem_usage_pct >= 60 and RAM_ICON_HIGH) or (mem_usage_pct >= 30 and RAM_ICON_MED) or RAM_ICON_LOW
+  local ram_warning = (mem_usage_pct >= 80) and WARNING_ICON or ''
+  local ram_str = string.format('%s %.1f%% %s', ram_icon, mem_usage_pct, ram_warning)
 
   window:set_right_status(wezterm.format({
-    ----> Divider
+    --> Divider w Sys Icon
     { Background = { Color = divider_color } },
     { Foreground = { Color = fg_color } },
     { Text = ' ' .. DEV_LINUX .. ' ' },
 
-    ----> CPU
+    --> CPU Section
     { Background = { Color = bg_color } },
-
     { Attribute = { Intensity = 'Bold' } },
     { Foreground = { Color = header_color } },
     { Text = ' CPU' },
     { Foreground = { Color = cpu_colors[cpu_idx] } },
-    { Text = cpu_str .. ' & ' .. cpu_temp .. ' ' },
+    { Text = ' ' .. cpu_str },
 
-    ---->  Divider
+    --> Divider CPU usage & temp
+    { Foreground = { Color = fg_color } },
+    { Text = '&' },
+
+    { Foreground = { Color = cpu_colors[cpu_idx] } },
+    { Text = ' ' .. cpu_temp .. ' ' },
+
+    --> Small Section Divider
     { Background = { Color = divider_color } },
     { Foreground = { Color = fg_color } },
-    { Text = ' ' .. divider .. ' ' },
+    { Text = ' ' },
 
-    ---->  RAM
+    --> RAM Section
     { Background = { Color = bg_color } },
     { Attribute = { Intensity = 'Bold' } },
     { Foreground = { Color = header_color } },
     { Text = ' RAM ' },
-
-    { Foreground = { Color = ram_color } },
+    { Foreground = { Color = ram_colors[ram_idx] } },
     { Text = ' ' .. ram_str .. ' ' },
   }))
 end)
