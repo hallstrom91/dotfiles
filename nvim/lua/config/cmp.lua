@@ -10,21 +10,20 @@ local source_mapping = {
   buffer = '[BUF]',
   path = '[PATH]',
   treesitter = '[TREE]',
-  --	["vim-dadbod-completion"] = "[DB]",
 }
 
 cmp.setup({
   snippet = {
     expand = function(args)
-      require('luasnip').lsp_expand(args.body) -- LuaSnip
+      require('luasnip').lsp_expand(args.body)
     end,
   },
   formatting = {
     format = function(entry, vim_item)
-      -- tailwind formatter
+      ----> tailwind formatter
       vim_item = tailwind_formatter(entry, vim_item)
 
-      -- show icons from lspkind
+      ----> show icons from lspkind
       vim_item = lspkind.cmp_format({
         mode = 'symbol_text',
         maxwidth = 50,
@@ -108,7 +107,7 @@ cmp.setup({
         show_documentation = true,
         show_content_on_docs = true,
         documentation_kind = 'markdown',
-        dotenv_environment = '^%.env.*$', -- show values of all env-files in project at import
+        dotenv_environment = '^%.env.*$', ----> show values of all env-files in project at import
         file_priority = function(a, b)
           return a:upper() < b:upper()
         end,
@@ -116,8 +115,8 @@ cmp.setup({
     },
   }),
   completion = {
-    autocomplete = { require('cmp.types').cmp.TriggerEvent.TextChanged }, -- Trigger only after typing
-    completeopt = 'menu,menuone,noinsert', -- No preselection of first item
+    autocomplete = { require('cmp.types').cmp.TriggerEvent.TextChanged }, ----> Trigger only after typing
+    completeopt = 'menu,menuone,noinsert',
   },
   experimental = {
     ghost_text = false,
@@ -135,12 +134,12 @@ cmp.setup({
       return true
     end
 
-    -- remove suggestions on comment lines
+    ----> remove suggestions on comment lines
     return not context.in_treesitter_capture('comment') and not context.in_syntax_group('Comment')
   end,
 })
 
--- for ":" (cmdline)
+----> for ":" (cmdline)
 cmp.setup.cmdline(':', {
   mapping = cmp.mapping.preset.cmdline(),
   sources = cmp.config.sources({

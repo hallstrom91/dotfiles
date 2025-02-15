@@ -1,6 +1,13 @@
 local wezterm = require('wezterm')
 local config = {}
 local mux = wezterm.mux
+local keymaps = require('keymaps')
+
+---------------------
+---- Keymaps config
+---------------------
+config.keys = keymaps.keys
+config.key_tables = keymaps.key_tables
 
 ---------------------
 ---- Reusable settings
@@ -142,6 +149,7 @@ local TEMP_ICON_LOW = wezterm.nerdfonts.fae_thermometer_low
 local TEMP_ICON_MED = wezterm.nerdfonts.fae_thermometer
 local TEMP_ICON_HIGH = wezterm.nerdfonts.fae_thermometer_high
 local DEV_LINUX = wezterm.nerdfonts.dev_linux
+local SSH_SERVER = wezterm.nerdfonts.fa_server
 local WARNING_ICON = wezterm.nerdfonts.cod_warning
 --local DEV_TERM_LINUX = wezterm.nerdfonts.cod_terminal_linux
 --local POPOS_ICON = wezterm.nerdfonts.linux_pop_os
@@ -173,6 +181,10 @@ wezterm.on('format-tab-title', function(tab)
   local process_fg = '#B0BEC5'
   local separator_fg = '#546E7A'
   local folder_fg = '#6a7fb5'
+
+  if process_name:match('ssh') then
+    formatted_title = SSH_SERVER .. ' ' .. 'remote session'
+  end
 
   return wezterm.format({
     { Text = ' ' .. pane_id .. ': ' },

@@ -1,23 +1,54 @@
 #!/bin/bash
 
-PARTITION="/dev/sdc2"           # Encrypted external partition
-MOUNT_POINT="/media/veracrypt1" # VeraCrypt mount point
-SLOT=1                          # VeraCrypt slot
+GREEN="\e[32m"
+YELLOW="\e[33m"
+RED="\e[31m"
+RESET="\e[0m"
 
-if mount | grep -q "$MOUNT_POINT"; then
-  echo "Partition is already mounted at $MOUNT_POINT"
+PARTITIONS=(
+  "/dev/sdb"  # internal drive
+  "/dev/sdc1" # external partition
+  "/dev/sdc2" # external partition
+)
+
+MOUNT_POINTS=(
+  "/media/veracrypt3" #disk sdb
+  "/media/veracrypt2" #partition sdc1
+  "/media/veracrypt1" #partition  sdc2
+)
+
+ALL_MOUNTED=true
+for MOUNT_POINT in "${MOUNT_POINTS[@]}"; do
+  if ! mount | grep -q "$MOUNT_POINT"; then
+    ALL_MOUNTED=false
+    break
+  fi
+done
+
+if [[ "$ALL_MOUNTED" == true ]]; then
+  echo -e "${YELLOW}All partitions are already mounted.${RESET}"
   exit 0
-else
-  echo -n "Enter VeraCrypt password: "
-  read -s PASSWORD
-  echo
-
-  echo "$PASSWORD" | sudo veracrypt --text --mount "$PARTITION" "$MOUNT_POINT" --slot=$SLOT --non-interactive --stdin
 fi
 
-if mount | grep -q "$MOUNT_POINT"; then
-  echo "Partition successfully mounted at $MOUNT_POINT"
-else
-  echo "Failed to mount partition"
-  exit 1
-fi
+echo -n "Enter decryption password: "
+read -s PASSWORD
+echo
+
+for i in "${!PARTITIONS[@]}"; do
+  PARTITION="${PARTITIONS[$i]}"
+  MOUNT_POINT="${MOUNT_POINTS[$i]}"
+
+  if mount | grep -q "$MOUNT_POINT"; then
+    echo -e "${YELLOW}Partition $PARTITION is already mounted at $MOUNT_POINT.${RESET}"
+  else
+    echo -e "${GREEN}Mounting $PARTITION to $MOUNT_POINT ...${RESET}"
+    echo "$PASSWORD" | sudo veracrypt --text --mount "$PARTITION" "$MOUNT_POINT" --non-interactive --stdin
+
+    if mount | grep -q "$MOUNT_POINT"; then
+      echo -e "$PARTITION: ${GREEN}DONE${RESET}"
+    else
+      echo -e "$PARTITION: ${RED}FAILED${RESET}"
+      exit 1
+    fi
+  fi
+done
