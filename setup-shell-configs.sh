@@ -37,8 +37,8 @@ if [[ "$HOSTNAME" == "pop-os" ]]; then
 elif [[ "$HOSTNAME" == "laptop" ]]; then
   echo "Detected Laptop (laptop): Using modified scripts"
   ln -sf "$CUSTOM_SCRIPTS/laptop/mountwsx_laptop.sh" "$HOME_BIN/mountwsx.sh"
-  ln -sf "$CUSTOM_SCRIPTS/laptop/mountwsx_and_nav_laptop.sh" "$HOME_BIN/laptop/mountwsx_and_navigate.sh"
-  ln -sf "$CUSTOM_SCRIPTS/laptop/dismountwsx_laptop.sh" "$HOME_BIN/laptop/dismountwsx.sh"
+  ln -sf "$CUSTOM_SCRIPTS/laptop/mountwsx_and_nav_laptop.sh" "$HOME_BIN/mountwsx_and_navigate.sh"
+  ln -sf "$CUSTOM_SCRIPTS/laptop/dismountwsx_laptop.sh" "$HOME_BIN/dismountwsx.sh"
 else
   echo "Unkown host ($HOSTNAME), self destruct..."
 fi
