@@ -12,6 +12,9 @@
 **/*.bak
 **/*.tmp
 
+# nvim
+**/lazy-lock.json
+
 # bash
 **/.bash_history
 **/.bash_sessions
