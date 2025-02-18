@@ -26,11 +26,22 @@ local servers = {
   ----> Typescript & JavaScript
   ts_ls = {
     root_dir = util.root_pattern('tsconfig.json', 'jsconfig.json', 'package.json', '.git'),
+    cmd = { 'typescript-language-server', '--stdio' },
+    init_options = {
+      plugins = {
+        {
+          name = '@styled/typescript-styled-plugin',
+          location = '/home/simon/.nvm/versions/node/v20.18.0/lib/node_modules/@styled/typescript-styled-plugin',
+          languages = { 'javascript', 'typescript', 'javascriptreact', 'typescriptreact' },
+        },
+      },
+    },
+
     settings = {
-      cmd = { 'typescript-language-server', '--stdio' },
       completions = {
         completeFunctionCalls = false,
       },
+
       filetypes = {
         'javascript',
         'javascriptreact',
@@ -39,12 +50,27 @@ local servers = {
       },
     },
   },
+
   ----> CSS
   cssls = {
+    cmd = { 'vscode-css-language-server', '--stdio' },
     filetypes = {
+      -- 'typescript',
+      -- 'typescriptreact',
+      -- 'javascriptreact',
+      -- 'javascript',
       'css',
       'scss',
       'less',
+    },
+    settings = {
+      css = {
+        validate = true,
+        lint = { unknownAtRules = 'ignore' },
+        completion = { completePropertyWithSemicolon = true, triggerPropertyValueCompletion = true },
+      },
+      scss = { validate = true, lint = { unknownAtRules = 'ignore' } },
+      less = { validate = true, lint = { unknownAtRules = 'ignore' } },
     },
   },
   ----> HTML
@@ -57,7 +83,15 @@ local servers = {
       Lua = {
         runtime = { version = 'LuaJIT' },
         diagnostics = {
-          globals = { 'vim' },
+          globals = {
+            'vim',
+            'get_application_name', --> devilspie2
+            'set_workspace', --> devilspie2
+            'set_window_geometry', --> devilspie2
+            'minimize', --> devilspie2
+            'maximize', --> devilspie2
+            'debug_print', --> devilspie2
+          },
           -- disable = {"undefined-field"},
         },
         workspace = {

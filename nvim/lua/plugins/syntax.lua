@@ -15,11 +15,12 @@ return {
           'html',
           'css',
           'javascript',
-          'tsx', -- ?
+          'tsx',
           'typescript',
           'json',
           'jsonc',
           'c_sharp',
+          'styled',
         },
         sync_install = false,
         auto_install = false,

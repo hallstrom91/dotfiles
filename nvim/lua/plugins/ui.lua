@@ -32,7 +32,7 @@ return {
 
   {
     'NvChad/nvim-colorizer.lua',
-    ft = { 'css', 'scss', 'html', 'javascript', 'typescript', 'lua' },
+    ft = { 'css', 'scss', 'html', 'javascript', 'typescript', 'lua', 'typescriptreact', 'javascriptreact' },
     config = function()
       require('colorizer').setup({
         user_default_options = {

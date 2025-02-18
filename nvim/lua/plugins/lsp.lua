@@ -100,6 +100,8 @@ return {
       'saadparwaiz1/cmp_luasnip',
       'onsails/lspkind.nvim',
       'SergioRibera/cmp-dotenv',
+      -- 'dcampos/cmp-emmet-vim',
+      -- { 'jackieaskins/cmp-emmet', build = 'npm run release' },
     },
     config = function()
       require('config.cmp')
@@ -208,4 +210,63 @@ return {
       require('lsp-progress').setup()
     end,
   },
+
+  -- {
+  --   'pmizio/typescript-tools.nvim',
+  --   dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
+  --   config = function()
+  --     require('typescript-tools').setup({
+  --
+  --       -- Anpassade handlers, t.ex. för att filtrera bort vissa varningar
+  --       handlers = {
+  --         ['textDocument/publishDiagnostics'] = require('typescript-tools.api').filter_diagnostics(
+  --           { 80006 } -- Ignorera "This may be converted to an async function"
+  --         ),
+  --       },
+  --
+  --       settings = {
+  --         -- Separat diagnosserver för bättre prestanda
+  --         separate_diagnostic_server = true,
+  --         publish_diagnostic_on = 'insert_leave',
+  --
+  --         -- Exponera vanliga TS Fixer-actions
+  --         expose_as_code_action = {
+  --           'fix_all',
+  --           'add_missing_imports',
+  --           'remove_unused',
+  --           'remove_unused_imports',
+  --           'organize_imports',
+  --         },
+  --
+  --         -- Ladda in TypeScript-plugins (Styled Components)
+  --         tsserver_plugins = {
+  --           '@styled/typescript-styled-plugin', -- För TypeScript 4.9+
+  --           -- "typescript-styled-plugin", -- För äldre versioner av TypeScript
+  --         },
+  --
+  --         -- Max minnesgräns för tsserver (kan sättas till ett nummer, t.ex. 4096 för 4GB)
+  --         tsserver_max_memory = 'auto',
+  --         tsserver_locale = 'en',
+  --
+  --         -- Inställningar för autocompletions och formatering
+  --         tsserver_file_preferences = {
+  --           includeInlayParameterNameHints = 'all',
+  --           includeCompletionsForModuleExports = true,
+  --           quotePreference = 'auto',
+  --         },
+  --
+  --         tsserver_format_options = {
+  --           allowIncompleteCompletions = false,
+  --           allowRenameOfImportPath = false,
+  --         },
+  --
+  --         -- JSX Auto-close (stäng av om du redan använder `nvim-ts-autotag`)
+  --         jsx_close_tag = {
+  --           enable = false,
+  --           filetypes = { 'javascriptreact', 'typescriptreact' },
+  --         },
+  --       },
+  --     })
+  --   end,
+  -- },
 }

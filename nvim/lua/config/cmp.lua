@@ -9,7 +9,6 @@ local source_mapping = {
   luasnip = '[SNIP]',
   buffer = '[BUF]',
   path = '[PATH]',
-  treesitter = '[TREE]',
 }
 
 cmp.setup({
@@ -97,6 +96,7 @@ cmp.setup({
       },
     },
     { name = 'nvim_lua' },
+
     {
       name = 'dotenv',
       option = {
