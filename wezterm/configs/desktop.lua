@@ -6,13 +6,23 @@ local keymaps = require('keymaps')
 ---------------------
 ---- Keymaps config
 ---------------------
+config.disable_default_key_bindings = true
 config.keys = keymaps.keys
 config.key_tables = keymaps.key_tables
 
 ---------------------
----- Reusable settings
+---- Core settings
 ---------------------
 local dimmer = { brightness = 0.1 }
+local font_size = 10.0
+local screen_width = 1920
+local screen_height = 1080
+local char_width = font_size * 0.6
+local char_height = font_size * 1.8
+
+---------------------
+---- Window
+---------------------
 
 config.window_padding = {
   top = 2,
@@ -21,34 +31,15 @@ config.window_padding = {
   left = 2,
 }
 
----------------------
----- Theme
----------------------
---config.color_scheme = 'Atelierdune (dark) (terminal.sexy)'
---config.color_scheme = 'farmhouse-dark'
---config.color_scheme = 'farmhouse-light'
--- config.colors = {
---   scrollbar_thumb = '#3f537d',
---   visual_bell = '#777777', -- "bell" notifier color, instead of "beep" sound
---   tab_bar = {
---     new_tab = {
---       bg_color = '#262420',
---       fg_color = '#A68B6D',
---       intensity = 'Normal',
---     },
---     new_tab_hover = {
---       bg_color = '#3f537d',
---       fg_color = '#E4C9AF',
---       intensity = 'Bold',
---     },
---   },
--- }
+config.initial_cols = math.floor(screen_width / char_width)
+config.initial_rows = math.floor(screen_height / char_height)
 
 ---------------------
 ---- Fonts
 ---------------------
+
 config.font = wezterm.font({ family = 'CaskaydiaCove NFM', stretch = 'Expanded', weight = 'Regular' })
-config.font_size = 10.0
+config.font_size = font_size
 
 ---------------------
 ---- Scrollbar
@@ -233,9 +224,9 @@ end)
 ---------------------
 
 wezterm.on('gui-startup', function()
-  local _, pane, _ = mux.spawn_window({
+  local _, pane, window = mux.spawn_window({
     workspace = 'Main',
-    cwd = wezterm.home_dir .. '/.config/wezterm',
+    cwd = wezterm.home_dir .. '/Documents/dotfiles',
     args = { wezterm.home_dir .. '/.bin/mountwsx_and_navigate.sh' },
   })
 
@@ -248,8 +239,8 @@ wezterm.on('gui-startup', function()
 
   system_info:send_text('fastfetch\n')
   system_info:send_text('task project\n')
-
   mux.set_active_workspace('Main')
+  -- window:gui_window():maximized()
 end)
 
 -------------------------
