@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Name=Kitty
+Comment=Fast, feature-rich, GPU-based terminal
+Exec=/home/simon/.local/bin/kitty
+Icon=/home/simon/.local/kitty.app/share/icons/hicolor/256x256/apps/whiskers.png
+Type=Application
+Categories=Utility;TerminalEmulator;

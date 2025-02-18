@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Postman
+Exec=/opt/Postman/Postman
+Icon=/opt/Postman/app/icons/icon_128x128.png
+Type=Application
+Categories=Development;Network;
+StartupNotify=true
+Terminal=false
+
