@@ -1,18 +1,16 @@
 declare -A paths
 paths=(
-  # [vimconf]="$HOME/.config/nvim"
-  # [wezconf]="$HOME/.config/wezterm"
-  # [kittyconf]="$HOME/.config/kitty"
   [dotfiles]="$HOME/Documents/dotfiles"
   [dls]="$HOME/Downloads"
   [docs]="$HOME/Documents"
   [wsx]="/media/veracrypt1/ws"
-  [webdev]="/media/veracrypt1/ws/webdev"
-  [wsxreactjs]="/media/veracrypt1/ws/webdev/reactjs"
-  [wsxnextjs]="/media/veracrypt1/ws/webdev/nextjs"
-  [wsxnodejs]="/media/veracrypt1/ws/webdev/nodejs"
-  [wsxstorybook]="/media/veracrypt1/ws/webdev/storybook"
-  [dotnet]="/media/veracrypt1/ws/dotnet"
+  [work]="/media/veracrypt2"
+  # [webdev]="/media/veracrypt1/ws/webdev"
+  # [wsxreactjs]="/media/veracrypt1/ws/webdev/reactjs"
+  # [wsxnextjs]="/media/veracrypt1/ws/webdev/nextjs"
+  # [wsxnodejs]="/media/veracrypt1/ws/webdev/nodejs"
+  # [wsxstorybook]="/media/veracrypt1/ws/webdev/storybook"
+  # [dotnet]="/media/veracrypt1/ws/dotnet"
 )
 
 cd() {
