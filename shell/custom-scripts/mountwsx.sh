@@ -42,7 +42,8 @@ for i in "${!PARTITIONS[@]}"; do
     echo -e "${YELLOW}Partition $PARTITION is already mounted at $MOUNT_POINT.${RESET}"
   else
     echo -e "${GREEN}Mounting $PARTITION to $MOUNT_POINT ...${RESET}"
-    echo "$PASSWORD" | sudo veracrypt --text --mount "$PARTITION" "$MOUNT_POINT" --non-interactive --stdin
+    # echo "$PASSWORD" | sudo veracrypt --text --mount "$PARTITION" "$MOUNT_POINT" --non-interactive --stdin
+    echo "$PASSWORD" | sudo veracrypt --text --mount "$PARTITION" "$MOUNT_POINT" --non-interactive --stdin --fs-options="uid=1000,gid=1000,umask=0002,dmask=0002,fmask=0002"
 
     if mount | grep -q "$MOUNT_POINT"; then
       echo -e "$PARTITION: ${GREEN}DONE${RESET}"
