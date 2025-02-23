@@ -140,7 +140,7 @@ return {
   -- theme development - testing
   {
     dir = '~/.local/share/nvim/lazy/webdever-theme',
-    enabled = true,
+    enabled = false,
     config = function()
       --   vim.cmd([[colorscheme webdever-theme]])
       require('webdever-theme').setup({
@@ -152,6 +152,78 @@ return {
         ibl = true,
         neotree = true,
         bufferline = false,
+      })
+    end,
+  },
+
+  {
+    'catppuccin/nvim',
+    name = 'catppuccin',
+    priority = 1000,
+    config = function()
+      vim.cmd([[colorscheme catppuccin-macchiato]]) --> latte, frappe, macchiato, mocha
+
+      require('catppuccin').setup({
+        flavor = 'auto', --> latte, frappe, macchiato, mocha
+        background = { -- :h background
+          light = 'latte',
+          dark = 'frappe',
+        },
+        styles = { -- Handles the styles of general hi groups (see `:h highlight-args`):
+          comments = { 'italic' }, -- Change the style of comments
+          conditionals = { 'italic' },
+          loops = {},
+          functions = {},
+          keywords = {},
+          strings = {},
+          variables = {},
+          numbers = {},
+          booleans = {},
+          properties = {},
+          types = {},
+          operators = {},
+          -- miscs = {}, -- Uncomment to turn off hard-coded styles
+        },
+        default_integrations = true,
+        integrations = {
+          cmp = true,
+          gitsigns = true,
+          nvimtree = true,
+          treesitter = true,
+          notify = true,
+          neotree = true,
+          treesitter_context = true,
+          ts_rainbow = true,
+          window_picker = true,
+          render_markdown = true,
+          which_key = true,
+          rainbow_delimiters = true,
+          indent_blankline = {
+            enabled = true,
+            scope_color = 'lavender', -- catppuccin color (eg. `lavender`) Default: text
+            colored_indent_levels = false, -- false default
+          },
+        },
+        native_lsp = {
+          enabled = true,
+          virtual_text = {
+            errors = { 'italic' },
+            hints = { 'italic' },
+            warnings = { 'italic' },
+            information = { 'italic' },
+            ok = { 'italic' },
+          },
+          underlines = {
+            errors = { 'underline' },
+            hints = { 'underline' },
+            warnings = { 'underline' },
+            information = { 'underline' },
+            ok = { 'underline' },
+          },
+          inlay_hints = {
+            background = true,
+          },
+        },
       })
     end,
   },

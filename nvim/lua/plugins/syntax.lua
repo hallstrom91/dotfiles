@@ -39,21 +39,25 @@ return {
     event = { 'BufReadPre', 'BufNewFile' },
     config = function()
       require('treesitter-context').setup({
-        enable = true,
-        multiwindow = true,
+        highlight = {
+          enable = true,
+          additional_vim_regex_highlighting = false,
+          multiwindow = true,
+        },
+        -- enable = true,
       })
-      --	custom highlight color for context
-      vim.api.nvim_set_hl(0, 'TreesitterContextBottom', {
-        underline = true,
-        bg = '#3b3b3b', -- bg
-        sp = '#909190', -- underline
-      })
-      -- custom highlight number color for context
-      vim.api.nvim_set_hl(0, 'TreesitterContextLineNumberBottom', {
-        underline = true,
-        bg = '#ffffff', -- bg
-        sp = '#67a137', -- underline
-      })
+      -- --	custom highlight color for context
+      -- vim.api.nvim_set_hl(0, 'TreesitterContextBottom', {
+      --   underline = true,
+      --   bg = '#3b3b3b', -- bg
+      --   sp = '#909190', -- underline
+      -- })
+      -- -- custom highlight number color for context
+      -- vim.api.nvim_set_hl(0, 'TreesitterContextLineNumberBottom', {
+      --   underline = true,
+      --   bg = '#ffffff', -- bg
+      --   sp = '#67a137', -- underline
+      -- })
 
       vim.keymap.set('n', '[c', function()
         require('treesitter-context').go_to_context(vim.v.count1)
@@ -127,6 +131,7 @@ return {
     dependencies = { 'nvim-treesitter/nvim-treesitter' },
     config = function()
       local rainbow_delimiters = require('rainbow-delimiters')
+
       vim.g.rainbow_delimiters = {
         strategy = {
           [''] = rainbow_delimiters.strategy['global'],
@@ -134,16 +139,49 @@ return {
         },
         query = {
           [''] = 'rainbow-delimiters',
-          javascript = 'rainbow-parens',
-          typescript = 'rainbow-parens',
-          tsx = 'rainbow-parens',
           lua = 'rainbow-blocks',
         },
         priority = {
           [''] = 110,
           lua = 210,
         },
+        highlight = {
+          'RainbowDelimiterRed',
+          'RainbowDelimiterYellow',
+          'RainbowDelimiterBlue',
+          'RainbowDelimiterOrange',
+          'RainbowDelimiterGreen',
+          'RainbowDelimiterViolet',
+          'RainbowDelimiterCyan',
+        },
       }
     end,
   },
+
+  ----| Rainbow-delimiters setup for personal plugin |----
+  -- {
+  --   'HiPhish/rainbow-delimiters.nvim',
+  --   event = { 'BufReadPre', 'BufNewFile' },
+  --   dependencies = { 'nvim-treesitter/nvim-treesitter' },
+  --   config = function()
+  --     local rainbow_delimiters = require('rainbow-delimiters')
+  --     vim.g.rainbow_delimiters = {
+  --       strategy = {
+  --         [''] = rainbow_delimiters.strategy['global'],
+  --         vim = rainbow_delimiters.strategy['local'],
+  --       },
+  --       query = {
+  --         [''] = 'rainbow-delimiters',
+  --         javascript = 'rainbow-parens',
+  --         typescript = 'rainbow-parens',
+  --         tsx = 'rainbow-parens',
+  --         lua = 'rainbow-blocks',
+  --       },
+  --       priority = {
+  --         [''] = 110,
+  --         lua = 210,
+  --       },
+  --     }
+  --   end,
+  -- },
 }

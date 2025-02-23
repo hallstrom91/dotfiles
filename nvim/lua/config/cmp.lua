@@ -84,7 +84,16 @@ cmp.setup({
   },
 
   sources = cmp.config.sources({
-    { name = 'nvim_lsp' },
+    {
+      name = 'nvim_lsp',
+      -- entry_filter = function(entry, _)
+      --   local kinds_to_ignore = {
+      --     cmp.lsp.CompletionItemKind.Module, -- Förhindra att hela moduler föreslås som duplicerade imports
+      --     cmp.lsp.CompletionItemKind.Text,
+      --   }
+      --   return not vim.tbl_contains(kinds_to_ignore, entry:get_kind())
+      -- end,
+    },
     { name = 'luasnip' },
     {
       name = 'buffer',
@@ -160,7 +169,7 @@ cmp.setup.cmdline('/', {
 
 cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
 
---[[ vim.api.nvim_set_hl(0, 'Pmenu', { bg = '#2E3440', fg = '#D8DEE9' })
+vim.api.nvim_set_hl(0, 'Pmenu', { bg = '#2E3440', fg = '#D8DEE9' })
 vim.api.nvim_set_hl(0, 'PmenuSel', { bg = '#4C566A', fg = '#D8DEE9' })
 vim.api.nvim_set_hl(0, 'PmenuSbar', { bg = '#3B4252' })
-vim.api.nvim_set_hl(0, 'PmenuThumb', { bg = '#4C566A' }) ]]
+vim.api.nvim_set_hl(0, 'PmenuThumb', { bg = '#4C566A' })

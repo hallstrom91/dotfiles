@@ -21,32 +21,54 @@ local manual_servers = {
   'css_variables',
 }
 
+----| TEST
+--local tsserver_cmd = { vim.fn.stdpath('data') .. '/mason/bin/typescript-language-server', '--stdio' }
+
 ----> List of LSP servers - Auto start @ correct filetype
 local servers = {
   ----> Typescript & JavaScript
   ts_ls = {
+
     root_dir = util.root_pattern('tsconfig.json', 'jsconfig.json', 'package.json', '.git'),
-    cmd = { 'typescript-language-server', '--stdio' },
+    -- cmd = { 'typescript-language-server', '--stdio' },
     init_options = {
       plugins = {
         {
           name = '@styled/typescript-styled-plugin',
           location = '/home/simon/.nvm/versions/node/v20.18.0/lib/node_modules/@styled/typescript-styled-plugin',
-          languages = { 'javascript', 'typescript', 'javascriptreact', 'typescriptreact' },
+          languages = {
+            --[[ 'javascript', 'typescript', ]]
+            'javascriptreact',
+            'typescriptreact',
+          },
         },
       },
     },
-
     settings = {
       completions = {
         completeFunctionCalls = false,
       },
-
       filetypes = {
         'javascript',
         'javascriptreact',
         'typescript',
         'typescriptreact',
+      },
+      typescript = {
+        -- preferences = {
+        --   importModuleSpecifierPreference = 'relative', --> OR "non-relative"
+        --   importModuleSpecifierEnding = 'minimal',
+        --   autoImportFileExcludePatterns = { '**/*.spec.ts', '**/*.test.ts' },
+        -- },
+        suggest = {
+          autoImports = false,
+        },
+        organizeImports = false,
+      },
+      javascript = {
+        suggest = {
+          autoImports = false,
+        },
       },
     },
   },
