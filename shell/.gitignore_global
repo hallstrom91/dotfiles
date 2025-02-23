@@ -1,4 +1,8 @@
-# Global Ignore 
+# Global Ignore
+
+# Personal
+todolist.md
+projectlist.md
 
 # Node.js
 node_modules/
@@ -11,6 +15,9 @@ bower_components/
 # VSC
 .vscode/
 *.code-workspace
+
+# DOTNET
+
 
 # Systemfiler
 .DS_Store
@@ -46,3 +53,6 @@ dist/
 build/
 out/
 
+# Secrets
+.env
+.env.*
