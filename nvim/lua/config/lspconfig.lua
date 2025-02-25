@@ -1,6 +1,7 @@
 local lspconfig = require('lspconfig')
 local util = require('lspconfig.util')
 local mason_omnisharp_path = vim.fn.stdpath('data') .. '/mason/packages/omnisharp/libexec/OmniSharp.dll' ----> To get correct version of .NET in command "LspInfo"
+local rootpath = os.getenv('HOME')
 
 ----> LSP Capabilities
 local init_capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -23,21 +24,22 @@ local manual_servers = {
 
 ----| TEST
 --local tsserver_cmd = { vim.fn.stdpath('data') .. '/mason/bin/typescript-language-server', '--stdio' }
-
+local root_path = vim.fn.expand('$HOME/')
 ----> List of LSP servers - Auto start @ correct filetype
 local servers = {
   ----> Typescript & JavaScript
   ts_ls = {
-
     root_dir = util.root_pattern('tsconfig.json', 'jsconfig.json', 'package.json', '.git'),
-    -- cmd = { 'typescript-language-server', '--stdio' },
+    cmd = { 'typescript-language-server', '--stdio' },
     init_options = {
       plugins = {
         {
           name = '@styled/typescript-styled-plugin',
-          location = '/home/simon/.nvm/versions/node/v20.18.0/lib/node_modules/@styled/typescript-styled-plugin',
+          -- location = '/home/simon/.nvm/versions/node/v20.18.0/lib/node_modules/@styled/typescript-styled-plugin',
+          location = rootpath .. '/.nvm/versions/node/v20.18.3/lib/node_modules/@styled/typescript-styled-plugin',
           languages = {
-            --[[ 'javascript', 'typescript', ]]
+            'javascript',
+            'typescript',
             'javascriptreact',
             'typescriptreact',
           },
@@ -53,22 +55,6 @@ local servers = {
         'javascriptreact',
         'typescript',
         'typescriptreact',
-      },
-      typescript = {
-        -- preferences = {
-        --   importModuleSpecifierPreference = 'relative', --> OR "non-relative"
-        --   importModuleSpecifierEnding = 'minimal',
-        --   autoImportFileExcludePatterns = { '**/*.spec.ts', '**/*.test.ts' },
-        -- },
-        suggest = {
-          autoImports = false,
-        },
-        organizeImports = false,
-      },
-      javascript = {
-        suggest = {
-          autoImports = false,
-        },
       },
     },
   },
