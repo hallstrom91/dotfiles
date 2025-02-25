@@ -69,8 +69,9 @@ end
 ----> Create Project Related Notes
 vim.api.nvim_create_user_command('CreateProjectNotes', function()
   local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
-  local project_dir = vim.fn.expand('~/.notes/' .. project_name)
-  local input = vim.fn.input('Namn på anteckning (skip för standard): ')
+  --local project_dir = vim.fn.expand('~/.notes/' .. project_name)
+  local project_dir = vim.fn.expand('/media/veracrypt1/ws/.notes/' .. project_name)
+  local input = vim.fn.input('Name of Note: (skip = projectname): ')
 
   --> If input is empty or "skip" create note with default name => projectname.md
   if input == '' or input == 'skip' then
@@ -104,8 +105,8 @@ end, {})
 ----> Find Project Related Notes
 vim.api.nvim_create_user_command('SearchNotes', function()
   local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
-  local project_dir = vim.fn.expand('~/.notes/' .. project_name)
-
+  -- local project_dir = vim.fn.expand('~/.notes/' .. project_name)
+  local project_dir = vim.fn.expand('/media/veracrypt1/ws/.notes/' .. project_name)
   local search_dir = vim.fn.isdirectory(project_dir) == 1 and project_dir or vim.fn.expand('~/.notes')
 
   require('telescope.builtin').find_files({
@@ -114,8 +115,8 @@ vim.api.nvim_create_user_command('SearchNotes', function()
     hidden = true,
     attach_mappings = function(_, map)
       map('i', '<CR>', function(prompt_bufnr)
-        local action_state = require('telescope.actions.state')
-        local actions = require('telescope.actions')
+        -- local action_state = require('telescope.actions.state')
+        -- local actions = require('telescope.actions')
         local selection = action_state.get_selected_entry()
         if selection then
           actions.close(prompt_bufnr)
