@@ -31,3 +31,7 @@ export TERMINFO=~/.local/kitty.app/lib/kitty/terminfo
 
 # Separate Kitty themes from nvim themes
 export TERM=xterm-256color
+
+# .NET tools for CA
+#export SSL_CERT_DIR=$HOME/.aspnet/dev-certs/trust:/usr/lib/ssl/certs
+#export PATH=$PATH:~/.dotnet/tools
