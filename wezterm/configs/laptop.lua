@@ -218,7 +218,7 @@ wezterm.on('update-status', function(window, pane)
     overrides.background = {
       {
         source = {
-          File = wezterm.home_dir .. '/.config/wezterm/backgrounds/anonbgdark1920x1080.png',
+          -- File = wezterm.home_dir .. '/.config/wezterm/backgrounds/anonbgdark1920x1080.png',
         },
         hsb = dimmer,
       },
