@@ -261,11 +261,23 @@ local map = vim.keymap.set
 local opts = { noremap = true, silent = true }
 
 ----> LSP keymaps
+-- map(
+--   'n',
+--   'gd',
+--   '<cmd>lua vim.lsp.buf.definition()<CR>',
+--   vim.tbl_extend('force', opts, { desc = 'LSP Go to definition' })
+-- )
+-- map('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', vim.tbl_extend('force', opts, { desc = 'LSP Find references' }))
+map('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', vim.tbl_extend('force', opts, { desc = 'LSP Hover documentation' }))
+
 map(
   'n',
   'gd',
-  '<cmd>lua vim.lsp.buf.definition()<CR>',
-  vim.tbl_extend('force', opts, { desc = 'LSP Go to definition' })
+  '<cmd>Telescope lsp_definitions<CR>',
+  vim.tbl_extend('force', opts, { desc = 'LSP Go to Definition (Telescope)' })
 )
-map('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', vim.tbl_extend('force', opts, { desc = 'LSP Find references' }))
-map('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', vim.tbl_extend('force', opts, { desc = 'LSP Hover documentation' }))
+
+map('n', 'gr', '<cmd>Telescope lsp_references<CR>', vim.tbl_extend('force', opts, { desc = 'LSP Find References' }))
+
+map('n', 'gi', '<cmd>Telescope lsp_implementations<CR>', opts)
+map('n', 'gt', '<cmd>Telescope lsp_type_definitions<CR>', opts)
