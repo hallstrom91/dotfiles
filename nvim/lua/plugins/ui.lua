@@ -140,7 +140,7 @@ return {
   -- theme development - testing
   {
     dir = '~/.local/share/nvim/lazy/webdever-theme',
-    enabled = false,
+    enabled = true,
     config = function()
       --   vim.cmd([[colorscheme webdever-theme]])
       require('webdever-theme').setup({
@@ -159,9 +159,10 @@ return {
   {
     'catppuccin/nvim',
     name = 'catppuccin',
+    enable = false,
     priority = 1000,
     config = function()
-      vim.cmd([[colorscheme catppuccin-macchiato]]) --> latte, frappe, macchiato, mocha
+      --vim.cmd([[colorscheme catppuccin-macchiato]]) --> latte, frappe, macchiato, mocha
 
       require('catppuccin').setup({
         flavor = 'auto', --> latte, frappe, macchiato, mocha

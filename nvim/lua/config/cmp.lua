@@ -169,7 +169,7 @@ cmp.setup.cmdline('/', {
 
 cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
 
-vim.api.nvim_set_hl(0, 'Pmenu', { bg = '#2E3440', fg = '#D8DEE9' })
-vim.api.nvim_set_hl(0, 'PmenuSel', { bg = '#4C566A', fg = '#D8DEE9' })
-vim.api.nvim_set_hl(0, 'PmenuSbar', { bg = '#3B4252' })
-vim.api.nvim_set_hl(0, 'PmenuThumb', { bg = '#4C566A' })
+-- vim.api.nvim_set_hl(0, 'Pmenu', { bg = '#2E3440', fg = '#D8DEE9' })
+-- vim.api.nvim_set_hl(0, 'PmenuSel', { bg = '#4C566A', fg = '#D8DEE9' })
+-- vim.api.nvim_set_hl(0, 'PmenuSbar', { bg = '#3B4252' })
+-- vim.api.nvim_set_hl(0, 'PmenuThumb', { bg = '#4C566A' })

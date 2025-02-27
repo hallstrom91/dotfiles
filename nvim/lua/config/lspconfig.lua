@@ -22,9 +22,6 @@ local manual_servers = {
   'css_variables',
 }
 
-----| TEST
---local tsserver_cmd = { vim.fn.stdpath('data') .. '/mason/bin/typescript-language-server', '--stdio' }
-local root_path = vim.fn.expand('$HOME/')
 ----> List of LSP servers - Auto start @ correct filetype
 local servers = {
   ----> Typescript & JavaScript
@@ -35,8 +32,9 @@ local servers = {
       plugins = {
         {
           name = '@styled/typescript-styled-plugin',
-          -- location = '/home/simon/.nvm/versions/node/v20.18.0/lib/node_modules/@styled/typescript-styled-plugin',
-          location = rootpath .. '/.nvm/versions/node/v20.18.3/lib/node_modules/@styled/typescript-styled-plugin',
+          --location = styled_plugin_path,
+          location = rootpath .. '/.nvm/versions/node/v18.20.7/lib/node_modules/@styled/typescript-styled-plugin',
+          -- location = root_path .. '/.nvm/versions/node/v20.18.3/lib/node_modules/@styled/typescript-styled-plugin',
           languages = {
             'javascript',
             'typescript',

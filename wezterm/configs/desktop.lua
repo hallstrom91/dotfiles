@@ -234,7 +234,7 @@ wezterm.on('gui-startup', function()
   local system_info = pane:split({
     direction = 'Right',
     workspace = 'sysinfo',
-    size = 0.3,
+    size = 0.5,
   })
 
   system_info:send_text('fastfetch\n')
