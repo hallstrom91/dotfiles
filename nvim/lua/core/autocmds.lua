@@ -14,23 +14,6 @@ autocmd('FileType', {
   command = 'wincmd L',
 })
 
--- auto update plugins at start
-
--- local function augroup(name)
--- 	return vim.api.nvim_create_augroup("lazyvim_" .. name, { clear = true })
--- end
---
--- vim.api.nvim_create_autocmd("VimEnter", {
--- 	group = augroup("autoupdate"),
--- 	callback = function()
--- 		vim.defer_fn(function()
--- 			if require("lazy.status").has_updates() then
--- 				require("lazy").update({ show = false })
--- 			end
--- 		end, 1000)
--- 	end,
--- })
-
 -- Auto update Treesitter Parsers
 autocmd('VimEnter', {
   pattern = 'VeryLazy',
@@ -43,4 +26,17 @@ autocmd('VimEnter', {
 autocmd({ 'BufRead', 'BufNewFile' }, {
   pattern = '.bash_*',
   command = 'set filetype=bash',
+})
+
+autocmd('CursorMoved', {
+  callback = function()
+    local buftype = vim.api.nvim_get_option_value('buftype', { buf = 0 })
+    if buftype == '' then
+      vim.cmd('highlight CursorJump guibg=#88C0D0 guifg=#31363F')
+      vim.cmd('setlocal cursorline')
+      vim.defer_fn(function()
+        vim.cmd('setlocal nocursorline')
+      end, 300)
+    end
+  end,
 })
