@@ -180,6 +180,14 @@ require('neo-tree').setup({
         desc = 'Git move file (no folders)',
       },
       ['gp'] = { desc = 'Git Push', 'git_push' },
+      ['P'] = {
+        'toggle_preview',
+        config = {
+          use_float = false,
+          use_image_nvim = true,
+          title = 'Neo-tree Previewer',
+        },
+      },
     },
   }, -- End of window settings
 
@@ -190,17 +198,39 @@ require('neo-tree').setup({
       leave_dirs_open = false, -- Close directories when switching buffers
     },
   }, -- End of Buffer management
+  source_selector = {
+    winbar = true,
+    statusline = false,
+  },
   event_handlers = {
-
     {
       event = 'file_open_requested',
       handler = function()
-        -- auto close
-        -- vim.cmd("Neotree close")
-        -- OR
         require('neo-tree.command').execute({ action = 'close' })
       end,
     },
+    -- {
+    --   event = 'neo_tree_buffer_leave',
+    --   handler = function()
+    --     local wins = vim.api.nvim_list_wins()
+    --
+    --     for _, win in ipairs(wins) do
+    --       local config = vim.api.nvim_win_get_config(win)
+    --       if config.relative ~= '' then
+    --         return -- Avbryt om en popup är öppen
+    --       end
+    --     end
+    --
+    --     -- Om ingen popup är aktiv, stäng Neo-tree
+    --     require('neo-tree.command').execute({ action = 'close' })
+    --   end,
+    -- },
+    -- {
+    --   event = 'neo_tree_buffer_leave',
+    --   handler = function()
+    --     require('neo-tree.command').execute({ action = 'close' })
+    --   end,
+    -- },
   },
 })
 
@@ -211,5 +241,3 @@ map(
   ':Neotree toggle reveal_force_cwd=true<CR>',
   vim.tbl_extend('force', opts, { desc = 'Open File explorer' })
 )
---
---[[ map("n", "<Leader>e", ":Neotree toggle focus<CR>", { desc = "Focus Neo-tree" }) ]]
