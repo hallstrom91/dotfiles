@@ -14,6 +14,7 @@ require('lazy').setup({
 })
 
 local user_grp = vim.api.nvim_create_augroup('LazyUserGroup', { clear = true })
+
 vim.api.nvim_create_autocmd('FileType', {
   pattern = 'lazy',
   desc = 'Quit lazy with <esc>',

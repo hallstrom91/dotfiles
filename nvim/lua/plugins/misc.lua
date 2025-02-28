@@ -76,4 +76,8 @@ return {
       require('config.spectre')
     end,
   },
+
+  {
+    'tpope/vim-surround',
+  },
 }

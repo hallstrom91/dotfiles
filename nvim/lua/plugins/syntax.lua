@@ -14,6 +14,7 @@ return {
           'markdown_inline',
           'html',
           'css',
+          'scss',
           'javascript',
           'tsx',
           'typescript',

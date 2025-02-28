@@ -32,9 +32,8 @@ local servers = {
       plugins = {
         {
           name = '@styled/typescript-styled-plugin',
-          --location = styled_plugin_path,
           location = rootpath .. '/.nvm/versions/node/v18.20.7/lib/node_modules/@styled/typescript-styled-plugin',
-          -- location = root_path .. '/.nvm/versions/node/v20.18.3/lib/node_modules/@styled/typescript-styled-plugin',
+          -- location = rootpath .. '/.nvm/versions/node/v20.18.3/lib/node_modules/@styled/typescript-styled-plugin',
           languages = {
             'javascript',
             'typescript',
@@ -87,22 +86,28 @@ local servers = {
   lua_ls = {
     settings = {
       Lua = {
-        runtime = { version = 'LuaJIT' },
+        format = {
+          enable = false,
+        },
+        runtime = {
+          version = 'LuaJIT',
+          special = { --> Test "special"
+            spec = 'require',
+          },
+        },
+
         diagnostics = {
           globals = {
             'vim',
-            'get_application_name', --> devilspie2
-            'set_workspace', --> devilspie2
-            'set_window_geometry', --> devilspie2
-            'minimize', --> devilspie2
-            'maximize', --> devilspie2
-            'debug_print', --> devilspie2
+            'spec',
           },
           -- disable = {"undefined-field"},
         },
         workspace = {
           library = {
-            vim.env.VIMRUNTIME,
+            --vim.env.VIMRUNTIME,
+            [vim.fn.expand('$VIMRUNTIME/lua')] = true,
+            [vim.fn.stdpath('config') .. '/lua'] = true,
             --[[ 		[vim.fn.stdpath("config") .. "/lua"] = true,
 						[vim.fn.stdpath("data") .. "/lazy"] = true, ]]
           },
@@ -113,8 +118,9 @@ local servers = {
         hint = {
           enable = true,
           setType = false,
-          paramType = 'Disable',
-          semicolon = 'Disable',
+          --paramType = 'Disable',
+          paramType = true,
+          semicolon = 'All',
           arrayIndex = 'Disable',
         },
       },
