@@ -67,7 +67,7 @@ for _, map in ipairs(keymaps) do
 end
 
 ----> Create Project Related Notes
-vim.api.nvim_create_user_command('CreateProjectNotes', function()
+vim.api.nvim_create_user_command('CreateNotes', function()
   local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
   --local project_dir = vim.fn.expand('~/.notes/' .. project_name)
   local project_dir = vim.fn.expand('/media/veracrypt1/ws/.notes/' .. project_name)
@@ -103,7 +103,7 @@ vim.api.nvim_create_user_command('CreateProjectNotes', function()
 end, {})
 
 ----> Find Project Related Notes
-vim.api.nvim_create_user_command('SearchNotes', function()
+vim.api.nvim_create_user_command('FindNotes', function()
   local project_name = vim.fn.fnamemodify(vim.fn.getcwd(), ':t')
   -- local project_dir = vim.fn.expand('~/.notes/' .. project_name)
   local project_dir = vim.fn.expand('/media/veracrypt1/ws/.notes/' .. project_name)
@@ -115,8 +115,6 @@ vim.api.nvim_create_user_command('SearchNotes', function()
     hidden = true,
     attach_mappings = function(_, map)
       map('i', '<CR>', function(prompt_bufnr)
-        -- local action_state = require('telescope.actions.state')
-        -- local actions = require('telescope.actions')
         local selection = action_state.get_selected_entry()
         if selection then
           actions.close(prompt_bufnr)
