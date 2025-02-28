@@ -133,6 +133,7 @@ cmp.setup({
   enabled = function()
     local context = require('cmp.config.context')
     local buftype = vim.bo.buftype
+    local filetype = vim.bo.filetype -- test
 
     if buftype == 'prompt' then
       return false
@@ -141,6 +142,20 @@ cmp.setup({
     -- remove below?
     if vim.api.nvim_get_mode().mode == 'c' then
       return true
+    end
+
+    -- Test no completion in non-code files like .md
+    local disabled_filetypes = {
+      'markdown',
+      'text',
+      'gitcommit',
+      'gitrebase',
+      'csv',
+      'log',
+    }
+
+    if vim.tbl_contains(disabled_filetypes, filetype) then
+      return false
     end
 
     ----> remove suggestions on comment lines
