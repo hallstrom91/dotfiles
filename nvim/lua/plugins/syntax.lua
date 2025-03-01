@@ -23,12 +23,13 @@ return {
           'c_sharp',
           'styled',
         },
-        sync_install = false,
+        sync_install = true,
         auto_install = false,
         fold = { enable = false }, -- using nvim-ufo for folding
         highlight = {
           enable = true,
           additional_vim_regex_highlighting = true,
+          disable = { 'scheme' },
         },
       })
     end,

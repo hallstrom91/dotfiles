@@ -39,14 +39,18 @@ local servers = {
             'typescript',
             'javascriptreact',
             'typescriptreact',
+            'javascript.jsx',
+            'typescript.tsx',
+            '.tsx',
+            '.ts',
           },
         },
       },
     },
     settings = {
-      completions = {
-        completeFunctionCalls = false,
-      },
+      -- completions = {
+      --   completeFunctionCalls = false,
+      -- },
       filetypes = {
         'javascript',
         'javascriptreact',
@@ -61,9 +65,9 @@ local servers = {
     cmd = { 'vscode-css-language-server', '--stdio' },
     filetypes = {
       -- 'typescript',
-      -- 'typescriptreact',
-      -- 'javascriptreact',
-      -- 'javascript',
+      --'typescriptreact',
+      --'javascriptreact',
+      --'javascript',
       'css',
       'scss',
       'less',
@@ -274,14 +278,19 @@ local opts = { noremap = true, silent = true }
 -- map('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', vim.tbl_extend('force', opts, { desc = 'LSP Find references' }))
 map('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', vim.tbl_extend('force', opts, { desc = 'LSP Hover documentation' }))
 
+map('n', 'gd', '<cmd>Telescope lsp_definitions<CR>', vim.tbl_extend('force', opts, { desc = 'LSP go to definition' }))
+
+map('n', 'gr', '<cmd>Telescope lsp_references<CR>', vim.tbl_extend('force', opts, { desc = 'LSP find references' }))
+
 map(
   'n',
-  'gd',
-  '<cmd>Telescope lsp_definitions<CR>',
-  vim.tbl_extend('force', opts, { desc = 'LSP Go to Definition (Telescope)' })
+  'gi',
+  '<cmd>Telescope lsp_implementations<CR>',
+  vim.tbl_extend('force', opts, { desc = 'LSP Implementations' })
 )
-
-map('n', 'gr', '<cmd>Telescope lsp_references<CR>', vim.tbl_extend('force', opts, { desc = 'LSP Find References' }))
-
-map('n', 'gi', '<cmd>Telescope lsp_implementations<CR>', opts)
-map('n', 'gt', '<cmd>Telescope lsp_type_definitions<CR>', opts)
+map(
+  'n',
+  'gt',
+  '<cmd>Telescope lsp_type_definitions<CR>',
+  vim.tbl_extend('force', opts, { desc = 'LSP type definitions' })
+)

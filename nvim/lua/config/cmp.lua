@@ -97,12 +97,12 @@ cmp.setup({
     { name = 'luasnip' },
     {
       name = 'buffer',
-      option = {
-        get_bufnrs = function()
-          return vim.api.nvim_list_bufs()
-        end,
-        keyword_length = 3,
-      },
+      -- option = {
+      --   get_bufnrs = function()
+      --     return vim.api.nvim_list_bufs()
+      --   end,
+      --   keyword_length = 3,
+      -- },
     },
     { name = 'nvim_lua' },
 
@@ -171,7 +171,7 @@ cmp.setup.cmdline(':', {
   }, {
     { name = 'cmdline', keyword_length = 1 },
   }),
-  --  matching = { disallow_symbol_nonprefix_matching = false },
+  -- matching = { disallow_symbol_nonprefix_matching = false },
 })
 
 -- For `/` (search)

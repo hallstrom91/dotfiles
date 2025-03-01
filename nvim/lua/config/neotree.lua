@@ -188,6 +188,8 @@ require('neo-tree').setup({
           title = 'Neo-tree Previewer',
         },
       },
+      ['<Esc>'] = { desc = 'close neotree', 'close_window' },
+      ['<CR>'] = 'open_tabnew',
     },
   }, -- End of window settings
 
@@ -209,28 +211,30 @@ require('neo-tree').setup({
         require('neo-tree.command').execute({ action = 'close' })
       end,
     },
-    -- {
-    --   event = 'neo_tree_buffer_leave',
-    --   handler = function()
-    --     local wins = vim.api.nvim_list_wins()
-    --
-    --     for _, win in ipairs(wins) do
-    --       local config = vim.api.nvim_win_get_config(win)
-    --       if config.relative ~= '' then
-    --         return -- Avbryt om en popup är öppen
-    --       end
-    --     end
-    --
-    --     -- Om ingen popup är aktiv, stäng Neo-tree
-    --     require('neo-tree.command').execute({ action = 'close' })
-    --   end,
-    -- },
-    -- {
-    --   event = 'neo_tree_buffer_leave',
-    --   handler = function()
-    --     require('neo-tree.command').execute({ action = 'close' })
-    --   end,
-    -- },
+    {
+      event = 'neo_tree_buffer_leave',
+      handler = function()
+        local wins = vim.api.nvim_list_wins()
+
+        -- Kolla om en popup är öppen, om så, avbryt
+        for _, win in ipairs(wins) do
+          local config = vim.api.nvim_win_get_config(win)
+          if config.relative ~= '' then
+            return
+          end
+        end
+
+        vim.api.nvim_create_autocmd('BufEnter', {
+          callback = function()
+            local bufname = vim.api.nvim_buf_get_name(0)
+            if not bufname:match('neo%-tree') then
+              require('neo-tree.command').execute({ action = 'close' })
+            end
+          end,
+          once = true,
+        })
+      end,
+    },
   },
 })
 
@@ -241,3 +245,13 @@ map(
   ':Neotree toggle reveal_force_cwd=true<CR>',
   vim.tbl_extend('force', opts, { desc = 'Open File explorer' })
 )
+
+-- vim.api.nvim_create_autocmd('FileType', {
+--   pattern = 'neo-tree',
+--   callback = function()
+--     vim.api.nvim_buf_set_keymap(0, 'n', '<Esc>', ':Neotree close=true<CR>', { noremap = true, silent = true })
+--   end,
+-- })
+--
+
+vim.api.nvim_set_keymap('n', '<Esc>', ':Neotree close<CR>', { noremap = true, silent = true })
