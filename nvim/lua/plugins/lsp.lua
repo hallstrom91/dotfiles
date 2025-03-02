@@ -5,7 +5,7 @@ return {
     dependencies = { 'williamboman/mason-lspconfig.nvim' },
     event = { 'BufReadPre', 'BufNewFile' },
     config = function()
-      require('config.lspconfig')
+      require('lsp')
     end,
   },
 
@@ -13,9 +13,7 @@ return {
     'williamboman/mason.nvim',
     build = ':MasonUpdate',
     config = function()
-      local mason = require('mason')
-
-      mason.setup({
+      require('mason').setup({
         ui = {
           icons = {
             package_installed = ' ',
@@ -23,7 +21,6 @@ return {
             package_uninstalled = ' ',
           },
         },
-        ensured_installed = { 'pip' }, -- python
       })
     end,
   },
@@ -32,65 +29,16 @@ return {
     'williamboman/mason-lspconfig.nvim',
     dependencies = { 'williamboman/mason.nvim', 'neovim/nvim-lspconfig' },
     config = function()
-      local mason_lspconfig = require('mason-lspconfig')
-
-      mason_lspconfig.setup({
-        --> Only LSP servers (auto-install)
-        ensure_installed = {
-          'ts_ls',
-          'html',
-          'cssls',
-          'pyright',
-          'lua_ls',
-          'tailwindcss',
-          'marksman',
-          'quick_lint_js',
-          'vimls',
-          'yamlls',
-          'cssmodules_ls',
-          'css_variables',
-          'bashls',
-          'jsonls',
-          'omnisharp',
-        },
+      require('mason-lspconfig').setup({
+        ensure_installed = vim.tbl_keys(require('lsp.servers')),
         automatic_installation = true,
       })
     end,
   },
 
   {
-    'WhoIsSethDaniel/mason-tool-installer.nvim',
-    dependencies = { 'williamboman/mason.nvim' },
-    config = function()
-      require('mason-tool-installer').setup({
-        ensure_installed = {
-          ----> Linters och formatters
-          'bash-language-server',
-          'bash-debug-adapter',
-          'markdownlint-cli2',
-          'prettierd',
-          --| 'prettier', |---> 'prettierd' is faster.
-          'shellcheck',
-          'shfmt',
-          'stylua',
-          'csharpier',
-        },
-        auto_update = true,
-        run_on_start = true,
-        start_delay = 3000, -- 3s delay
-        debounce_hours = 24, -- 24h between update attempts
-        integrations = {
-          ['mason-lspconfig'] = true,
-          ['mason-null-ls'] = false,
-          ['mason-nvim-dap'] = false,
-        },
-      })
-    end,
-  },
-
-  {
     'hrsh7th/nvim-cmp',
-    event = 'InsertEnter',
+    -- event = 'InsertEnter',
     dependencies = {
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-buffer',
@@ -104,32 +52,33 @@ return {
       -- { 'jackieaskins/cmp-emmet', build = 'npm run release' },
     },
     config = function()
-      require('config.cmp')
+      require('lsp.cmp.init')
     end,
   },
 
-  {
-    'L3MON4D3/LuaSnip',
-    version = 'v2.*',
-    dependencies = {
-      'rafamadriz/friendly-snippets',
-    },
-    ----> install jsregexp (optional!).
-    build = 'make install_jsregexp',
-    event = { 'InsertEnter' },
-    config = function()
-      local luasnip = require('luasnip')
-
-      luasnip.config.set_config({
-        enable_autosnippets = true,
-        store_selection_keys = '<Tab>',
-      })
-
-      require('luasnip.loaders.from_vscode').lazy_load({ paths = '~/.local/share/nvim/lazy/friendly-snippets/' })
-      require('luasnip.loaders.from_lua').load({ paths = '~/.config/nvim/lua/snippets/' })
-    end,
-  },
-
+  -- {
+  --
+  --   'L3MON4D3/LuaSnip',
+  --   version = 'v2.*',
+  --   dependencies = {
+  --     'rafamadriz/friendly-snippets',
+  --   },
+  --   ----> install jsregexp (optional!).
+  --   build = 'make install_jsregexp',
+  --   event = { 'InsertEnter' },
+  --   config = function()
+  --     local luasnip = require('luasnip')
+  --
+  --     luasnip.config.set_config({
+  --       enable_autosnippets = true,
+  --       store_selection_keys = '<Tab>',
+  --     })
+  --
+  --     require('luasnip.loaders.from_vscode').lazy_load({ paths = '~/.local/share/nvim/lazy/friendly-snippets/' })
+  --     require('luasnip.loaders.from_lua').load({ paths = '~/.config/nvim/lua/snippets/' })
+  --   end,
+  -- },
+  --
   {
     'hinell/lsp-timeout.nvim',
     dependencies = { 'neovim/nvim-lspconfig' },
@@ -201,15 +150,15 @@ return {
       })
     end,
   },
-
-  {
-    'linrongbin16/lsp-progress.nvim',
-    dependencies = { 'nvim-lualine/lualine.nvim' }, ----> Lualine integration
-    event = { 'BufReadPre', 'BufNewFile' },
-    config = function()
-      require('lsp-progress').setup()
-    end,
-  },
+  --
+  -- {
+  --   'linrongbin16/lsp-progress.nvim',
+  --   dependencies = { 'nvim-lualine/lualine.nvim' }, ----> Lualine integration
+  --   event = { 'BufReadPre', 'BufNewFile' },
+  --   config = function()
+  --     require('lsp-progress').setup()
+  --   end,
+  -- },
 
   -- {
   --   'pmizio/typescript-tools.nvim',

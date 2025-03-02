@@ -3,7 +3,7 @@ local rootpath = os.getenv('HOME')
 
 return {
   --> TypeScript & JavaScript
-  tsserver = {
+  ts_ls = {
     root_dir = util.root_pattern('tsconfig.json', 'package.json', '.git'),
     cmd = { 'typescript-language-server', '--stdio' },
     init_options = {
