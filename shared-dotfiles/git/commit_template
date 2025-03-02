@@ -1,0 +1,16 @@
+# Commit message following Conventional Commits
+# Always include a task number in the title (e.g., feat: (#123) Add new feature)
+
+#fix: (#123) Fix issue in XYZ
+#feat: (#456) Add new feature for ABC
+#perf: (#789) Optimize performance for DEF
+#docs: (#101) Update documentation for GHI
+#style: (#202) Improve code style in JKL
+#refactor: (#303) Refactor code in MNO
+#test: (#404) Add tests for PQR
+#chore: (#505) Maintenance of STU
+
+# Add a description with a maximum of 72 characters above.
+# Add a longer description below if necessary.
+
+# BREAKING CHANGE: Changes that break backward compatibility are listed here

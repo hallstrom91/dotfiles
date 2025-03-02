@@ -1,0 +1,66 @@
+# ~/.bash_ui
+
+# === Colors ===
+FG_USER_NORMAL='\[\e[1;38;5;79m\]'      # cyan
+FG_USER_ROOT='\[\e[1;38;5;203m\]'       # red
+FG_HOST='\[\e[1;38;5;176m\]'            # magenta
+FG_PATH='\[\e[1;38;5;173m\]'            # orange
+FG_GIT='\[\e[1;38;5;118m\]'  # lightgreen
+FG_RESET='\[\e[0m\]'
+
+# === Git prompt status ===
+source /usr/share/git-core/contrib/completion/git-prompt.sh
+
+get_git_line() {
+  if git rev-parse --is-inside-work-tree &>/dev/null; then
+    local status branch commits
+    status="$(git status --short | wc -l)"
+    branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+    commits="$(git rev-list --count HEAD 2>/dev/null)"
+    echo -e "\e[1;38;5;118m↳ Git: ${branch} • ${status} changes • ${commits} commits\e[0m"
+  else
+    echo ""
+  fi
+}
+
+update_git_prompt_line() {
+  if git rev-parse --is-inside-work-tree &>/dev/null; then
+    GIT_EXTRA_LINE="$(git_info_extra)"
+  else
+    GIT_EXTRA_LINE=""
+  fi
+}
+
+# === short path ===
+shorten_path() {
+  local path="$PWD"
+  if [[ "$path" == "$HOME" ]]; then
+    echo "~"
+  elif [[ "$path" == /media/* ]]; then
+    IFS='/' read -ra parts <<< "$path"
+    local len=${#parts[@]}
+    echo "${parts[$((len-2))]}/${parts[$((len-1))]}"
+  else
+    echo "$path"
+  fi
+}
+
+# === Separator block ===
+print_block_separator() {
+  echo -e "\n\033[1;38;5;250m┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
+}
+
+# === root color switcher ===
+if [[ $EUID -eq 0 ]]; then
+  FG_USER=$FG_USER_ROOT
+else
+  FG_USER=$FG_USER_NORMAL
+fi
+
+# === Update prompt separator block ===
+PROMPT_COMMAND="print_block_separator"
+
+# === Prompt ===
+export PS1="\n${FG_USER}\u${FG_HOST}@\h${FG_RESET}: ${FG_PATH}\$(shorten_path)${FG_RESET}${FG_GIT}\$(__git_ps1 ' (%s)')${FG_RESET}\n\$(get_git_line)\n\$ "
+
+

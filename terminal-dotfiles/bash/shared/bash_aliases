@@ -1,0 +1,37 @@
+# alias for script loading
+alias mountwsx="~/.bin/mountwsx.sh"
+alias dismountwsx="~/.bin/dismountwsx.sh"
+alias untar="~/.bin/untar.sh"
+
+# dev related
+alias cryptokey="node -e 'console.log(require('crypto').randomBytes(32).toString('hex'))'"
+alias dotnetrun="dotnet run --project Main"
+alias listsecrets="dotnet user-secrets list --project Main"
+alias vim='nvim'
+
+# system
+alias reload="source ~/.bashrc"
+alias reloaddesktop="update-desktop-database ~/.local/share/applications/"
+alias gpgkill="gpgconf --kill gpg-agent"
+alias gpgstart="gpgconf --launch gpg-agent"
+alias listaliases='grep "^alias " ~/.bash/bash_aliases'
+
+# git
+alias gwl='git worktree list'
+alias gwa='git worktree add'
+alias gwr='git worktree remove'
+
+# fzf
+alias killprocess="ps -eo pid,comm,args --sort=-%mem | fzf --preview='echo {}' | awk '{print \$1}' | xargs -r kill -9"
+
+# term showcase
+alias bat="batcat"
+alias treeonedir="tree -d -L 1"
+
+#shortcuts
+alias work="cd /media/veracrypt2/wellr/repos/"
+alias wtrees="cd /media/veracrypt2/wellr/repos/worktrees/"
+
+# random helpers
+alias sessiontype='echo "Current session type: $XDG_SESSION_TYPE"'
+

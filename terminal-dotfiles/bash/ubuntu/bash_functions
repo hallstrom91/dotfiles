@@ -1,0 +1,43 @@
+declare -A paths
+paths=(
+  [dotfiles]="$HOME/Documents/dotfiles"
+  [dl]="$HOME/Downloads"
+  [doc]="$HOME/Documents"
+  [wsx]="/media/veracrypt1/ws"
+  [work]="/media/veracrypt2/wellr"
+  [wtrees]="/media/veracrypt2/wellr/repos/worktrees"
+)
+
+cd() {
+  if [[ -z "$1" ]]; then
+    builtin cd ~ || return
+  elif [[ -n "${paths[$1]}" ]]; then
+    builtin cd "${paths[$1]}" || return
+  elif [[ -d "$1" ]]; then
+    builtin cd "$1" || return
+  else
+    echo "cd: No such file or directory: $1" >&2
+    echo "Available shortcuts: ${!paths[*]}"
+    return 1
+  fi
+}
+
+_cd_custom() {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  local keys=("${!paths[@]}")
+
+  if [[ -z "$cur" ]]; then
+
+    mapfile -t COMPREPLY < <(compgen -W "${keys[*]}" -- "")
+    mapfile -t local_dirs < <(compgen -o filenames -d -- "")
+    COMPREPLY+=("${local_dirs[@]}")
+  elif [[ "$cur" == /* ]]; then
+    mapfile -t COMPREPLY < <(compgen -o filenames -d -- "$cur")
+  elif [[ "$COMP_CWORD" -eq 1 ]]; then
+    mapfile -t COMPREPLY < <(compgen -W "${keys[*]}" -- "$cur")
+  else
+    mapfile -t COMPREPLY < <(compgen -o filenames -d -- "$cur")
+  fi
+}
+
+complete -F _cd_custom cd

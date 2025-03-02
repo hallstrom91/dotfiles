@@ -1,0 +1,62 @@
+# Global Ignore
+
+# Personal
+todolist.md
+projectlist.md
+notes.md
+.nvimrc.lua
+omnisharp.json
+
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Bower
+bower_components/
+
+# VSC
+.vscode/
+*.code-workspace
+
+# DOTNET
+secrets.json
+
+# Sys
+.DS_Store
+Thumbs.db
+.Thumbs/
+
+# Temp
+*~
+*.swp
+*.swo
+*.log
+*.bak
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Ruby
+*.gem
+.bundle/
+
+# Java
+*.class
+*.jar
+
+# Docker
+**/Dockerfile
+**/docker-compose.yml
+
+# builds
+dist/
+build/
+out/
+
+# Secrets
+.env
+.env.*

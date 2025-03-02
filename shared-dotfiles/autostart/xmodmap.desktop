@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Exec=/home/simon/.bin/load_xmodmap.sh
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name=Xmodmap CapsLock
+Comment=Remap Caps Lock to F13 for neovim bind
