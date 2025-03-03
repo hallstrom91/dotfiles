@@ -2,21 +2,21 @@ local lspconfig = require('lspconfig')
 local mason = require('mason')
 local mason_lspconfig = require('mason-lspconfig')
 
-require('lsp.capabilities') -- Importerar capabilities
-require('lsp.keymaps') -- Importerar LSP keybinds
-local servers = require('lsp.servers') -- Importerar server-lista
-local on_attach = require('lsp.on_attach')
+require('core.lsp.timeout')
+local capabilities = require('core.lsp.capabilities')
+local servers = require('core.lsp.servers')
+local on_attach = require('core.lsp.on_attach').on_attach
 
 mason.setup()
 mason_lspconfig.setup({
-  ensure_installed = vim.tbl_keys(servers), -- Installerar alla definierade servrar
+  ensure_installed = vim.tbl_keys(servers),
   automatic_installation = true,
 })
 
 for server, config in pairs(servers) do
   lspconfig[server].setup(vim.tbl_deep_extend('force', {
     on_attach = on_attach,
-    capabilities = require('lsp.capabilities'),
+    capabilities = capabilities,
     flags = { debounce_text_changes = 150 },
   }, config))
 end

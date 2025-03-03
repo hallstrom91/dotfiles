@@ -2,99 +2,77 @@ return {
 
   {
     'neovim/nvim-lspconfig',
-    dependencies = { 'williamboman/mason-lspconfig.nvim' },
+    dependencies = { 'williamboman/mason-lspconfig.nvim', 'williamboman/mason.nvim' },
     event = { 'BufReadPre', 'BufNewFile' },
     config = function()
-      require('lsp')
+      require('core.lsp.init')
     end,
   },
-
   {
     'williamboman/mason.nvim',
     build = ':MasonUpdate',
-    config = function()
-      require('mason').setup({
-        ui = {
-          icons = {
-            package_installed = ' ',
-            package_pending = ' ',
-            package_uninstalled = ' ',
-          },
-        },
-      })
-    end,
+    lazy = true,
   },
-
   {
     'williamboman/mason-lspconfig.nvim',
-    dependencies = { 'williamboman/mason.nvim', 'neovim/nvim-lspconfig' },
-    config = function()
-      require('mason-lspconfig').setup({
-        ensure_installed = vim.tbl_keys(require('lsp.servers')),
-        automatic_installation = true,
-      })
-    end,
+    lazy = true,
   },
+  -- {
+  --   'williamboman/mason.nvim',
+  --   build = ':MasonUpdate',
+  --   config = function()
+  --     require('mason').setup({
+  --       ui = {
+  --         icons = {
+  --           package_installed = ' ',
+  --           package_pending = ' ',
+  --           package_uninstalled = ' ',
+  --         },
+  --       },
+  --     })
+  --   end,
+  -- },
+  --
+  -- {
+  --   'williamboman/mason-lspconfig.nvim',
+  --   dependencies = { 'williamboman/mason.nvim', 'neovim/nvim-lspconfig' },
+  --   config = function()
+  --     require('mason-lspconfig').setup({
+  --       ensure_installed = vim.tbl_keys(require('lsp.servers')),
+  --       automatic_installation = true,
+  --     })
+  --   end,
+  -- },
 
   {
     'hrsh7th/nvim-cmp',
-    -- event = 'InsertEnter',
+    event = 'InsertEnter',
     dependencies = {
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-buffer',
       'hrsh7th/cmp-path',
       'hrsh7th/cmp-cmdline',
+      'hrsh7th/cmp-nvim-lsp-signature-help',
       'L3MON4D3/LuaSnip',
       'saadparwaiz1/cmp_luasnip',
       'onsails/lspkind.nvim',
       'SergioRibera/cmp-dotenv',
-      -- 'dcampos/cmp-emmet-vim',
-      -- { 'jackieaskins/cmp-emmet', build = 'npm run release' },
     },
     config = function()
-      require('lsp.cmp.init')
+      require('core.cmp.init')
     end,
   },
 
-  -- {
-  --
-  --   'L3MON4D3/LuaSnip',
-  --   version = 'v2.*',
-  --   dependencies = {
-  --     'rafamadriz/friendly-snippets',
-  --   },
-  --   ----> install jsregexp (optional!).
-  --   build = 'make install_jsregexp',
-  --   event = { 'InsertEnter' },
-  --   config = function()
-  --     local luasnip = require('luasnip')
-  --
-  --     luasnip.config.set_config({
-  --       enable_autosnippets = true,
-  --       store_selection_keys = '<Tab>',
-  --     })
-  --
-  --     require('luasnip.loaders.from_vscode').lazy_load({ paths = '~/.local/share/nvim/lazy/friendly-snippets/' })
-  --     require('luasnip.loaders.from_lua').load({ paths = '~/.config/nvim/lua/snippets/' })
-  --   end,
-  -- },
-  --
   {
-    'hinell/lsp-timeout.nvim',
-    dependencies = { 'neovim/nvim-lspconfig' },
-    config = function()
-      vim.g.lspTimeoutConfig = {
-        stopTimeout = 1000 * 60 * 25, ----> 25min until LSP shutdown if inactive.
-        startTimeout = 1000 * 5, ----> 5s to restart LSP for buffer
-        silent = false,
-        filetypes = {
-          ignore = { 'markdown', 'plaintext' },
-        },
-      }
+    'L3MON4D3/LuaSnip',
+    dependencies = { 'rafamadriz/friendly-snippets' },
+    build = 'make install_jsregexp',
+  },
 
-      local Config = require('lsp-timeout.config').Config
-      Config:new(vim.g.lspTimeoutConfig):validate()
-    end,
+  {
+    'Hoffs/omnisharp-extended-lsp.nvim',
+    ft = 'cs',
+    lazy = true,
   },
 
   {
@@ -108,114 +86,152 @@ return {
   },
 
   {
-    'windwp/nvim-ts-autotag',
-    dependencies = { 'nvim-treesitter/nvim-treesitter' },
+    'windwp/nvim-autopairs',
     event = 'InsertEnter',
+    dependencies = { 'hrsh7th/nvim-cmp' },
     config = function()
-      require('nvim-ts-autotag').setup({
-        enable = true,
-        filetype = { 'html', 'xml', 'javascript', 'typescript', 'typescriptreact', 'javascriptreact' },
-        opts = {
-          enable_close = true,
-          enable_rename = false,
-          enable_close_on_slash = true,
-        },
-      })
+      require('config.autopairs').setup()
     end,
   },
 
   {
-    'windwp/nvim-autopairs',
-    event = 'InsertEnter',
+    'hinell/lsp-timeout.nvim',
+    dependencies = { 'neovim/nvim-lspconfig' },
     config = function()
-      local autopairs = require('nvim-autopairs')
-      local Rule = require('nvim-autopairs.rule')
-
-      autopairs.setup({
-        disable_filetype = { 'TelescopePrompt', 'dashboard' },
-        check_ts = true,
-      })
-
-      -- test rule - TO NOT add () to imported modules in js,jsx,tsx files
-      autopairs.add_rules({
-        Rule('{', '}'):with_pair(function(opts)
-          local line = opts.line
-          return not line:match('^%s*import%s*{.*') -- If row starts with -  import {
-        end),
-
-        Rule(';', ''):with_pair(function(opts)
-          local line = opts.line
-          return line:match('^%s*import%s+.*;$') ~= nil
-        end),
-      })
+      require('core.lsp.timeout').setup()
     end,
   },
-  --
-  -- {
-  --   'linrongbin16/lsp-progress.nvim',
-  --   dependencies = { 'nvim-lualine/lualine.nvim' }, ----> Lualine integration
-  --   event = { 'BufReadPre', 'BufNewFile' },
-  --   config = function()
-  --     require('lsp-progress').setup()
-  --   end,
-  -- },
 
-  -- {
-  --   'pmizio/typescript-tools.nvim',
-  --   dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
-  --   config = function()
-  --     require('typescript-tools').setup({
-  --
-  --       -- Anpassade handlers, t.ex. för att filtrera bort vissa varningar
-  --       handlers = {
-  --         ['textDocument/publishDiagnostics'] = require('typescript-tools.api').filter_diagnostics(
-  --           { 80006 } -- Ignorera "This may be converted to an async function"
-  --         ),
-  --       },
-  --
-  --       settings = {
-  --         -- Separat diagnosserver för bättre prestanda
-  --         separate_diagnostic_server = true,
-  --         publish_diagnostic_on = 'insert_leave',
-  --
-  --         -- Exponera vanliga TS Fixer-actions
-  --         expose_as_code_action = {
-  --           'fix_all',
-  --           'add_missing_imports',
-  --           'remove_unused',
-  --           'remove_unused_imports',
-  --           'organize_imports',
-  --         },
-  --
-  --         -- Ladda in TypeScript-plugins (Styled Components)
-  --         tsserver_plugins = {
-  --           '@styled/typescript-styled-plugin', -- För TypeScript 4.9+
-  --           -- "typescript-styled-plugin", -- För äldre versioner av TypeScript
-  --         },
-  --
-  --         -- Max minnesgräns för tsserver (kan sättas till ett nummer, t.ex. 4096 för 4GB)
-  --         tsserver_max_memory = 'auto',
-  --         tsserver_locale = 'en',
-  --
-  --         -- Inställningar för autocompletions och formatering
-  --         tsserver_file_preferences = {
-  --           includeInlayParameterNameHints = 'all',
-  --           includeCompletionsForModuleExports = true,
-  --           quotePreference = 'auto',
-  --         },
-  --
-  --         tsserver_format_options = {
-  --           allowIncompleteCompletions = false,
-  --           allowRenameOfImportPath = false,
-  --         },
-  --
-  --         -- JSX Auto-close (stäng av om du redan använder `nvim-ts-autotag`)
-  --         jsx_close_tag = {
-  --           enable = false,
-  --           filetypes = { 'javascriptreact', 'typescriptreact' },
-  --         },
-  --       },
-  --     })
-  --   end,
-  -- },
+  {
+    'linrongbin16/lsp-progress.nvim',
+    dependencies = { 'nvim-lualine/lualine.nvim' },
+    event = { 'BufReadPre', 'BufNewFile' },
+    config = function()
+      require('lsp-progress').setup()
+    end,
+  },
+
+  {
+    'windwp/nvim-ts-autotag',
+    dependencies = { 'nvim-treesitter/nvim-treesitter' },
+    event = 'InsertEnter',
+    config = function()
+      require('core.lsp.ts_autotag').setup()
+    end,
+  },
+
+  -- lazy.nvim
+  {
+    'GustavEikaas/easy-dotnet.nvim',
+    -- 'nvim-telescope/telescope.nvim' or 'ibhagwan/fzf-lua'
+    -- are highly recommended for a better experience
+    dependencies = { 'nvim-lua/plenary.nvim', 'nvim-telescope/telescope.nvim' },
+    config = function()
+      local function get_secret_path(secret_guid)
+        local path = ''
+        local home_dir = vim.fn.expand('~')
+        if require('easy-dotnet.extensions').isWindows() then
+          local secret_path = home_dir
+            .. '\\AppData\\Roaming\\Microsoft\\UserSecrets\\'
+            .. secret_guid
+            .. '\\secrets.json'
+          path = secret_path
+        else
+          local secret_path = home_dir .. '/.microsoft/usersecrets/' .. secret_guid .. '/secrets.json'
+          path = secret_path
+        end
+        return path
+      end
+
+      local dotnet = require('easy-dotnet')
+      -- Options are not required
+      dotnet.setup({
+        --Optional function to return the path for the dotnet sdk (e.g C:/ProgramFiles/dotnet/sdk/8.0.0)
+        -- easy-dotnet will resolve the path automatically if this argument is omitted, for a performance improvement you can add a function that returns a hardcoded string
+        -- You should define this function to return a hardcoded path for a performance improvement 🚀
+        get_sdk_path = get_sdk_path,
+        ---@type TestRunnerOptions
+        test_runner = {
+          ---@type "split" | "float" | "buf"
+          viewmode = 'float',
+          enable_buffer_test_execution = true, --Experimental, run tests directly from buffer
+          noBuild = true,
+          noRestore = true,
+          icons = {
+            passed = '',
+            skipped = '',
+            failed = '',
+            success = '',
+            reload = '',
+            test = '',
+            sln = '󰘐',
+            project = '󰘐',
+            dir = '',
+            package = '',
+          },
+          mappings = {
+            run_test_from_buffer = { lhs = '<leader>r', desc = 'run test from buffer' },
+            filter_failed_tests = { lhs = '<leader>fe', desc = 'filter failed tests' },
+            debug_test = { lhs = '<leader>d', desc = 'debug test' },
+            go_to_file = { lhs = 'g', desc = 'got to file' },
+            run_all = { lhs = '<leader>R', desc = 'run all tests' },
+            run = { lhs = '<leader>r', desc = 'run test' },
+            peek_stacktrace = { lhs = '<leader>p', desc = 'peek stacktrace of failed test' },
+            expand = { lhs = 'o', desc = 'expand' },
+            expand_node = { lhs = 'E', desc = 'expand node' },
+            expand_all = { lhs = '-', desc = 'expand all' },
+            collapse_all = { lhs = 'W', desc = 'collapse all' },
+            close = { lhs = 'q', desc = 'close testrunner' },
+            refresh_testrunner = { lhs = '<C-r>', desc = 'refresh testrunner' },
+          },
+          --- Optional table of extra args e.g "--blame crash"
+          additional_args = {},
+        },
+        ---@param action "test" | "restore" | "build" | "run"
+        terminal = function(path, action, args)
+          local commands = {
+            run = function()
+              return string.format('dotnet run --project %s %s', path, args)
+            end,
+            test = function()
+              return string.format('dotnet test %s %s', path, args)
+            end,
+            restore = function()
+              return string.format('dotnet restore %s %s', path, args)
+            end,
+            build = function()
+              return string.format('dotnet build %s %s', path, args)
+            end,
+          }
+
+          local command = commands[action]() .. '\r'
+          vim.cmd('vsplit')
+          vim.cmd('term ' .. command)
+        end,
+        secrets = {
+          path = get_secret_path,
+        },
+        csproj_mappings = true,
+        fsproj_mappings = true,
+        auto_bootstrap_namespace = {
+          --block_scoped, file_scoped
+          type = 'block_scoped',
+          enabled = true,
+        },
+        -- choose which picker to use with the plugin
+        -- possible values are "telescope" | "fzf" | "basic"
+        picker = 'telescope',
+      })
+
+      -- Example command
+      vim.api.nvim_create_user_command('Secrets', function()
+        dotnet.secrets()
+      end, {})
+
+      -- Example keybinding
+      vim.keymap.set('n', '<C-p>', function()
+        dotnet.run_project()
+      end)
+    end,
+  },
 }

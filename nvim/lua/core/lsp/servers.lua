@@ -16,10 +16,6 @@ return {
             'typescript',
             'javascriptreact',
             'typescriptreact',
-            'javascript.jsx',
-            'typescript.tsx',
-            '.tsx',
-            '.ts',
           },
         },
       },
@@ -43,22 +39,34 @@ return {
   --> HTML
   html = { filetypes = { 'html' } },
 
-  --> Lua
   lua_ls = {
     settings = {
       Lua = {
-        format = { enable = false }, -- Vi använder conform för formatering
-        diagnostics = { globals = { 'vim' } },
+        runtime = { version = 'LuaJIT' },
+        diagnostics = {
+          globals = { 'vim' },
+          -- disable = {"undefined-field"},
+        },
         workspace = {
           library = {
+            --  vim.env.VIMRUNTIME,
             [vim.fn.expand('$VIMRUNTIME/lua')] = true,
             [vim.fn.stdpath('config') .. '/lua'] = true,
           },
           checkThirdParty = false,
         },
         telemetry = { enable = false },
+        completion = { enable = true, callSnippet = 'Replace', keywordSnippet = 'Both' },
+        hint = {
+          enable = true,
+          setType = false,
+          paramType = 'Disable',
+          semicolon = 'Disable',
+          arrayIndex = 'Disable',
+        },
       },
     },
+    filetypes = { 'lua' },
   },
 
   --> Markdown
@@ -91,59 +99,31 @@ return {
   },
 
   --> C# .NET med OmniSharp
-  omnisharp = {
-    cmd = { 'dotnet', vim.fn.stdpath('data') .. '/mason/packages/omnisharp/libexec/OmniSharp.dll' },
-    filetypes = { 'cs' },
-    root_dir = util.root_pattern('*.sln', '*.csproj', '.git'),
-    settings = {
-      FormattingOptions = { EnableEditorConfigSupport = true, OrganizeImports = true },
-      MsBuild = { LoadProjectsOnDemand = true },
-      RoslynExtensionsOptions = {
-        EnableAnalyzersSupport = true,
-        EnableImportCompletion = true,
-        AnalyzeOpenDocumentsOnly = true,
-      },
-      Sdk = { IncludePrereleases = false },
-    },
-  },
+  -- omnisharp = {
+  --   cmd = { 'dotnet', vim.fn.stdpath('data') .. '/mason/packages/omnisharp/libexec/OmniSharp.dll' },
+  --   filetypes = { 'cs' },
+  --   root_dir = util.root_pattern('*.sln', '*.csproj', '.git'),
+  --   settings = {
+  --     FormattingOptions = { EnableEditorConfigSupport = true, OrganizeImports = true },
+  --     MsBuild = {
+  --       LoadProjectsOnDemand = false,
+  --       EnableMSBuildLoadProjectsOnDemand = false,
+  --       ProvideSingleFileIntellisense = true,
+  --     },
+  --     RoslynExtensionsOptions = {
+  --       EnableAnalyzersSupport = true,
+  --       EnableImportCompletion = true,
+  --       AnalyzeOpenDocumentsOnly = true,
+  --     },
+  --     Sdk = { IncludePrereleases = false },
+  --   },
+  --   Rules = {
+  --     ['IDE0008'] = 'none',
+  --   },
+  --   handlers = {
+  --     ['textDocument/definition'] = function(...)
+  --       return require('omnisharp_extended').handler(...)
+  --     end,
+  --   },
+  -- },
 }
-
--- return {
---   tsserver = {
---     root_dir = util.root_pattern('tsconfig.json', 'package.json', '.git'),
---     cmd = { 'typescript-language-server', '--stdio' },
---     settings = {
---       filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
---     },
---   },
---
---   cssls = {
---     cmd = { 'vscode-css-language-server', '--stdio' },
---     filetypes = { 'css', 'scss', 'less' },
---     settings = {
---       css = { validate = true, lint = { unknownAtRules = 'ignore' } },
---       scss = { validate = true },
---       less = { validate = true },
---     },
---   },
---
---   html = { filetypes = { 'html' } },
---   pyright = { filetypes = { 'python' } },
---   lua_ls = {
---     settings = {
---       Lua = {
---         diagnostics = { globals = { 'vim' } },
---         workspace = {
---           library = { [vim.fn.expand('$VIMRUNTIME/lua')] = true },
---         },
---         telemetry = { enable = false },
---       },
---     },
---   },
---
---   omnisharp = {
---     cmd = { 'dotnet', vim.fn.stdpath('data') .. '/mason/packages/omnisharp/libexec/OmniSharp.dll' },
---     filetypes = { 'cs' },
---     root_dir = util.root_pattern('*.sln', '*.csproj', '.git'),
---   },
--- }
