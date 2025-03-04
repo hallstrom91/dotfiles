@@ -99,31 +99,31 @@ return {
   },
 
   --> C# .NET med OmniSharp
-  -- omnisharp = {
-  --   cmd = { 'dotnet', vim.fn.stdpath('data') .. '/mason/packages/omnisharp/libexec/OmniSharp.dll' },
-  --   filetypes = { 'cs' },
-  --   root_dir = util.root_pattern('*.sln', '*.csproj', '.git'),
-  --   settings = {
-  --     FormattingOptions = { EnableEditorConfigSupport = true, OrganizeImports = true },
-  --     MsBuild = {
-  --       LoadProjectsOnDemand = false,
-  --       EnableMSBuildLoadProjectsOnDemand = false,
-  --       ProvideSingleFileIntellisense = true,
-  --     },
-  --     RoslynExtensionsOptions = {
-  --       EnableAnalyzersSupport = true,
-  --       EnableImportCompletion = true,
-  --       AnalyzeOpenDocumentsOnly = true,
-  --     },
-  --     Sdk = { IncludePrereleases = false },
-  --   },
-  --   Rules = {
-  --     ['IDE0008'] = 'none',
-  --   },
-  --   handlers = {
-  --     ['textDocument/definition'] = function(...)
-  --       return require('omnisharp_extended').handler(...)
-  --     end,
-  --   },
-  -- },
+  omnisharp = {
+    cmd = { 'dotnet', vim.fn.stdpath('data') .. '/mason/packages/omnisharp/libexec/OmniSharp.dll' },
+    filetypes = { 'cs' },
+    root_dir = util.root_pattern('*.sln', '*.csproj', '.git'),
+    settings = {
+      FormattingOptions = { EnableEditorConfigSupport = true, OrganizeImports = true },
+      MsBuild = {
+        LoadProjectsOnDemand = true,
+        EnableMSBuildLoadProjectsOnDemand = false,
+        ProvideSingleFileIntellisense = true,
+      },
+      RoslynExtensionsOptions = {
+        EnableAnalyzersSupport = true,
+        EnableImportCompletion = true,
+        AnalyzeOpenDocumentsOnly = true,
+      },
+      Sdk = { IncludePrereleases = false },
+    },
+    Rules = {
+      ['IDE0008'] = 'none',
+    },
+    handlers = {
+      ['textDocument/definition'] = function(...)
+        return require('omnisharp_extended').handler(...)
+      end,
+    },
+  },
 }
