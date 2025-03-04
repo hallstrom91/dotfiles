@@ -19,10 +19,10 @@ M.on_attach = function(client, bufnr)
   end
 
   --deactive semantic tokens from omnisharp (fix treesitter color)
-  --[[   if client.name == 'omnisharp' then
+  if client.name == 'omnisharp' then
     client.server_capabilities.semanticTokensProvider = nil
-  end ]]
-
+  end
+  --
   -- option2
   -- if client.name == 'omnisharp' then
   --    local tokenModifiers = client.server_capabilities.semanticTokensProvider.legend.tokenModifiers

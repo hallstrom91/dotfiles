@@ -104,7 +104,7 @@ return {
     filetypes = { 'cs' },
     root_dir = util.root_pattern('*.sln', '*.csproj', '.git'),
     settings = {
-      FormattingOptions = { EnableEditorConfigSupport = true, OrganizeImports = true },
+      FormattingOptions = { EnableEditorConfigSupport = true, OrganizeImports = false },
       MsBuild = {
         LoadProjectsOnDemand = true,
         EnableMSBuildLoadProjectsOnDemand = false,
@@ -114,16 +114,23 @@ return {
         EnableAnalyzersSupport = true,
         EnableImportCompletion = true,
         AnalyzeOpenDocumentsOnly = true,
+        EnableDecompilationSupport = true,
       },
       Sdk = { IncludePrereleases = false },
     },
     Rules = {
       ['IDE0008'] = 'none',
     },
+    -- handlers = {
+    --   ['textDocument/definition'] = function(...)
+    --     return require('omnisharp_extended').handler(...)
+    --   end,
+    -- },
     handlers = {
-      ['textDocument/definition'] = function(...)
-        return require('omnisharp_extended').handler(...)
-      end,
+      ['textDocument/definition'] = require('omnisharp_extended').definition_handler,
+      ['textDocument/typeDefinition'] = require('omnisharp_extended').type_definition_handler,
+      ['textDocument/references'] = require('omnisharp_extended').references_handler,
+      ['textDocument/implementation'] = require('omnisharp_extended').implementation_handler,
     },
   },
 }

@@ -1,62 +1,24 @@
 local M = {}
 
 M.setup = function(bufnr, server_name)
-  local map = vim.api.nvim_buf_set_keymap
-  local opts = { noremap = true, silent = true }
+  local map = vim.keymap.set
+  local opts = { noremap = true, silent = true, buffer = bufnr }
 
-  -- 🔹 Omnisharp-specifika keymaps
-  if server_name == 'omnisharp' then
-    local telescope_ok = pcall(require, 'telescope')
+  -- 🔹 OmniSharp
+  if bufnr and server_name == 'omnisharp' then
+    local nmap = function(keys, func, desc)
+      if desc then
+        desc = 'LSP: ' .. desc
+      end
 
-    if telescope_ok then
-      map(bufnr, 'n', 'gd', '', {
-        callback = function()
-          require('omnisharp_extended').telescope_lsp_definitions()
-        end,
-        desc = 'OmniSharp: Go to Definition',
-        noremap = true,
-        silent = true,
-      })
-    else
-      map(bufnr, 'n', 'gd', '', {
-        callback = function()
-          require('omnisharp_extended').lsp_definition()
-        end,
-        desc = 'OmniSharp: Go to Definition',
-        noremap = true,
-        silent = true,
-      })
+      vim.keymap.set('n', keys, func, { buffer = bufnr, desc = desc })
     end
-
-    map(bufnr, 'n', '<leader>D', '', {
-      callback = function()
-        require('omnisharp_extended').lsp_type_definition()
-      end,
-      desc = 'OmniSharp: Go to Type Definition',
-      noremap = true,
-      silent = true,
-    })
-    map(bufnr, 'n', 'gr', '', {
-      callback = function()
-        require('omnisharp_extended').lsp_references()
-      end,
-      desc = 'OmniSharp: Find References',
-      noremap = true,
-      silent = true,
-    })
-    map(bufnr, 'n', 'gi', '', {
-      callback = function()
-        require('omnisharp_extended').lsp_implementation()
-      end,
-      desc = 'OmniSharp: Go to Implementation',
-      noremap = true,
-      silent = true,
-    })
-
-    return
+    nmap('gd', require('omnisharp_extended').lsp_definition, '[G]oto [D]efinition')
+    nmap('gr', require('omnisharp_extended').lsp_references, '[G]oto [R]eferences')
+    nmap('gI', require('omnisharp_extended').lsp_implementation, '[G]oto [I]mplementation')
+    nmap('<leader>D', require('omnisharp_extended').lsp_type_definition, 'Type [D]efinition')
   end
 
-  -- Standard
   local keymaps = {
     { 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', 'LSP Hover documentation' },
     { 'n', 'gd', '<cmd>Telescope lsp_definitions<CR>', 'LSP Go to Definition' },
@@ -66,7 +28,7 @@ M.setup = function(bufnr, server_name)
   }
 
   for _, keymap in ipairs(keymaps) do
-    map(bufnr, keymap[1], keymap[2], keymap[3], { desc = keymap[4], noremap = true, silent = true })
+    map(keymap[1], keymap[2], keymap[3], { desc = keymap[4], noremap = true, silent = true, buffer = bufnr })
   end
 end
 

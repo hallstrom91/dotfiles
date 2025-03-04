@@ -17,32 +17,6 @@ return {
     'williamboman/mason-lspconfig.nvim',
     lazy = true,
   },
-  -- {
-  --   'williamboman/mason.nvim',
-  --   build = ':MasonUpdate',
-  --   config = function()
-  --     require('mason').setup({
-  --       ui = {
-  --         icons = {
-  --           package_installed = ' ',
-  --           package_pending = ' ',
-  --           package_uninstalled = ' ',
-  --         },
-  --       },
-  --     })
-  --   end,
-  -- },
-  --
-  -- {
-  --   'williamboman/mason-lspconfig.nvim',
-  --   dependencies = { 'williamboman/mason.nvim', 'neovim/nvim-lspconfig' },
-  --   config = function()
-  --     require('mason-lspconfig').setup({
-  --       ensure_installed = vim.tbl_keys(require('lsp.servers')),
-  --       automatic_installation = true,
-  --     })
-  --   end,
-  -- },
 
   {
     'hrsh7th/nvim-cmp',
