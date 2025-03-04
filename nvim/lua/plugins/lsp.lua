@@ -43,10 +43,64 @@ return {
     build = 'make install_jsregexp',
   },
 
+  -- {
+  --   'Hoffs/omnisharp-extended-lsp.nvim',
+  --   ft = 'cs',
+  --   lazy = true,
+  -- },
+
   {
-    'Hoffs/omnisharp-extended-lsp.nvim',
+    'seblyng/roslyn.nvim',
     ft = 'cs',
-    lazy = true,
+    opts = {
+      config = {
+        -- exe = {
+        --   'dotnet',
+        --   vim.fn.stdpath('data'),
+        --   'roslyn',
+        --   'Microsoft.CodeAnalysis.LanguageServer.dll',
+        -- },
+        cmd = {
+          'dotnet',
+          '--fx-version',
+          '8.0.13',
+          vim.fn.stdpath('data') .. '/mason/packages/roslyn/libexec/Microsoft.CodeAnalysis.LanguageServer.dll',
+        },
+        args = {
+          '--logLevel=Information',
+          '--extensionLogDirectory=' .. vim.fs.dirname(vim.lsp.get_log_path()),
+        },
+        settings = {
+          ['csharp|inlay_hints'] = {
+            csharp_enable_inlay_hints_for_implicit_object_creation = true,
+            csharp_enable_inlay_hints_for_implicit_variable_types = true,
+            csharp_enable_inlay_hints_for_lambda_parameter_types = true,
+            csharp_enable_inlay_hints_for_types = true,
+            dotnet_enable_inlay_hints_for_indexer_parameters = true,
+            dotnet_enable_inlay_hints_for_literal_parameters = true,
+            dotnet_enable_inlay_hints_for_object_creation_parameters = true,
+            dotnet_enable_inlay_hints_for_other_parameters = true,
+            dotnet_enable_inlay_hints_for_parameters = true,
+            dotnet_suppress_inlay_hints_for_parameters_that_differ_only_by_suffix = true,
+            dotnet_suppress_inlay_hints_for_parameters_that_match_argument_name = true,
+            dotnet_suppress_inlay_hints_for_parameters_that_match_method_intent = true,
+          },
+          ['csharp|code_lens'] = {
+            dotnet_enable_references_code_lens = true,
+          },
+          ['csharp|completion'] = {
+            dotnet_show_completion_items_from_unimported_namespaces = true,
+            dotnet_show_name_completion_suggestions = true,
+          },
+          ['csharp|background_analysis'] = {
+            background_analysis_dotnet_compiler_diagnostics_scope = 'fullSolution',
+          },
+          ['csharp|symbol_search'] = {
+            dotnet_search_reference_assemblies = true,
+          },
+        },
+      },
+    },
   },
 
   {
@@ -93,119 +147,4 @@ return {
       require('core.lsp.ts_autotag').setup()
     end,
   },
-
-  -- lazy.nvim
-  -- {
-  --   'GustavEikaas/easy-dotnet.nvim',
-  --   -- 'nvim-telescope/telescope.nvim' or 'ibhagwan/fzf-lua'
-  --   -- are highly recommended for a better experience
-  --   dependencies = { 'nvim-lua/plenary.nvim', 'nvim-telescope/telescope.nvim' },
-  --   config = function()
-  --     local function get_secret_path(secret_guid)
-  --       local path = ''
-  --       local home_dir = vim.fn.expand('~')
-  --       if require('easy-dotnet.extensions').isWindows() then
-  --         local secret_path = home_dir
-  --           .. '\\AppData\\Roaming\\Microsoft\\UserSecrets\\'
-  --           .. secret_guid
-  --           .. '\\secrets.json'
-  --         path = secret_path
-  --       else
-  --         local secret_path = home_dir .. '/.microsoft/usersecrets/' .. secret_guid .. '/secrets.json'
-  --         path = secret_path
-  --       end
-  --       return path
-  --     end
-  --
-  --     local dotnet = require('easy-dotnet')
-  --     -- Options are not required
-  --     dotnet.setup({
-  --       --Optional function to return the path for the dotnet sdk (e.g C:/ProgramFiles/dotnet/sdk/8.0.0)
-  --       -- easy-dotnet will resolve the path automatically if this argument is omitted, for a performance improvement you can add a function that returns a hardcoded string
-  --       -- You should define this function to return a hardcoded path for a performance improvement 🚀
-  --       get_sdk_path = get_sdk_path,
-  --       ---@type TestRunnerOptions
-  --       test_runner = {
-  --         ---@type "split" | "float" | "buf"
-  --         viewmode = 'float',
-  --         enable_buffer_test_execution = true, --Experimental, run tests directly from buffer
-  --         noBuild = true,
-  --         noRestore = true,
-  --         icons = {
-  --           passed = '',
-  --           skipped = '',
-  --           failed = '',
-  --           success = '',
-  --           reload = '',
-  --           test = '',
-  --           sln = '󰘐',
-  --           project = '󰘐',
-  --           dir = '',
-  --           package = '',
-  --         },
-  --         mappings = {
-  --           run_test_from_buffer = { lhs = '<leader>r', desc = 'run test from buffer' },
-  --           filter_failed_tests = { lhs = '<leader>fe', desc = 'filter failed tests' },
-  --           debug_test = { lhs = '<leader>d', desc = 'debug test' },
-  --           go_to_file = { lhs = 'g', desc = 'got to file' },
-  --           run_all = { lhs = '<leader>R', desc = 'run all tests' },
-  --           run = { lhs = '<leader>r', desc = 'run test' },
-  --           peek_stacktrace = { lhs = '<leader>p', desc = 'peek stacktrace of failed test' },
-  --           expand = { lhs = 'o', desc = 'expand' },
-  --           expand_node = { lhs = 'E', desc = 'expand node' },
-  --           expand_all = { lhs = '-', desc = 'expand all' },
-  --           collapse_all = { lhs = 'W', desc = 'collapse all' },
-  --           close = { lhs = 'q', desc = 'close testrunner' },
-  --           refresh_testrunner = { lhs = '<C-r>', desc = 'refresh testrunner' },
-  --         },
-  --         --- Optional table of extra args e.g "--blame crash"
-  --         additional_args = {},
-  --       },
-  --       ---@param action "test" | "restore" | "build" | "run"
-  --       terminal = function(path, action, args)
-  --         local commands = {
-  --           run = function()
-  --             return string.format('dotnet run --project %s %s', path, args)
-  --           end,
-  --           test = function()
-  --             return string.format('dotnet test %s %s', path, args)
-  --           end,
-  --           restore = function()
-  --             return string.format('dotnet restore %s %s', path, args)
-  --           end,
-  --           build = function()
-  --             return string.format('dotnet build %s %s', path, args)
-  --           end,
-  --         }
-  --
-  --         local command = commands[action]() .. '\r'
-  --         vim.cmd('vsplit')
-  --         vim.cmd('term ' .. command)
-  --       end,
-  --       secrets = {
-  --         path = get_secret_path,
-  --       },
-  --       csproj_mappings = true,
-  --       fsproj_mappings = true,
-  --       auto_bootstrap_namespace = {
-  --         --block_scoped, file_scoped
-  --         type = 'block_scoped',
-  --         enabled = true,
-  --       },
-  --       -- choose which picker to use with the plugin
-  --       -- possible values are "telescope" | "fzf" | "basic"
-  --       picker = 'telescope',
-  --     })
-  --
-  --     -- Example command
-  --     vim.api.nvim_create_user_command('Secrets', function()
-  --       dotnet.secrets()
-  --     end, {})
-  --
-  --     -- Example keybinding
-  --     vim.keymap.set('n', '<C-p>', function()
-  --       dotnet.run_project()
-  --     end)
-  --   end,
-  -- },
 }

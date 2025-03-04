@@ -7,7 +7,13 @@ local capabilities = require('core.lsp.capabilities')
 local servers = require('core.lsp.servers')
 local on_attach = require('core.lsp.on_attach').on_attach
 
-mason.setup()
+require('mason').setup({
+  registries = {
+    'github:Crashdummyy/mason-registry',
+    'github:mason-org/mason-registry',
+  },
+})
+
 mason_lspconfig.setup({
   ensure_installed = vim.tbl_keys(servers),
   automatic_installation = true,
