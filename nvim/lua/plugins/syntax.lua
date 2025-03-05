@@ -59,29 +59,7 @@ return {
     opts = {},
     event = { 'BufWritePre', 'BufWritePost' },
     config = function()
-      require('conform').setup({
-        formatters_by_ft = {
-          lua = { 'stylua' },
-          python = { 'isort', 'black' },
-          javascript = { 'prettierd' },
-          javascriptreact = { 'prettierd' },
-          typescript = { 'prettierd' },
-          typescriptreact = { 'prettierd' },
-          html = { 'prettierd' },
-          css = { 'prettierd' },
-          markdown = { 'prettierd' },
-          json = { 'prettierd' },
-          jsonc = { 'prettierd' },
-          -- csharp = { 'csharpier' },
-        },
-        format_on_save = {
-          timeout_ms = 1000,
-          lsp_format = 'fallback',
-        },
-        options = {
-          prefer_local = '.prettierrc', -- priority local (project) prettier config
-        },
-      })
+      require('config.conform')
     end,
   },
 
@@ -89,7 +67,7 @@ return {
     'mattn/emmet-vim',
     ft = { 'html', 'css', 'javascript', 'typescript', 'jsx', 'tsx' },
     config = function()
-      vim.g.user_emmet_leader_key = '<C-Z>' -- leaderkey for emmet ctrl+Z
+      vim.g.user_emmet_leader_key = '<C-Z>'
     end,
   },
 
@@ -103,8 +81,8 @@ return {
     config = function()
       require('Comment').setup({
         opleader = {
-          line = 'gc', -- comment on or several rows
-          block = 'gb', -- block comment for marked rows
+          line = 'gc',
+          block = 'gb',
         },
         pre_hook = require('ts_context_commentstring.integrations.comment_nvim').create_pre_hook(),
       })
