@@ -27,21 +27,21 @@ fi
 
 # Create symbolic link based on workstation hostname
 if [[ "$HOSTNAME" == "pop-os" ]]; then
-  ln -s "$CONFIG_DIR/wezterm/configs/desktop.lua" "$WEZTERM_CONFIG"
-  ln -s "$CONFIG_DIR/kitty/configs/desktop.conf" "$KITTY_CONFIG"
+  [ ! -L "$WEZTERM_CONFIG" ] && ln -s "$CONFIG_DIR/wezterm/configs/desktop.lua" "$WEZTERM_CONFIG"
+  [ ! -L "$KITTY_CONFIG" ] && ln -s "$CONFIG_DIR/kitty/configs/desktop.conf" "$KITTY_CONFIG"
 elif [[ "$HOSTNAME" == "laptop" ]]; then
-  ln -s "$CONFIG_DIR/wezterm/configs/laptop.lua" "$WEZTERM_CONFIG"
-  ln -s "$CONFIG_DIR/kitty/configs/laptop.conf" "$KITTY_CONFIG"
+  [ ! -L "$WEZTERM_CONFIG" ] && ln -s "$CONFIG_DIR/wezterm/configs/laptop.lua" "$WEZTERM_CONFIG"
+  [ ! -L "$KITTY_CONFIG" ] && ln -s "$CONFIG_DIR/kitty/configs/laptop.conf" "$KITTY_CONFIG"
 else
   echo "No specific config for this machine, using defaults"
 fi
 
 echo "Symbolic links for wezterm & kitty dotfiles created."
 
-# create sym links on all workstations
-ln -s "$CONFIG_DIR/kitty/themes" "$KITTY_THEMES"
+# Create symbolic links for shared configurations
+[ ! -L "$KITTY_THEMES" ] && ln -s "$CONFIG_DIR/kitty/themes" "$KITTY_THEMES"
 echo "Symbolic link for Kitty themes created."
-ln -s "$CONFIG_DIR/nvim" "$NVIM_CONFIG"
+[ ! -L "$NVIM_CONFIG" ] && ln -s "$CONFIG_DIR/nvim" "$NVIM_CONFIG"
 echo "Symbolic link for Neovim config created."
 
 # completed
