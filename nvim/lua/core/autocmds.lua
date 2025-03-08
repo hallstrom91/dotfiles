@@ -5,11 +5,42 @@ local augroup = function(name)
 end
 
 --> Format on save
-autocmd('BufWritePre', {
-  group = augroup('AutoFormat'),
-  pattern = { '*', '*.md' },
+
+local function get_formatter(bufnr)
+  local lsp_format_used = false
+  for _, client in ipairs(vim.lsp.get_clients({ bufnr = bufnr })) do
+    if client.server_capabilities.documentFormattingProvider then
+      lsp_format_used = true
+      break
+    end
+  end
+
+  local conform = require('conform')
+  local formatters = conform.list_formatters(bufnr)
+  local conform_used = #formatters > 0
+
+  if lsp_format_used and conform_used then
+    return 'LSP + Conform'
+  elseif lsp_format_used then
+    return 'LSP'
+  elseif conform_used then
+    return 'Conform.nvim'
+  else
+    return 'Ingen formattering'
+  end
+end
+
+vim.api.nvim_create_autocmd('BufWritePost', {
+  group = vim.api.nvim_create_augroup('CustomSaveMessage', { clear = true }),
+  pattern = '*',
   callback = function(args)
-    require('conform').format({ bufnr = args.buf })
+    local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(args.buf), ':t')
+    local formatter = get_formatter(args.buf)
+
+    vim.defer_fn(function()
+      vim.api.nvim_echo({ { '✔ ' .. filename .. ' saved (' .. formatter .. ')', 'None' } }, false, {})
+      vim.cmd("echo ''")
+    end, 50)
   end,
 })
 
