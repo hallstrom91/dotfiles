@@ -2,7 +2,11 @@ return {
 
   {
     'neovim/nvim-lspconfig',
-    dependencies = { 'williamboman/mason-lspconfig.nvim', 'williamboman/mason.nvim' },
+    dependencies = {
+      'williamboman/mason-lspconfig.nvim',
+      'williamboman/mason.nvim',
+      'hrsh7th/cmp-nvim-lsp',
+    },
     event = { 'BufReadPre', 'BufNewFile' },
     config = function()
       require('core.lsp.init')
@@ -22,18 +26,24 @@ return {
     'hrsh7th/nvim-cmp',
     event = 'InsertEnter',
     dependencies = {
+      -- lsp, signature, bufs, filesys, cmd
       'hrsh7th/cmp-nvim-lsp',
+      'hrsh7th/cmp-nvim-lsp-signature-help',
       'hrsh7th/cmp-buffer',
       'hrsh7th/cmp-path',
       'hrsh7th/cmp-cmdline',
-      'hrsh7th/cmp-nvim-lsp-signature-help',
+      -- snippets
       'L3MON4D3/LuaSnip',
       'saadparwaiz1/cmp_luasnip',
+      -- extra
       'onsails/lspkind.nvim',
       'SergioRibera/cmp-dotenv',
+      'petertriho/cmp-git', -- Git commit & branches
+      'davidsierradz/cmp-conventionalcommits', -- Conventional commits
+      'amarakon/nvim-cmp-lua-latex-symbols', -- Latex/Unicode symbols
     },
     config = function()
-      require('core.cmp.init')
+      require('config.cmp')
     end,
   },
 
@@ -43,23 +53,11 @@ return {
     build = 'make install_jsregexp',
   },
 
-  -- {
-  --   'Hoffs/omnisharp-extended-lsp.nvim',
-  --   ft = 'cs',
-  --   lazy = true,
-  -- },
-
   {
     'seblyng/roslyn.nvim',
     ft = 'cs',
     opts = {
       config = {
-        -- exe = {
-        --   'dotnet',
-        --   vim.fn.stdpath('data'),
-        --   'roslyn',
-        --   'Microsoft.CodeAnalysis.LanguageServer.dll',
-        -- },
         cmd = {
           'dotnet',
           '--fx-version',
@@ -70,6 +68,7 @@ return {
           '--logLevel=Information',
           '--extensionLogDirectory=' .. vim.fs.dirname(vim.lsp.get_log_path()),
         },
+        filewatching = false, --> false for performance
         settings = {
           ['csharp|inlay_hints'] = {
             csharp_enable_inlay_hints_for_implicit_object_creation = true,
@@ -93,7 +92,7 @@ return {
             dotnet_show_name_completion_suggestions = true,
           },
           ['csharp|background_analysis'] = {
-            background_analysis_dotnet_compiler_diagnostics_scope = 'fullSolution',
+            background_analysis_dotnet_compiler_diagnostics_scope = 'openFilesOnly', --> "fullSolution" or "openFilesOnly"
           },
           ['csharp|symbol_search'] = {
             dotnet_search_reference_assemblies = true,
