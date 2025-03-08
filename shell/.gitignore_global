@@ -3,6 +3,10 @@
 # Personal
 todolist.md
 projectlist.md
+notes.md
+.nvimrc.lua
+
+
 
 # Node.js
 node_modules/
@@ -17,7 +21,7 @@ bower_components/
 *.code-workspace
 
 # DOTNET
-
+secrets.json
 
 # Systemfiler
 .DS_Store
@@ -48,7 +52,7 @@ __pycache__/
 **/Dockerfile
 **/docker-compose.yml
 
-# Byggfiler
+# builds
 dist/
 build/
 out/
