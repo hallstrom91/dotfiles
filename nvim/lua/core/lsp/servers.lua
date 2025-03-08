@@ -97,40 +97,4 @@ return {
     root_dir = util.root_pattern('package.json', '.git', '.'),
     filetypes = { 'json', 'jsonc' },
   },
-
-  --> C# .NET med OmniSharp
-  -- omnisharp = {
-  --   cmd = { 'dotnet', vim.fn.stdpath('data') .. '/mason/packages/omnisharp/libexec/OmniSharp.dll' },
-  --   filetypes = { 'cs' },
-  --   root_dir = util.root_pattern('*.sln', '*.csproj', '.git'),
-  --   settings = {
-  --     FormattingOptions = { EnableEditorConfigSupport = true, OrganizeImports = false },
-  --     MsBuild = {
-  --       LoadProjectsOnDemand = true,
-  --       EnableMSBuildLoadProjectsOnDemand = false,
-  --       ProvideSingleFileIntellisense = true,
-  --     },
-  --     RoslynExtensionsOptions = {
-  --       EnableAnalyzersSupport = true,
-  --       EnableImportCompletion = true,
-  --       AnalyzeOpenDocumentsOnly = true,
-  --       EnableDecompilationSupport = true,
-  --     },
-  --     Sdk = { IncludePrereleases = false },
-  --   },
-  --   Rules = {
-  --     ['IDE0008'] = 'none',
-  --   },
-  --   -- handlers = {
-  --   --   ['textDocument/definition'] = function(...)
-  --   --     return require('omnisharp_extended').handler(...)
-  --   --   end,
-  --   -- },
-  --   handlers = {
-  --     ['textDocument/definition'] = require('omnisharp_extended').definition_handler,
-  --     ['textDocument/typeDefinition'] = require('omnisharp_extended').type_definition_handler,
-  --     ['textDocument/references'] = require('omnisharp_extended').references_handler,
-  --     ['textDocument/implementation'] = require('omnisharp_extended').implementation_handler,
-  --   },
-  -- },
 }

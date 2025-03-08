@@ -3,11 +3,11 @@ local mason = require('mason')
 local mason_lspconfig = require('mason-lspconfig')
 
 require('core.lsp.timeout')
-local capabilities = require('core.lsp.capabilities')
+local capabilities = require('core.lsp.capabilities').capabilities
 local servers = require('core.lsp.servers')
 local on_attach = require('core.lsp.on_attach').on_attach
 
-require('mason').setup({
+mason.setup({
   registries = {
     'github:Crashdummyy/mason-registry',
     'github:mason-org/mason-registry',
@@ -26,3 +26,10 @@ for server, config in pairs(servers) do
     flags = { debounce_text_changes = 150 },
   }, config))
 end
+
+vim.diagnostic.config({
+  virtual_text = true,
+  signs = true,
+  underline = true,
+  update_in_insert = false,
+})

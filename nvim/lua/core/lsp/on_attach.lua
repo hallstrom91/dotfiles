@@ -10,32 +10,36 @@ M.on_attach = function(client, bufnr)
     'yamlls',
     'marksman',
     'jsonls',
+    'quick_lint_js',
     'omnisharp',
   }
 
-  if vim.tbl_contains(exclude_formatting, client.name) then
+  local included_projects = {
+    '/media/veracrypt2/wellr/repos/wellr-frontend',
+  }
+
+  local function is_included_project()
+    local cwd = vim.fn.getcwd()
+    for _, path in ipairs(included_projects) do
+      if cwd:find(path, 1, true) then
+        return true
+      end
+    end
+    return false
+  end
+
+  if is_included_project() then
+    client.server_capabilities.documentFormattingProvider = true
+    client.server_capabilities.document_range_formatting = true
+  elseif vim.tbl_contains(exclude_formatting, client.name) then
+    client.server_capabilities.documentFormattingProvider = false
+    client.server_capabilities.document_range_formatting = false
+  else
     client.server_capabilities.documentFormattingProvider = false
     client.server_capabilities.document_range_formatting = false
   end
 
-  --deactive semantic tokens from omnisharp (fix treesitter color)
-  if client.name == 'omnisharp' then
-    client.server_capabilities.semanticTokensProvider = nil
-  end
-  --
-  -- option2
-  -- if client.name == 'omnisharp' then
-  --    local tokenModifiers = client.server_capabilities.semanticTokensProvider.legend.tokenModifiers
-  --    for i, v in ipairs(tokenModifiers) do
-  --      tokenModifiers[i] = v:gsub(' ', '_')
-  --    end
-  --    local tokenTypes = client.server_capabilities.semanticTokensProvider.legend.tokenTypes
-  --    for i, v in ipairs(tokenTypes) do
-  --      tokenTypes[i] = v:gsub(' ', '_')
-  --    end
-  --  end
-
-  require('core.lsp.keymaps').setup(bufnr, client.name)
+  require('core.lsp.keymaps').setup(bufnr)
 end
 
 return M
