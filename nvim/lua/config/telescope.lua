@@ -9,11 +9,11 @@ telescope.setup({
     selection_caret = ' ',
     path_display = { 'truncate' },
     file_ignore_patterns = { 'node_modules', '.git/' }, -- Ignore unwanted folders
-    mappings = {
-      i = {
-        ['<Esc>'] = require('telescope.actions').close, -- Specifik ESC-funktionalitet
-      },
-    },
+    -- mappings = {
+    --   i = {
+    --     ['<Esc>'] = require('telescope.actions').close, -- Specifik ESC-funktionalitet
+    --   },
+    -- },
   },
   pickers = {
     find_files = {

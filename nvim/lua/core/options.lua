@@ -18,13 +18,11 @@ opt.linebreak = true
 opt.wrap = false -- disable line wrap
 opt.smoothscroll = true
 opt.clipboard = vim.env.SSH_TTY and '' or 'unnamedplus'
---opt.clipboard = 'unnamedplus' -- sync clipboard actions with system clipboard
---opt.foldexpr = "nvim_treesitter#foldexpr()"
--- opt.mousemoveevent = true -- "true" to activate hoover on buffertabs
 
 vim.g.loaded_netrw = 1 -- disable netrw
 vim.g.loaded_netrwPlugin = 1 -- disable netrw
 vim.g.markdown_recommended_style = 0
+vim.g.loaded_matchparen = 1
 
 opt.guicursor = {
   -- Normal mode: horizontal line _
@@ -34,15 +32,6 @@ opt.guicursor = {
   -- Command line - vertical
   'c:ver25',
 }
-
--- opt.fillchars = {
---   foldopen = "",
---   foldclose = "",
---   fold = " ",
---   foldsep = " ",
---   diff = "╱",
---   eob = " ",
--- }
 
 -- Disable providers
 vim.g.loaded_node_provider = 0

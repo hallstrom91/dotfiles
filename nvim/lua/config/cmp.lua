@@ -109,8 +109,8 @@ cmp.setup({
     { name = 'path', priority = 250 },
     { name = 'git', priority = 700 }, -- 🔹 Git-autocomplete
     { name = 'conventionalcommits', priority = 600 }, -- 🔹 Conventional Commits
-    { name = 'cmdline', priority = 550 }, -- 🔹 Command-line autocomplete
-    { name = 'latex_symbols', priority = 300 }, -- 🔹 Latex/Unicode symbols
+    --{ name = 'cmdline', priority = 550 }, -- 🔹 Command-line autocomplete
+    --{ name = 'latex_symbols', priority = 300 }, -- 🔹 Latex/Unicode symbols
     {
       name = 'dotenv',
       option = {
