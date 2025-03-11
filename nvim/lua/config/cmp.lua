@@ -13,8 +13,8 @@ local source_mapping = {
   path = '[PATH]',
   git = '[GIT]', -- Git-autocomplete
   conventionalcommits = '[COMMITS]', -- Conventional Commits
-  cmdline = '[CMD]', -- Command-line autocomplete
-  latex_symbols = '[LATEX]', -- Latex/Unicode symbols
+  --cmdline = '[CMD]', -- Command-line autocomplete
+  --  latex_symbols = '[LATEX]', -- Latex/Unicode symbols
   dotenv = '[ENV]',
 }
 
@@ -61,7 +61,7 @@ cmp.setup({
     },
   },
   performance = {
-    max_view_entries = 15, -- 🔹 Begränsar antal förslag för bättre prestanda
+    max_view_entries = 15,
   },
   window = {
     completion = {

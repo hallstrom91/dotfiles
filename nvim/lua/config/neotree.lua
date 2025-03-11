@@ -211,6 +211,7 @@ require('neo-tree').setup({
         require('neo-tree.command').execute({ action = 'close' })
       end,
     },
+
     {
       event = 'neo_tree_buffer_leave',
       handler = function()
@@ -220,21 +221,47 @@ require('neo-tree').setup({
         for _, win in ipairs(wins) do
           local config = vim.api.nvim_win_get_config(win)
           if config.relative ~= '' then
-            return
+            return -- Popup är aktiv, avbryt
           end
         end
 
-        vim.api.nvim_create_autocmd('BufEnter', {
+        -- Använd `WinEnter` för att pålitligt upptäcka bufferbyten
+        vim.api.nvim_create_autocmd('WinEnter', {
           callback = function()
+            -- Kolla om vi INTE är i en Neo-tree buffer
             local bufname = vim.api.nvim_buf_get_name(0)
             if not bufname:match('neo%-tree') then
               require('neo-tree.command').execute({ action = 'close' })
             end
           end,
-          once = true,
+          once = true, -- Säkerställer att detta bara körs en gång
         })
       end,
     },
+    -- {
+    --   event = 'neo_tree_buffer_leave',
+    --   handler = function()
+    --     local wins = vim.api.nvim_list_wins()
+    --
+    --     -- Kolla om en popup är öppen, om så, avbryt
+    --     for _, win in ipairs(wins) do
+    --       local config = vim.api.nvim_win_get_config(win)
+    --       if config.relative ~= '' then
+    --         return
+    --       end
+    --     end
+    --
+    --     vim.api.nvim_create_autocmd('BufEnter', {
+    --       callback = function()
+    --         local bufname = vim.api.nvim_buf_get_name(0)
+    --         if not bufname:match('neo%-tree') then
+    --           require('neo-tree.command').execute({ action = 'close' })
+    --         end
+    --       end,
+    --       once = true,
+    --     })
+    --   end,
+    -- },
   },
 })
 
