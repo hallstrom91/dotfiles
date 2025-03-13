@@ -2,20 +2,20 @@ local M = {}
 
 M.on_attach = function(client, bufnr)
   local exclude_formatting = {
-    'ts_ls',
-    'html',
-    'cssls',
-    'lua_ls',
-    'pyright',
-    'yamlls',
-    'marksman',
-    'jsonls',
-    'quick_lint_js',
-    'omnisharp',
+    "ts_ls",
+    "html",
+    "cssls",
+    "lua_ls",
+    "pyright",
+    -- 'yamlls',
+    "marksman",
+    "jsonls",
+    "quick_lint_js",
+    "omnisharp",
   }
 
   local included_projects = {
-    '/media/veracrypt2/wellr/repos/wellr-frontend',
+    --'/media/veracrypt2/wellr/repos/wellr-frontend',
   }
 
   local function is_included_project()
@@ -35,11 +35,11 @@ M.on_attach = function(client, bufnr)
     client.server_capabilities.documentFormattingProvider = false
     client.server_capabilities.document_range_formatting = false
   else
-    client.server_capabilities.documentFormattingProvider = false
-    client.server_capabilities.document_range_formatting = false
+    client.server_capabilities.documentFormattingProvider = true
+    client.server_capabilities.document_range_formatting = true
   end
 
-  require('core.lsp.keymaps').setup(bufnr)
+  require("core.lsp.keymaps").setup(bufnr)
 end
 
 return M

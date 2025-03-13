@@ -4,6 +4,7 @@ local lsp = require('modules.diagnostics.lsp_actions')
 local system = require('modules.lualine.system')
 local logo = require('modules.ui.logo')
 local separators = require('modules.lualine.separators')
+local short_path = require('modules.utils').short_path
 
 -- LSP diagnostics
 local lsp_diagnostics = {
@@ -25,10 +26,6 @@ require('lualine').setup({
 
   options = {
     theme = custom_theme,
-    --	component_separators = { left = "", right = "" },
-    --	component_separators = {left = '', right = ''}
-    --	section_separators = { left = "", right = "" },
-    --	component_separators = { left = "󰇙", right = "󰇙" },
     component_separators = '',
     section_separators = { left = ' ', right = ' ' },
     always_divide_middle = true,
@@ -47,6 +44,7 @@ require('lualine').setup({
       },
     },
     lualine_b = {
+
       {
         'filename',
         file_status = true,

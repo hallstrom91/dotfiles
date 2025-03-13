@@ -9,12 +9,8 @@ telescope.setup({
     selection_caret = ' ',
     path_display = { 'truncate' },
     file_ignore_patterns = { 'node_modules', '.git/' }, -- Ignore unwanted folders
-    -- mappings = {
-    --   i = {
-    --     ['<Esc>'] = require('telescope.actions').close, -- Specifik ESC-funktionalitet
-    --   },
-    -- },
   },
+  --[[  mappings = {}, ]]
   pickers = {
     find_files = {
       theme = 'dropdown',
@@ -31,7 +27,7 @@ telescope.setup({
   },
   extensions = {
     fzf = {
-      fuzzy = true, -- Activate fuzzy find
+      fuzzy = true,
       override_generic_sorter = true,
       override_file_sorter = true,
       case_mode = 'smart_case',

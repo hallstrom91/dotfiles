@@ -3,6 +3,9 @@ local lsp_actions = require('modules.diagnostics.lsp_actions')
 local git = require('modules.git.git_info')
 local tabs = require('modules.bufferline.tabs')
 local bufdelete = require('bufdelete')
+local short_path = require('modules.utils').short_path
+local sort_by_short_path = require('modules.utils').sort_by_short_path
+local sort_by_type_and_modified = require('modules.utils').sort_by_type_and_modified
 
 require('bufferline').setup({
   options = {
@@ -10,6 +13,7 @@ require('bufferline').setup({
     style_preset = require('bufferline').style_preset.default,
     themable = true,
     numbers = 'ordinal', -- (can be "none", "ordinal", "buffer_id", or "both")
+
     -- numbers = 'buffer_id',
     diagnostics = 'nvim_lsp',
     diagnostics_update_on_event = true,
@@ -21,6 +25,22 @@ require('bufferline').setup({
     left_mouse_command = function(clicked_tab_id)
       tabs.left_mouse_open_tab(clicked_tab_id)
     end,
+
+    -- tab names
+    tab_size = 22,
+    truncate_names = true, -- whether or not tab names should be truncated
+    name_formatter = function(buf)
+      return short_path(buf.path)
+    end,
+
+    -- sorting
+    sort_by = function(buffer_a, buffer_b)
+      return sort_by_type_and_modified(buffer_a, buffer_b)
+    end,
+
+    -- sort_by = function(buffer_a, buffer_b)
+    --   return sort_by_short_path(buffer_a, buffer_b)
+    -- end,
 
     -- if mode = "buffers" -- use below
     -- close_command = 'bdelete! %d',

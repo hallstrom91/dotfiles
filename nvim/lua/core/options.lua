@@ -18,10 +18,13 @@ opt.linebreak = true
 opt.wrap = false -- disable line wrap
 opt.smoothscroll = true
 opt.clipboard = vim.env.SSH_TTY and '' or 'unnamedplus'
+opt.spelllang = { 'en' }
+opt.timeoutlen = vim.g.vscode and 1000 or 300 -- trigger whichkey faster
+opt.confirm = true -- confirm to save changes before exiting buffer
 
+vim.g.markdown_recommended_style = 0 -- test ?
 vim.g.loaded_netrw = 1 -- disable netrw
 vim.g.loaded_netrwPlugin = 1 -- disable netrw
-vim.g.markdown_recommended_style = 0
 vim.g.loaded_matchparen = 1
 
 opt.guicursor = {

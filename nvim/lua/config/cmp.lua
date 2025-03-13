@@ -13,8 +13,8 @@ local source_mapping = {
   path = '[PATH]',
   git = '[GIT]', -- Git-autocomplete
   conventionalcommits = '[COMMITS]', -- Conventional Commits
-  --cmdline = '[CMD]', -- Command-line autocomplete
-  --  latex_symbols = '[LATEX]', -- Latex/Unicode symbols
+  -- cmdline = '[CMD]', -- Command-line autocomplete
+  -- latex_symbols = '[LATEX]', -- Latex/Unicode symbols
   dotenv = '[ENV]',
 }
 

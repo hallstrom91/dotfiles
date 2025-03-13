@@ -8,6 +8,10 @@ case $- in
 *) return ;;
 esac
 
+if [ -f ~/.bash_exports ]; then
+  . ~/.bash_exports
+fi
+
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 HISTCONTROL=ignoreboth
@@ -117,9 +121,9 @@ fi
 
 # Load Env variables
 # shellcheck source=/home/simon/.bash_exports
-if [ -f ~/.bash_exports ]; then
-  . ~/.bash_exports
-fi
+# if [ -f ~/.bash_exports ]; then
+#   . ~/.bash_exports
+# fi
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
@@ -134,7 +138,3 @@ fi
 
 # connect custom completion from .bash_functions
 complete -o default -o nospace -F _cd_custom cd
-
-# export NVM_DIR="$HOME/.nvm"
-# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
