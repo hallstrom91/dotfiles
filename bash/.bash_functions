@@ -5,6 +5,7 @@ paths=(
   [doc]="$HOME/Documents"
   [wsx]="/media/veracrypt1/ws"
   [work]="/media/veracrypt2/wellr"
+  [wtrees]="/media/veracrypt2/wellr/repos/worktrees"
 )
 
 cd() {

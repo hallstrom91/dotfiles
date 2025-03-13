@@ -108,6 +108,7 @@ vim.api.nvim_create_autocmd("FileType", {
     "startuptime",
     "tsplayground",
     "TelescopePrompt",
+    "neo-tree",
   },
   callback = function(event)
     vim.bo[event.buf].buflisted = false
@@ -121,5 +122,18 @@ vim.api.nvim_create_autocmd("FileType", {
         desc = "Quit buffer",
       })
     end)
+  end,
+})
+
+vim.api.nvim_create_autocmd("RecordingEnter", {
+  callback = function()
+    local reg = vim.fn.reg_recording()
+    vim.notify("Macro recording started @" .. reg, vim.log.levels.INFO, { title = "Makro Start" })
+  end,
+})
+
+vim.api.nvim_create_autocmd("RecordingLeave", {
+  callback = function()
+    vim.notify("Macro recording terminated", vim.log.levels.INFO, { title = "Makro Slut" })
   end,
 })
