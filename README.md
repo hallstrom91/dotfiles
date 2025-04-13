@@ -32,25 +32,26 @@ Personal dotfiles repository.
 
 You can pass these flags to any install script that uses `motherscript.sh`:
 
-````bash
 ```bash
 ./install-terminal-dotfiles.sh --dry-run
 ./install-shared-dotfiles.sh --yes --debug
-````
+```
 
 ## Installation
 
 1. **Make the script executable** (only needed once):
 
-````bash
-chmod +x ./install-*.sh```
+```bash
+chmod +x ./install-*.sh
+```
 
 _You can optionally make motherscript.sh executable, but it's not required since it’s sourced._
 
 2. **Run an install script:**
+
 ```bash
 ./install-shared-dotfiles.sh
-````
+```
 
 ## Usage
 
