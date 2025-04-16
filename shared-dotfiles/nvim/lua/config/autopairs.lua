@@ -21,7 +21,6 @@ M.setup = function()
     end),
   })
 
-  -- Stoppa () i import-rader
   autopairs.get_rule("("):with_pair(function(opts)
     local line = opts.line
     return not line:match("^%s*import%s*{")

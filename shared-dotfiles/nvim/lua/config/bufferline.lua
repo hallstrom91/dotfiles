@@ -98,11 +98,11 @@ require("bufferline").setup({
 })
 
 ----> Keybinds - Switch between buffertabs
-vim.keymap.set("n", "<Tab>", function()
+map("n", "<Tab>", function()
   require("bufferline").cycle(1)
 end, { desc = "Next buffer", silent = true })
 
-vim.keymap.set("n", "<S-Tab>", function()
+map("n", "<S-Tab>", function()
   require("bufferline").cycle(-1)
 end, { desc = "Prev buffer", silent = true })
 

@@ -58,7 +58,7 @@ return {
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
-    event = { "BufReadPre", "BufNewFile" },
+    -- event = { "BufReadPre", "BufNewFile" },
     config = function()
       require("nvim-treesitter.configs").setup({
         ensure_installed = {
@@ -96,7 +96,6 @@ return {
   },
 
   ----| Treesitter Context Window |----
-
   {
     "nvim-treesitter/nvim-treesitter-context",
     event = "BufReadPost",
@@ -106,11 +105,17 @@ return {
         enable = true,
         multiwindow = true,
         additional_vim_regex_highlighting = false,
+        max_lines = 10,
+        min_window_height = 100,
       })
 
       vim.keymap.set("n", "[c", function()
         require("treesitter-context").go_to_context(vim.v.count1)
       end, { silent = true })
     end,
+
+    vim.api.nvim_set_hl(0, "TreesitterContext", {
+      bg = "#205781",
+    }),
   },
 }

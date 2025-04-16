@@ -4,7 +4,7 @@ local config = {}
 --| custom config files |---
 local keymaps = require("keymaps")
 local sysstatus = require("status")
-local setup_gui_startup = require("gui_startup")
+local gui_startup = require("gui_startup")
 local gui_tabs = require("gui_tabs")
 local gui_theme = require("gui_theme")
 
@@ -95,7 +95,7 @@ config.enable_kitty_graphics = true
 ---------------------
 
 ----| automated script loading and navigation |-----
-wezterm.on("gui-startup", setup_gui_startup)
+wezterm.on("gui-startup", gui_startup.bootloader)
 
 ----| dynamic theme (if SSH) |----
 wezterm.on("update-status", gui_theme.switcher)
