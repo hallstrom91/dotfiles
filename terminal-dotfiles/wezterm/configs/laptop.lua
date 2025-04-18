@@ -41,6 +41,7 @@ config.font = wezterm.font_with_fallback({
   "CaskaydiaCove NF", -- Nerd Font
   "JetBrainsMono Nerd Font", -- fallback
 })
+
 config.font_size = font_size
 
 ---------------------
