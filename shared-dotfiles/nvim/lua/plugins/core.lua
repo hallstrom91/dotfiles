@@ -7,7 +7,7 @@ return {
   ----| LSP, Mason etc.. |----
   {
     "neovim/nvim-lspconfig",
-    event = { "BufReadPre", "BufNewFile" },
+    event = { "BufReadPre" },
     cmd = { "LspInfo", "LspInstall", "LspStart", "Mason" },
     dependencies = {
       { "williamboman/mason.nvim", build = ":MasonUpdate" },

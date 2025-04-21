@@ -1,27 +1,27 @@
 local util = require("lspconfig.util")
---local rootpath = os.getenv("HOME")
-local get_styled_plugin_location = require("modules.utils").get_styled_plugin_location
-
+--local get_styled_plugin_location = require("modules.utils").get_styled_plugin_location
+local utils = require("modules.utils")
 return {
-
   ----| TypeScript & JavaScript |----
   ts_ls = {
     root_dir = util.root_pattern("tsconfig.json", "package.json", ".git"),
     cmd = { "typescript-language-server", "--stdio" },
-    init_options = {
-      plugins = {
-        {
-          name = "@styled/typescript-styled-plugin",
-          location = get_styled_plugin_location(),
-          languages = {
-            "javascript",
-            "typescript",
-            "javascriptreact",
-            "typescriptreact",
-          },
-        },
-      },
-    },
+    init_options = utils.get_ts_ls_init_options(),
+    -- init_options = {
+    --   plugins = {
+    --     {
+    --       name = "@styled/typescript-styled-plugin",
+    --       -- location = get_styled_plugin_location(),
+    --       languages = {
+    --         "javascript",
+    --         "typescript",
+    --         "javascriptreact",
+    --         "typescriptreact",
+    --       },
+    --     },
+    --   },
+    -- },
+
     settings = {
       filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
     },

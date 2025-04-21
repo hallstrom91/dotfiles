@@ -69,20 +69,9 @@ function M.get_node_version()
   local result = handle:read("*a")
   handle:close()
   if result then
-    ----| v18.20.7 → 18.20.7
     return result:gsub("^v", ""):gsub("%s+", "")
   end
 end
-
--- function M.get_styled_plugin_location()
---   local version = M.get_node_version()
---   if not version then
---     return nil
---   end
---
---   local home = os.getenv("HOME")
---   return home .. "/.nvm/versions/node/v" .. version .. "/lib/node_modules/@styled/typescript-styled-plugin"
--- end
 
 function M.get_styled_plugin_location()
   local version = M.get_node_version()
@@ -94,8 +83,33 @@ function M.get_styled_plugin_location()
   local home = os.getenv("HOME")
   local path = home .. "/.nvm/versions/node/v" .. version .. "/lib/node_modules/@styled/typescript-styled-plugin"
 
-  vim.notify("Styled Plugin Path: " .. path)
+  vim.notify("Node: " .. version .. " found for ts-styled-plugin")
   return path
+end
+
+function M.get_ts_ls_init_options()
+  local plugin_path = M.get_styled_plugin_location()
+  if not plugin_path or vim.fn.isdirectory(plugin_path) ~= 1 then
+    vim.notify("[styled-plugin] Plugin path missing or invalid: " .. (plugin_path or "nil"), vim.log.levels.WARN)
+    return {}
+  end
+
+  vim.notify("[styled-plugin] Loaded from: " .. plugin_path, vim.log.levels.INFO)
+
+  return {
+    plugins = {
+      {
+        name = "@styled/typescript-styled-plugin",
+        location = plugin_path,
+        languages = {
+          "javascript",
+          "typescript",
+          "javascriptreact",
+          "typescriptreact",
+        },
+      },
+    },
+  }
 end
 
 -- for nvims builtin tabs
@@ -130,27 +144,6 @@ function M.tabline()
   return s
 end
 
--- function M.tab_name_formatter(buf)
---   -- Hämta tab-ID där buffern ligger
---   local buf_tabnr = vim.fn.tabpagenr()
---
---   -- Räkna buffers i aktuell tab
---   local wins_in_tab = vim.api.nvim_tabpage_list_wins(vim.api.nvim_get_current_tabpage())
---   local buffer_count = #wins_in_tab
---
---   local name = vim.fn.fnamemodify(buf.name, ":t")
---   if name == "" then
---     name = "[No Name]"
---   end
---
---   if buffer_count > 1 then
---     name = string.format("%s +%d", name, buffer_count - 1)
---   end
---
---   return name
--- end
-
--- Hitta rätt tabb för en given buffert
 local function find_tab_for_buf(bufnr)
   for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
     for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
@@ -162,7 +155,6 @@ local function find_tab_for_buf(bufnr)
   return nil
 end
 
--- Namnformatterare med korrekt bufferräkning per tabb
 function M.tab_name_formatter(buf)
   local tab = find_tab_for_buf(buf.bufnr)
   if not tab then

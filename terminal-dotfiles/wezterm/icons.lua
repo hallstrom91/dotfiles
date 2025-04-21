@@ -9,10 +9,10 @@ icons.process = {
   ["kuberlr"] = wezterm.nerdfonts.linux_docker,
   ["kubectl"] = wezterm.nerdfonts.linux_docker,
   ["stern"] = wezterm.nerdfonts.linux_docker,
-  ["nvim"] = wezterm.nerdfonts.custom_vim,
+  ["nvim"] = wezterm.nerdfonts.linux_neovim,
   ["make"] = wezterm.nerdfonts.seti_makefile,
   ["vim"] = wezterm.nerdfonts.dev_vim,
-  ["bash"] = wezterm.nerdfonts.cod_terminal_bash,
+  ["bash"] = wezterm.nerdfonts.md_bash,
   ["btm"] = wezterm.nerdfonts.mdi_chart_donut_variant,
   ["cargo"] = wezterm.nerdfonts.dev_rust,
   ["sudo"] = wezterm.nerdfonts.fa_hashtag,
@@ -23,9 +23,10 @@ icons.process = {
   ["wget"] = wezterm.nerdfonts.mdi_arrow_down_box,
   ["curl"] = wezterm.nerdfonts.mdi_flattr,
   ["gh"] = wezterm.nerdfonts.dev_github_badge,
-  ["node"] = wezterm.nerdfonts.dev_nodejs_small,
+  ["node"] = wezterm.nerdfonts.md_nodejs,
   ["dotnet"] = wezterm.nerdfonts.md_language_csharp,
   ["ssh"] = wezterm.nerdfonts.md_connection,
+  ["nautilus"] = wezterm.nerdfonts.fa_mouse_pointer,
 }
 
 icons.system = {
