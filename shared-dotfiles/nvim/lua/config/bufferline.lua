@@ -3,8 +3,6 @@ local lsp_actions = require("modules.diagnostics.lsp_actions")
 local git = require("modules.git.git_info")
 local tabs = require("modules.bufferline.tabs")
 local bufdelete = require("bufdelete")
---local render = require("modules.utils").tabline
---local tab_names = require("modules.utils").tab_name_formatter
 
 require("bufferline").setup({
   options = {
@@ -25,9 +23,6 @@ require("bufferline").setup({
       tabs.left_mouse_open_tab(clicked_tab_id)
     end,
 
-    --- Fix this - reacts to to many "buffers"
-    --  name_formatter = tab_names,
-
     -- tab names
     tab_size = 22,
     truncate_names = true, -- whether or not tab names should be truncated
@@ -40,7 +35,6 @@ require("bufferline").setup({
         "TelescopePrompt",
         "neo-tree",
         "spectre_panel",
-        --  "NvimTree",
         "qf",
         "help",
         "",
@@ -107,7 +101,6 @@ map("n", "<S-Tab>", function()
 end, { desc = "Prev buffer", silent = true })
 
 ----> Keybinds - create new buffer
-
 vim.keymap.set("n", "<leader>tn", function()
   vim.cmd.tabnew()
 end, { desc = "Open a new tab", silent = true })
@@ -115,11 +108,8 @@ end, { desc = "Open a new tab", silent = true })
 vim.keymap.set("n", "<leader>tc", function()
   vim.cmd.tabclose()
 end, { desc = "Close current tab", silent = true })
--- map("n", "<leader>tn", ":tabnew<CR>", { desc = "Open a new tab" })
--- map("n", "<leader>tc", ":tabclose<CR>", { desc = "Close current tab" })
--- map("n", "<Tab>", "<Cmd>BufferLineCycleNext<CR>", { silent = true, desc = "Next buffer" })
--- map("n", "<S-Tab>", "<Cmd>BufferLineCyclePrev<CR>", { silent = true, desc = "Prev buffer" })
 
+----> Close buf split and leave empty window
 vim.keymap.set("n", "<leader>q", function()
   local current_win = vim.api.nvim_get_current_win()
   local current_buf = vim.api.nvim_win_get_buf(current_win)

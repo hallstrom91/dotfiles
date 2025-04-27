@@ -90,11 +90,20 @@ return {
   },
 
   ----| Indent Blankline  |----
+  -- {
+  --   "lukas-reineke/indent-blankline.nvim",
+  --   event = { "BufReadPre", "BufNewFile" },
+  --   config = function()
+  --     require("config.indent-blankline")
+  --   end,
+  -- },
+
+  ----| hlchunck - indent |----
   {
-    "lukas-reineke/indent-blankline.nvim",
+    "shellRaining/hlchunk.nvim",
     event = { "BufReadPre", "BufNewFile" },
     config = function()
-      require("config.indent-blankline")
+      require("config.indents")
     end,
   },
 

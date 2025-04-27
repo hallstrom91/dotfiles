@@ -23,8 +23,6 @@ opt.timeoutlen = vim.g.vscode and 1000 or 300 -- trigger whichkey faster
 opt.confirm = false -- confirm to save changes before exiting buffer
 opt.showmatch = true
 opt.matchtime = 3
---vim.o.showtabline = 2
---vim.o.tabline = "%!v:lua.require'modules.utils'.tabline()"
 
 vim.g.markdown_recommended_style = 0 -- test ?
 vim.g.loaded_netrw = 1 -- disable netrw

@@ -41,20 +41,6 @@ cmp.setup({
       return vim_item
     end,
   },
-  -- formatting = {
-  --   format = function(entry, vim_item)
-  --     vim_item = tailwind_formatter(entry, vim_item)
-  --     vim_item = lspkind.cmp_format({
-  --       mode = "symbol_text",
-  --       maxwidth = 50,
-  --       ellipsis_char = "...",
-  --     })(entry, vim_item)
-  --
-  --     vim_item.abbr = vim_item.abbr:gsub("%$%d", "")
-  --     vim_item.menu = source_mapping[entry.source.name] or ""
-  --     return vim_item
-  --   end,
-  -- },
 
   sorting = {
     priority_weight = 2,
@@ -77,11 +63,11 @@ cmp.setup({
   window = {
     completion = {
       border = "rounded",
-      --  winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
+        winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
     },
     documentation = {
       border = "rounded",
-      -- winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
+       winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
     },
   },
   mapping = cmp.mapping.preset.insert({

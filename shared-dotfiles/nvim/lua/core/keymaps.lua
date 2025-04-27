@@ -9,7 +9,6 @@ local keymaps = {
   --> Basic
   { mode = "n", keys = ";", cmd = ":", desc = "Enter command mode" },
   { mode = "i", keys = "jk", cmd = "<ESC>", desc = "Exit insert mode" },
-  --{ mode = "n", keys = "<Esc><Esc>", cmd = ":noh<CR>", desc = "Clear Search Markings" },
   { mode = "n", keys = "<F13>", cmd = ":noh<CR>", desc = "Clear Search Markings" },
   { mode = { "i", "x", "n", "s" }, keys = "<C-s>", cmd = "<cmd>w<cr><esc>", desc = "Save File" },
 
@@ -33,14 +32,13 @@ local keymaps = {
   { mode = "n", keys = "<leader>q", cmd = "<C-W>c", desc = "Close Window", remap = true },
 
   --> Print msg binds
-  { mode = "n", keys = "<leader>qe", cmd = utils.print_exclusion_status, desc = "Check Excluded Project" },
-  { mode = "n", keys = "<leader>ql", cmd = utils.print_lsp_formatting_status, desc = "Check LSP Formatting" },
+  { mode = "n", keys = "<leader>cex", cmd = utils.print_exclusion_status, desc = "Check Excluded Project" },
+  { mode = "n", keys = "<leader>clf", cmd = utils.print_lsp_formatting_status, desc = "Check LSP Formatting" },
 }
 
 for _, keymap in ipairs(keymaps) do
   local key_opts = vim.tbl_extend("force", opts, { desc = keymap.desc })
 
-  -- Lägg till remap om det finns
   if keymap.remap then
     key_opts.remap = true
   end
