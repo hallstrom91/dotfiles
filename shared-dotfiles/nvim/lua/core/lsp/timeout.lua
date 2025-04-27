@@ -1,13 +1,12 @@
 return {
   setup = function()
-    --> deactivate lsp-timeout with:
     if vim.g.lsp_timeout_enabled == false then
       return
     end
 
     vim.g.lspTimeoutConfig = {
       stopTimeout = 1000 * 60 * 25,
-      startTimeout = 1000 * 5,
+      startTimeout = 1000 * 15,
       silent = false,
       filetypes = {
         ignore = { "markdown", "plaintext" },

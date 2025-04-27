@@ -1,27 +1,11 @@
 local util = require("lspconfig.util")
---local get_styled_plugin_location = require("modules.utils").get_styled_plugin_location
-local utils = require("modules.utils")
+
 return {
   ----| TypeScript & JavaScript |----
   ts_ls = {
     root_dir = util.root_pattern("tsconfig.json", "package.json", ".git"),
     cmd = { "typescript-language-server", "--stdio" },
-    init_options = utils.get_ts_ls_init_options(),
-    -- init_options = {
-    --   plugins = {
-    --     {
-    --       name = "@styled/typescript-styled-plugin",
-    --       -- location = get_styled_plugin_location(),
-    --       languages = {
-    --         "javascript",
-    --         "typescript",
-    --         "javascriptreact",
-    --         "typescriptreact",
-    --       },
-    --     },
-    --   },
-    -- },
-
+    init_options = require("modules.ts_ls_init_opts").get_ts_ls_init_options(),
     settings = {
       filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
     },
@@ -99,14 +83,6 @@ return {
   jsonls = {
     root_dir = util.root_pattern("package.json", ".git", "."),
     filetypes = { "json", "jsonc" },
-    -- root_dir = function(fname)
-    --   return require("lspconfig.util").find_git_ancestor(fname)
-    -- end,
-    -- settings = {
-    --   json = {
-    --     validate = { enable = true }, --| on / off ?
-    --   },
-    -- },
   },
 
   ----| C# .NET |----
@@ -131,7 +107,7 @@ return {
           parameters = { enabled = true },
           typeHints = { enabled = true },
         },
-        formatting = { enabled = true }, -- eller false om du använder dotnet-format externt
+        formatting = { enabled = true },
         hover = { enabled = true },
       },
     },
