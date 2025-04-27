@@ -22,12 +22,6 @@ vim.keymap.set("n", "<leader>ss", resession.save, { desc = "save session" })
 vim.keymap.set("n", "<leader>sl", resession.load, { desc = "load session" })
 vim.keymap.set("n", "<leader>sd", resession.delete, { desc = "delete session" })
 
--- vim.api.nvim_create_autocmd("VimLeavePre", {
---   callback = function()
---     resession.save(get_session_name(), { dir = "dirsession", notify = false })
---   end,
--- })
-
 vim.api.nvim_create_autocmd("VimEnter", {
   callback = function()
     -- Only load the session if nvim was started with no args

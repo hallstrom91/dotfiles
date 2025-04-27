@@ -12,7 +12,6 @@ local source_mapping = {
   luasnip = "[SNIP]",
   buffer = "[BUF]",
   path = "[PATH]",
-  git = "[GIT]",
   dotenv = "[ENV]",
 }
 

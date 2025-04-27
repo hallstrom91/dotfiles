@@ -7,7 +7,7 @@ return {
   ----| LSP, Mason etc.. |----
   {
     "neovim/nvim-lspconfig",
-    event = { "BufReadPre" },
+    event = { "BufReadPost", "BufNewFile" },
     cmd = { "LspInfo", "LspInstall", "LspStart", "Mason" },
     dependencies = {
       { "williamboman/mason.nvim", build = ":MasonUpdate" },
@@ -17,7 +17,7 @@ return {
     },
     config = function()
       require("core.lsp.init")
-      require("core.lsp.timeout").setup()
+      -- require("core.lsp.timeout").setup()
     end,
   },
 
@@ -43,7 +43,6 @@ return {
       -- Extra completion sources
       "onsails/lspkind.nvim",
       "SergioRibera/cmp-dotenv",
-      "petertriho/cmp-git",
       "roobert/tailwindcss-colorizer-cmp.nvim",
     },
     config = function()

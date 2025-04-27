@@ -26,7 +26,7 @@ colors.neovim_logo = {
   light_sky = "#65b8fb",
   sky = "#2e85c5",
   dark_sky = "#1b5ba3",
-  icon = "#ffffff", -- hl for nvim nerdicon
+  icon = "#ffffff", -- hl for nerdicon
   text = "#CCCCCC", -- hl for 'v'-in-VERSION
   number = "#888888", -- hl for 'number'-in-VERSION
 }

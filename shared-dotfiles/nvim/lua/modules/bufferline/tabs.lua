@@ -10,7 +10,7 @@ function M.left_mouse_open_tab(clicked_tab_id)
     end
   end
 
-  print('Invalid tab ID: ' .. clicked_tab_id)
+  print("Invalid tab ID: " .. clicked_tab_id)
 end
 
 function M.right_mouse_close_tab(bufnr)

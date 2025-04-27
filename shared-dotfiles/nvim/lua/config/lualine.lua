@@ -83,7 +83,8 @@ require("lualine").setup({
     lualine_x = {
       { "selectioncount" },
       { "searchcount" },
-      logo.nvim_logo_and_version_color,
+      --logo.nvim_logo_and_version_color,
+      logo.nvim_logo_and_version,
     },
 
     lualine_y = {

@@ -31,6 +31,7 @@ return {
   {
     "nvim-telescope/telescope.nvim",
     tag = "0.1.8",
+    event = "VimEnter",
     keys = { "<leader>f", "<leader>p" },
     dependencies = {
       "nvim-lua/plenary.nvim",
@@ -70,7 +71,6 @@ return {
     event = "InsertEnter",
     config = function()
       require("nvim-ts-autotag").setup({
-
         enable = true,
         filetypes = { "html", "xml", "javascript", "typescript", "typescriptreact", "javascriptreact" },
         opts = {
@@ -167,6 +167,15 @@ return {
           long_message_to_split = true,
           inc_rename = false,
           lsp_doc_border = false,
+        },
+        routes = {
+          {
+            filter = {
+              event = "notify",
+              find = "vim%.deprecated",
+            },
+            opts = { skip = true },
+          },
         },
       })
     end,
