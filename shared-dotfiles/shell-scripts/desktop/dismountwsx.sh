@@ -6,7 +6,6 @@ RED="\e[31m"
 RESET="\e[0m"
 
 MOUNT_POINTS=(
-    "/media/veracrypt3"
     "/media/veracrypt2"
     "/media/veracrypt1"
 )

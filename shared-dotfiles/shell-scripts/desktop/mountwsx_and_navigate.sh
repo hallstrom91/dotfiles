@@ -11,7 +11,6 @@ WORKDIR="/media/veracrypt2"
 MOUNT_POINTS=(
   "/media/veracrypt1"
   "/media/veracrypt2"
-  "/media/veracrypt3"
 )
 
 SIGNAL_FILE="/tmp/mount_success.signal"
