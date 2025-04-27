@@ -18,6 +18,15 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   end,
 })
 
+--> Resession reload
+vim.api.nvim_create_autocmd("User", {
+  group = augroup("session"),
+  pattern = "ResessionLoadPost",
+  callback = function()
+    vim.cmd("silent! doautocmd BufRead")
+  end,
+})
+
 --> open help window in vertical mode
 autocmd("FileType", {
   group = augroup("HelpWindow"),
@@ -37,7 +46,7 @@ autocmd("VimEnter", {
 --> Recognize .bash_* files
 autocmd({ "BufRead", "BufNewFile" }, {
   group = augroup("BashFiles"),
-  pattern = ".bash_*",
+  pattern = { ".bash_*", "bash_*" },
   command = "set filetype=bash",
 })
 
