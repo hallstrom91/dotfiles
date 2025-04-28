@@ -13,7 +13,12 @@ require("hlchunk").setup({
       vertical_line = "│",
       left_top = "╭",
       left_bottom = "╰",
-      right_arrow = ">",
+      --right_arrow = ">",
+      right_arrow = "",
+      -- "󰅂"
+      -- ""
+      -- ""
+      -- ""
     },
     -- style = "#806d9c",
     style = "#D4C9BE",
@@ -21,7 +26,8 @@ require("hlchunk").setup({
 
   indent = {
     enable = true,
-    chars = { "│" },
+    --chars = { "│" },
+    chars = { "" },
     style = {
       safe_hl_color("IndentLevel1"),
       safe_hl_color("IndentLevel2"),

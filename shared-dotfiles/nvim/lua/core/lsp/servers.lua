@@ -59,11 +59,6 @@ return {
   ----| Markdown |----
   marksman = { filetypes = { "markdown" } },
 
-  ----| JavaScript Linting |----
-  -- quick_lint_js = {
-  --   filetypes = { "javascript", "javascriptreact", "typescriptreact", "typescript" },
-  -- },
-
   ----| Vimscript |----
   vimls = { filetypes = { "vim" } },
 
