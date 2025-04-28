@@ -6,8 +6,8 @@ RED="\e[31m"
 RESET="\e[0m"
 
 PARTITIONS=(
-  "/dev/sda1" # external
-  "/dev/sda2" # external
+  "/dev/sdc1" # external
+  "/dev/sdc2" # external
 )
 
 MOUNT_POINTS=(

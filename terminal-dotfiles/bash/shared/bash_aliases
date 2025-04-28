@@ -25,8 +25,15 @@ alias gwr='git worktree remove'
 alias killprocess="ps -eo pid,comm,args --sort=-%mem | fzf --preview='echo {}' | awk '{print \$1}' | xargs -r kill -9"
 
 # term showcase
-alias bat="batcat"
 alias treeonedir="tree -d -L 1"
+# Try to use bat if available, otherwise batcat, otherwise fall back to cat
+if command -v bat &> /dev/null; then
+  alias bat="bat"
+elif command -v batcat &> /dev/null; then
+  alias bat="batcat"
+else
+  alias bat="cat"
+fi
 
 #shortcuts
 alias work="cd /media/veracrypt2/wellr/repos/"
