@@ -29,8 +29,9 @@ end
 vim.diagnostic.config({
   virtual_text = true,
   signs = true,
-  underline = true,
+  underline = false,
   update_in_insert = false,
+  float = false,
 })
 
 require("core.lsp.timeout")

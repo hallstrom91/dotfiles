@@ -66,10 +66,14 @@ return {
   yamlls = { filetypes = { "yaml", "yml" } },
 
   ----| CSS Modules |----
-  cssmodules_ls = {
-    filetypes = { "javascript", "javascriptreact", "javascript.jsx" },
-    camelCase = true,
-  },
+  -- cssmodules_ls = {
+  --   filetypes = { "modules.css", "css" },
+  --   camelCase = true,
+  -- },
+
+  -- css_variables = {
+  --   filetypes = { "css" },
+  -- },
 
   ----| Bash |----
   bashls = { filetypes = { "sh", "bash" } },

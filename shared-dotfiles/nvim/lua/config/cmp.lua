@@ -63,11 +63,11 @@ cmp.setup({
   window = {
     completion = {
       border = "rounded",
-        winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
+      winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
     },
     documentation = {
       border = "rounded",
-       winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
+      winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
     },
   },
   mapping = cmp.mapping.preset.insert({
@@ -101,10 +101,11 @@ cmp.setup({
   }),
 
   sources = cmp.config.sources({
-    { name = "nvim_lsp", priority = 1000, keyword_length = 1 },
+    { name = "nvim_lsp", priority = 1000, keyword_length = 2 },
+    { name = "path", priority = 600, keyword_length = 1 },
     { name = "luasnip", priority = 400, keyword_length = 3 },
+    { name = "nvim_lua", priority = 200 },
     { name = "buffer", priority = 500, keyword_length = 3 },
-    { name = "path", priority = 300, keyword_length = 3 },
     { name = "git", priority = 200, keyword_length = 3 },
     { name = "conventionalcommits", priority = 200, keyword_length = 3 },
     {
@@ -144,7 +145,7 @@ cmp.setup({
       return true
     end
 
-    local disabled_filetypes = { "markdown", "text", "gitcommit", "gitrebase", "csv", "log" }
+    local disabled_filetypes = { "text", "gitcommit", "gitrebase", "csv", "log" }
     if vim.tbl_contains(disabled_filetypes, filetype) then
       return false
     end
