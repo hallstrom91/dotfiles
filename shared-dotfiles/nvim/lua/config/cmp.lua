@@ -128,7 +128,7 @@ cmp.setup({
       return true
     end
 
-    local disabled_filetypes = { "markdown", "text", "gitcommit", "gitrebase", "csv", "log" }
+    local disabled_filetypes = { "text", "gitcommit", "gitrebase", "csv", "log" }
     if vim.tbl_contains(disabled_filetypes, filetype) then
       return false
     end

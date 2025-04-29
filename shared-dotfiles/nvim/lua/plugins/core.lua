@@ -23,11 +23,7 @@ return {
     event = "InsertEnter",
     dependencies = {
       -- Snippets
-      {
-        "L3MON4D3/LuaSnip",
-        build = "make install_jsregexp",
-        dependencies = { "rafamadriz/friendly-snippets" },
-      },
+      "L3MON4D3/LuaSnip",
       "saadparwaiz1/cmp_luasnip",
 
       -- Completion sources
@@ -47,6 +43,11 @@ return {
         color_square_width = 2,
       })
     end,
+  },
+
+  {
+    "L3MON4D3/LuaSnip",
+    dependencies = { "rafamadriz/friendly-snippets" },
   },
 
   ----| Treesitter |----
