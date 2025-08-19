@@ -2,7 +2,7 @@ local builtin = require("telescope.builtin")
 local telescope = require("telescope")
 local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
-require("telescope").load_extension("csharpls_definition")
+--require("telescope").load_extension("csharpls_definition")
 
 telescope.setup({
   defaults = {

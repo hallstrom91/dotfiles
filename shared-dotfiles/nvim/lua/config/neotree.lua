@@ -1,6 +1,5 @@
 local map = vim.keymap.set
 local opts = { noremap = true, silent = true }
-local git_actions = require("modules.git.git_actions")
 
 vim.fn.sign_define("DiagnosticSignError", { text = " ", texthl = "DiagnosticSignError" })
 vim.fn.sign_define("DiagnosticSignWarn", { text = "", texthl = "DiagnosticSignWarn" })
@@ -166,18 +165,6 @@ require("neo-tree").setup({
       ["<leader>"] = {
         "toggle_node",
         nowait = false,
-      },
-      ["gu"] = { desc = "Git unstaged file", "git_unstage_file" },
-      ["ga"] = { desc = "Git add and commit (or just add) file/folder", git_actions.git_add_and_commit },
-      ["gd"] = { desc = "Git delete and auto commit file/folder", git_actions.git_delete_and_commit },
-      ["gz"] = { desc = "Git commit file(s)", git_actions.git_commit },
-      ["gr"] = {
-        desc = "Git restore file",
-        git_actions.git_restore,
-      },
-      ["gmv"] = {
-        git_actions.git_move_file,
-        desc = "Git move file (no dirs)",
       },
       ["gp"] = { desc = "Git Push", "git_push" },
       ["P"] = {

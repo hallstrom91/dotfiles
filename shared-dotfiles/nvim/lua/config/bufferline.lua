@@ -1,7 +1,4 @@
 local map = vim.keymap.set
-local lsp_actions = require("modules.diagnostics.lsp_actions")
-local git = require("modules.git.git_info")
-local tabs = require("modules.bufferline.tabs")
 local bufdelete = require("bufdelete")
 
 require("bufferline").setup({
@@ -19,12 +16,9 @@ require("bufferline").setup({
     close_command = "tabclose",
     middle_mouse_command = "vertical sbuffer %d",
     right_mouse_command = "tabclose",
-    left_mouse_command = function(clicked_tab_id)
-      tabs.left_mouse_open_tab(clicked_tab_id)
-    end,
 
     -- tab names
-    tab_size = 22,
+    tab_size = 18,
     truncate_names = true, -- whether or not tab names should be truncated
     custom_filter = function(buf_number, _)
       -- dont let specific type of buffers "hijack" tab-name
@@ -53,13 +47,13 @@ require("bufferline").setup({
       return true
     end,
 
-    diagnostics_indicator = lsp_actions.diagnostics_indicator,
     offsets = {
       {
         filetype = "neo-tree",
-        text = function()
-          return " " .. git.get_current_branch()
-        end,
+        text = "neo-tree",
+        -- text = function()
+        --   return " " .. git.get_current_branch()
+        -- end,
         highlight = "Directory",
       },
     },

@@ -1,29 +1,82 @@
-local colors = require("modules.ui.colors").vsc_dark_modern
-local custom_theme = require("modules.lualine.themes").vsc_dark_lualine
-local lsp = require("modules.diagnostics.lsp_actions")
-local system = require("modules.lualine.system")
-local logo = require("modules.ui.logo")
-local separators = require("modules.lualine.separators")
-local short_path = require("modules.utils").short_path
+local icons = require("core.icons")
+local widgets = require("core.widgets")
 
--- LSP diagnostics
-local lsp_diagnostics = {
-  "diagnostics",
-  sources = { "nvim_diagnostic" },
-  symbol = { error = "  ", warn = " ", info = " ", hint = " " },
-  color = {
-    error = colors.red,
-    warn = colors.yellow,
-    info = colors.blue,
-    hint = colors.cyan,
+local theme_colors = {
+  bg = "#1e1e1e",
+  fg = "#cccccc",
+  bg_secondary = "#252526",
+  highlight = "#254F78",
+  bg_winbar = "#b9b4c7",
+  fg_winbar = "#2d4356",
+  insert = "#487e02",
+  visual = "#c586c0",
+  replace = "#f14c4c",
+  command = "#cca700",
+}
+
+local custom_theme = {
+  normal = {
+    a = {
+      bg = theme_colors.highlight,
+      fg = theme_colors.fg,
+      gui = "bold",
+    },
+    b = {
+      bg = theme_colors.bg,
+      fg = theme_colors.fg,
+    },
+    c = {
+      bg = theme_colors.bg_secondary,
+      fg = theme_colors.fg,
+    },
+    x = {
+      bg = theme_colors.bg,
+      fg = theme_colors.fg,
+    },
+    y = {
+      bg = theme_colors.bg,
+      fg = theme_colors.fg,
+    },
+    z = {
+      bg = theme_colors.bg,
+      fg = theme_colors.fg,
+    },
   },
-  on_click = function()
-    lsp.open_diagnostics_with_telescope()
-  end,
+
+  insert = {
+    a = {
+      bg = theme_colors.insert,
+      fg = theme_colors.fg,
+      gui = "bold",
+    },
+  },
+
+  visual = {
+    a = {
+      bg = theme_colors.visual,
+      fg = theme_colors.fg,
+      gui = "bold",
+    },
+  },
+
+  replace = {
+    a = {
+      bg = theme_colors.replace,
+      fg = theme_colors.fg,
+      gui = "bold",
+    },
+  },
+
+  command = {
+    a = {
+      bg = theme_colors.command,
+      fg = theme_colors.fg,
+      gui = "bold",
+    },
+  },
 }
 
 require("lualine").setup({
-
   options = {
     theme = custom_theme,
     component_separators = "",
@@ -35,13 +88,13 @@ require("lualine").setup({
     },
   },
   sections = {
-
     lualine_a = {
       {
-        system.mode_with_icon,
+        widgets.mode_with_icon,
         padding = { left = 1, right = 1 },
       },
     },
+
     lualine_b = {
       {
         "filename",
@@ -49,12 +102,10 @@ require("lualine").setup({
         newfile_status = true,
         path = 0, -- 1 =  filename, 2: filename with path, 3: full path
         color = {
-          bg = colors.visual_color,
           gui = "italic",
         },
       },
-      { "location", color = { bg = colors.visual_color } },
-      separators.left_lualine(colors.visual_color),
+      { "location" },
     },
 
     lualine_c = {
@@ -62,38 +113,43 @@ require("lualine").setup({
         "branch",
         icon = " ",
         color = {
-          fg = colors.cyan,
+          fg = theme_colors.highlight,
           gui = "bold",
         },
       },
       {
         "diff",
         symbols = {
-          added = "✚ ",
-          modified = "✎ ",
-          removed = "✖ ",
-          color_added = colors.green,
-          color_modified = colors.orange,
-          color_removed = colors.red,
+          added = icons.git_icons.added,
+          modified = icons.git_icons.modified,
+          removed = icons.git_icons.removed,
+          color_added = theme_colors.insert,
+          color_modified = theme_colors.command,
+          color_removed = theme_colors.replace,
         },
         color = { gui = "italic" },
       },
     },
 
     lualine_x = {
-      { "selectioncount" },
-      { "searchcount" },
-      --logo.nvim_logo_and_version_color,
-      logo.nvim_logo_and_version,
+      { "selectioncount", icon = "󰄒 ", color = { gui = "italic" } },
+      { "searchcount", icon = " ", color = { gui = "bold" } },
     },
 
     lualine_y = {
-      lsp.lsp_progress,
+      {
+        "diagnostics",
+        sources = { "nvim_diagnostic" },
+        sections = { "error", "warn", "info", "hint" },
+        symbols = { error = " E", warn = " W", info = " I", hint = "󰘥 H" },
+        color = { bg = theme_colors.bg_secondary },
+      },
+      {
+        widgets.lsp_clients,
+      },
     },
 
-    lualine_z = {
-      -- system.clock,
-    },
+    lualine_z = {},
   },
 
   inactive_sections = {
@@ -113,29 +169,34 @@ require("lualine").setup({
         colored = true,
         icon_only = false,
         icon = { align = "left" },
-        color = { bg = "#c2e29b", fg = "#373737" },
+        color = { bg = theme_colors.fg, fg = theme_colors.bg, gui = "bold" },
       },
       {
         "filename",
         file_status = true,
         path = 1,
-        color = { bg = colors.winbarbg, fg = colors.winbarfg, gui = "bold" },
       },
     },
-    lualine_b = {
-      lsp_diagnostics,
-    },
+    lualine_b = {},
     lualine_c = {},
     lualine_x = {},
     lualine_y = {
       {
         "encoding",
         show_bomb = false,
-        color = { bg = colors.winbarbg, fg = colors.winbarfg, gui = "bold" },
+        icon = " ",
       },
     },
     lualine_z = {
-      system.clock,
+      {
+        widgets.clock,
+        icon = " ",
+        color = {
+          fg = theme_colors.fg,
+          bg = theme_colors.highlight,
+          gui = "bold",
+        },
+      },
     },
   },
 })
