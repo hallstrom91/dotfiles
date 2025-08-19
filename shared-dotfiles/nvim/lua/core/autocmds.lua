@@ -9,11 +9,6 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   group = augroup("Formatter"),
   pattern = "*",
   callback = function(args)
-    local utils = require("modules.utils")
-
-    if utils.is_excluded_project(args.buf) then
-      return
-    end
     require("conform").format({ bufnr = args.buf })
   end,
 })
@@ -64,21 +59,6 @@ autocmd({ "BufRead", "BufNewFile" }, {
   command = "set filetype=conf",
 })
 
-----| hlight cursor moved |----
-autocmd("CursorMoved", {
-  group = augroup("CursorHighlight"),
-  callback = function()
-    local buftype = vim.api.nvim_get_option_value("buftype", { buf = 0 })
-    if buftype == "" then
-      vim.cmd("highlight CursorLine guibg=#88C0D0 guifg=#31363F")
-      vim.cmd("setlocal cursorline")
-      vim.defer_fn(function()
-        vim.cmd("setlocal nocursorline")
-      end, 300)
-    end
-  end,
-})
-
 ----| Highlight on yank |----
 autocmd("TextYankPost", {
   group = augroup("HighlightYank"),
@@ -117,14 +97,6 @@ autocmd("FileType", {
   end,
 })
 
-----| csharp dos format |----
-autocmd({ "BufRead", "BufNewFile" }, {
-  pattern = "*.cs",
-  callback = function()
-    vim.opt.fileformat = "dos"
-  end,
-})
-
 ----| No comment on new row |----
 autocmd("FileType", {
   group = augroup("NewCommentRow"),
@@ -138,12 +110,12 @@ autocmd("FileType", {
 autocmd("RecordingEnter", {
   callback = function()
     local reg = vim.fn.reg_recording()
-    vim.notify("Macro recording started @" .. reg, vim.log.levels.INFO, { title = "Makro Start" })
+    vim.notify("Macro recording started @" .. reg, vim.log.levels.INFO, { title = "Macro Start" })
   end,
 })
 
 autocmd("RecordingLeave", {
   callback = function()
-    vim.notify("Macro recording terminated", vim.log.levels.INFO, { title = "Makro Slut" })
+    vim.notify("Macro recording terminated", vim.log.levels.INFO, { title = "Macro Ended" })
   end,
 })

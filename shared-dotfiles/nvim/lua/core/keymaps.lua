@@ -1,6 +1,5 @@
 local map = vim.keymap.set
 local opts = { noremap = true, silent = true }
-local utils = require("modules.utils")
 
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
@@ -30,10 +29,6 @@ local keymaps = {
   { mode = "n", keys = "<leader><Right>", cmd = "<C-W>v", desc = "Vertical Split Right", remap = true },
   { mode = "n", keys = "<leader><Left>", cmd = ":vsplit<CR>", desc = "Vertical Split Left", remap = true },
   { mode = "n", keys = "<leader>q", cmd = "<C-W>c", desc = "Close Window", remap = true },
-
-  --> Print msg binds
-  { mode = "n", keys = "<leader>cex", cmd = utils.print_exclusion_status, desc = "Check Excluded Project" },
-  { mode = "n", keys = "<leader>clf", cmd = utils.print_lsp_formatting_status, desc = "Check LSP Formatting" },
 }
 
 for _, keymap in ipairs(keymaps) do
