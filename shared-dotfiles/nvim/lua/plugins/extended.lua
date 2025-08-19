@@ -83,19 +83,10 @@ return {
   },
 
   ----| csharpls extended |----
-  {
-    "Decodetalkers/csharpls-extended-lsp.nvim",
-    ft = { "cs" },
-    dependencies = { "neovim/nvim-lspconfig" },
-  },
-
-  ----| Indent Blankline  |----
   -- {
-  --   "lukas-reineke/indent-blankline.nvim",
-  --   event = { "BufReadPre", "BufNewFile" },
-  --   config = function()
-  --     require("config.indent-blankline")
-  --   end,
+  --   "Decodetalkers/csharpls-extended-lsp.nvim",
+  --   ft = { "cs" },
+  --   dependencies = { "neovim/nvim-lspconfig" },
   -- },
 
   ----| hlchunck - indent |----
@@ -141,16 +132,6 @@ return {
     end,
   },
 
-  ----| Dashboard  |----
-  {
-    "nvimdev/dashboard-nvim",
-    event = "VimEnter",
-    config = function()
-      require("config.dashboard")
-    end,
-    dependencies = { { "nvim-tree/nvim-web-devicons" } },
-  },
-
   ----| Noice  |----
   {
     "folke/noice.nvim",
@@ -177,15 +158,16 @@ return {
           inc_rename = false,
           lsp_doc_border = false,
         },
-        routes = {
-          {
-            filter = {
-              event = "notify",
-              find = "vim%.deprecated",
-            },
-            opts = { skip = true },
-          },
-        },
+        -- remove routes ? err fixed?
+        -- routes = {
+        --   {
+        --     filter = {
+        --       event = "notify",
+        --       find = "vim%.deprecated",
+        --     },
+        --     opts = { skip = true },
+        --   },
+        -- },
       })
     end,
   },

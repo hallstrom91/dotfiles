@@ -69,7 +69,7 @@ return {
   ----| Colorizer (display colors #123456) |----
   {
     "NvChad/nvim-colorizer.lua",
-    ft = { "css", "scss", "html", "javascript", "typescript", "lua", "typescriptreact", "javascriptreact" },
+    ft = { "css", "lua", "typescriptreact", "javascriptreact" },
     config = function()
       require("colorizer").setup({
         user_default_options = {
@@ -133,15 +133,6 @@ return {
     enabled = vim.fn.has("nvim-0.10.0") == 1,
   },
 
-  ----| Fugitive (Git helper/extension) |----
-  {
-    "tpope/vim-fugitive",
-    cmd = { "Git", "Gstatus", "Gcommit", "Gpush", "Gpull" },
-    config = function()
-      -- add config here or load config if needed
-    end,
-  },
-
   ----| Gitsigns  |----
   {
     "lewis6991/gitsigns.nvim",
@@ -150,28 +141,6 @@ return {
       require("config.gitsigns")
       require("scrollbar.handlers.gitsigns").setup()
     end,
-  },
-
-  ----| Lazygit  |----
-  {
-    "kdheepak/lazygit.nvim",
-    lazy = true,
-    cmd = {
-      "LazyGit",
-      "LazyGitConfig",
-      "LazyGitCurrentFile",
-      "LazyGitFilter",
-      "LazyGitFilterCurrentFile",
-    },
-    -- optional for floating window border decoration
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-    },
-    -- setting the keybinding for LazyGit with 'keys' is recommended in
-    -- order to load the plugin when the command is run for the first time
-    keys = {
-      { "<leader>lg", "<cmd>LazyGit<cr>", desc = "LazyGit" },
-    },
   },
 
   ----| TS Error Translator |----
@@ -184,7 +153,6 @@ return {
   },
 
   ----| Git Conflict |----
-
   {
     "akinsho/git-conflict.nvim",
     version = "*",

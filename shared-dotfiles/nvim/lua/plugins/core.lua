@@ -4,20 +4,17 @@ return {
   { "nvim-lua/plenary.nvim" },
   { "nvim-tree/nvim-web-devicons" },
 
-  ----| LSP, Mason etc.. |----
+  ----| Mason |----
+
   {
-    "neovim/nvim-lspconfig",
-    event = { "BufReadPost", "BufNewFile" },
-    cmd = { "LspInfo", "LspInstall", "LspStart", "Mason" },
-    dependencies = {
-      { "williamboman/mason.nvim", build = ":MasonUpdate" },
-      "williamboman/mason-lspconfig.nvim",
-      "hrsh7th/cmp-nvim-lsp",
-      "hinell/lsp-timeout.nvim",
-    },
+    "mason-org/mason.nvim",
     config = function()
-      require("core.lsp.init")
-      -- require("core.lsp.timeout").setup()
+      require("mason").setup({
+        registries = {
+          "github:Crashdummyy/mason-registry",
+          "github:mason-org/mason-registry",
+        },
+      })
     end,
   },
 
@@ -68,14 +65,12 @@ return {
           "markdown_inline",
           "html",
           "css",
-          "scss",
           "javascript",
           "tsx",
           "typescript",
           "json",
           "jsonc",
           "c_sharp",
-          "styled",
           "gitcommit",
           "git_rebase",
           "git_config",
