@@ -48,9 +48,10 @@ vim.lsp.config("*", {
 })
 
 vim.lsp.enable({
-  "ts_ls",
+  "vtsls",
   "lua_ls",
   "bashls",
   "jsonls",
+  -- "ts_ls",
   -- "csharp_ls",
 })
