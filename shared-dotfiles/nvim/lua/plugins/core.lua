@@ -5,7 +5,6 @@ return {
   { "nvim-tree/nvim-web-devicons" },
 
   ----| Mason |----
-
   {
     "mason-org/mason.nvim",
     config = function()
@@ -39,7 +38,7 @@ return {
 
       -- Extra completion sources
       "onsails/lspkind.nvim",
-      "SergioRibera/cmp-dotenv",
+      --"SergioRibera/cmp-dotenv",
       "roobert/tailwindcss-colorizer-cmp.nvim",
     },
     config = function()
@@ -54,7 +53,9 @@ return {
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
-    -- event = { "BufReadPre", "BufNewFile" },
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter-context",
+    },
     config = function()
       require("nvim-treesitter.configs").setup({
         ensure_installed = {
@@ -92,15 +93,13 @@ return {
   ----| Treesitter Context Window |----
   {
     "nvim-treesitter/nvim-treesitter-context",
-    event = "BufReadPost",
-    dependencies = "nvim-treesitter/nvim-treesitter",
     config = function()
       require("treesitter-context").setup({
         enable = true,
         multiwindow = true,
         additional_vim_regex_highlighting = false,
         max_lines = 10,
-        min_window_height = 100,
+        min_window_height = 50,
       })
 
       vim.keymap.set("n", "[c", function()
