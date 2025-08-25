@@ -35,9 +35,9 @@ local function on_attach(client, bufnr)
   client.server_capabilities.documentRangeFormattingProvider = enable_fmt
 
   -- Load keymaps for buffer
-  -- pcall(function()
-  --   require(keymaps.where.are.they)(client, bufnr)
-  -- end)
+  pcall(function()
+    require("core.lsp-keymaps").setup(client, bufnr)
+  end)
 end
 
 --- Config (global = * )
