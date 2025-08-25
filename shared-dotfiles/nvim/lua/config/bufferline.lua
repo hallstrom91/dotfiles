@@ -3,7 +3,7 @@ local bufdelete = require("bufdelete")
 
 require("bufferline").setup({
   options = {
-    mode = "tabs", ----> show buffers instead of tabs
+    mode = "tabs", -- OR "buffers"
     style_preset = require("bufferline").style_preset.default,
     themable = true,
     numbers = "ordinal", -- (can be "none", "ordinal", "buffer_id", or "both")
@@ -12,14 +12,14 @@ require("bufferline").setup({
     diagnostics = "nvim_lsp",
     diagnostics_update_on_event = true,
 
-    -- if mode = "tabs"
+    -- opts > IF mode = "tabs"
     close_command = "tabclose",
     middle_mouse_command = "vertical sbuffer %d",
     right_mouse_command = "tabclose",
 
     -- tab names
     tab_size = 18,
-    truncate_names = true, -- whether or not tab names should be truncated
+    truncate_names = true,
     custom_filter = function(buf_number, _)
       -- dont let specific type of buffers "hijack" tab-name
       local ft = vim.bo[buf_number].filetype
@@ -50,7 +50,7 @@ require("bufferline").setup({
     offsets = {
       {
         filetype = "neo-tree",
-        text = "neo-tree",
+        text = "FS Explorer",
         -- text = function()
         --   return " " .. git.get_current_branch()
         -- end,
@@ -58,7 +58,7 @@ require("bufferline").setup({
       },
     },
     hover = {
-      enabled = true,
+      enabled = false,
       delay = 200, -- value in ms
       reveal = { "close" },
     },

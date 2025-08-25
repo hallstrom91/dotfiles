@@ -8,9 +8,9 @@ require("conform").setup({
     html = { "prettierd" },
     css = { "prettierd" },
     markdown = { "prettierd" },
-    json = { "prettierd" },
-    jsonc = { "prettierd" },
     yaml = { "prettierd" },
+    --json = { "prettierd" },
+    --jsonc = { "prettierd" },
     -- csharp = { 'csharpier' },
   },
   format_on_save = {

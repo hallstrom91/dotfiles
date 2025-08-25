@@ -12,7 +12,6 @@ local source_mapping = {
   luasnip = "[SNIP]",
   buffer = "[BUF]",
   path = "[PATH]",
-  dotenv = "[ENV]",
 }
 
 cmp.setup({
@@ -21,6 +20,7 @@ cmp.setup({
       require("luasnip").lsp_expand(args.body)
     end,
   },
+
   formatting = {
     format = function(entry, vim_item)
       vim_item = tailwind_formatter(entry, vim_item)
@@ -60,16 +60,18 @@ cmp.setup({
   performance = {
     max_view_entries = 15,
   },
+
   window = {
     completion = {
       border = "rounded",
-        winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
+      winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
     },
     documentation = {
       border = "rounded",
-       winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
+      winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
     },
   },
+
   mapping = cmp.mapping.preset.insert({
     ["<C-p>"] = cmp.mapping.select_prev_item(),
     ["<C-n>"] = cmp.mapping.select_next_item(),
@@ -101,28 +103,10 @@ cmp.setup({
   }),
 
   sources = cmp.config.sources({
-    { name = "nvim_lsp", priority = 1000, keyword_length = 1 },
-    { name = "luasnip", priority = 400, keyword_length = 3 },
-    { name = "buffer", priority = 500, keyword_length = 3 },
-    { name = "path", priority = 300, keyword_length = 3 },
-    { name = "git", priority = 200, keyword_length = 3 },
-    { name = "conventionalcommits", priority = 200, keyword_length = 3 },
-    {
-      name = "dotenv",
-      option = {
-        path = ".",
-        load_shell = false,
-        item_kind = cmp.lsp.CompletionItemKind.Variable,
-        eval_on_confirm = false,
-        show_documentation = true,
-        show_content_on_docs = true,
-        documentation_kind = "markdown",
-        dotenv_environment = "^%.env.*$",
-        file_priority = function(a, b)
-          return a:upper() < b:upper()
-        end,
-      },
-    },
+    { name = "nvim_lsp", keyword_length = 1 },
+    { name = "luasnip", keyword_length = 3 },
+    { name = "buffer", keyword_length = 2 },
+    { name = "path", keyword_length = 5 },
   }),
 
   completion = {
@@ -156,8 +140,8 @@ cmp.setup({
 cmp.setup.cmdline(":", {
   mapping = cmp.mapping.preset.cmdline(),
   sources = cmp.config.sources({
-    { name = "path", priority = 500, keyword_length = 3 },
-    { name = "cmdline", priority = 1000, keyword_length = 1 },
+    { name = "path", keyword_length = 3 },
+    { name = "cmdline" },
   }),
 })
 
@@ -166,7 +150,6 @@ cmp.setup.cmdline({ "/", "?" }, {
   sources = {
     {
       name = "buffer",
-      priority = 750,
       option = {
         keyword_pattern = [[\k\+]],
         keyword_length = 3,
