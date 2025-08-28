@@ -52,6 +52,7 @@ vim.lsp.enable({
   "lua_ls",
   "bashls",
   "jsonls",
+  "systemd_ls",
   -- "ts_ls",
   -- "csharp_ls",
 })
