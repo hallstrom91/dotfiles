@@ -68,7 +68,6 @@ require("bufferline").setup({
       icon = "▎󰸞 ", -- indicator for active buffer
       style = "icon", -- can be 'icon', 'underline', or 'none'
     },
-
     ----> Icons for closing and modified buffers
     buffer_close_icon = "󰅖",
     modified_icon = "󰷫",

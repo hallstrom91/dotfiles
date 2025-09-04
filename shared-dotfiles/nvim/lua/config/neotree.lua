@@ -1,11 +1,6 @@
 local map = vim.keymap.set
 local opts = { noremap = true, silent = true }
 
-vim.fn.sign_define("DiagnosticSignError", { text = " ", texthl = "DiagnosticSignError" })
-vim.fn.sign_define("DiagnosticSignWarn", { text = "", texthl = "DiagnosticSignWarn" })
-vim.fn.sign_define("DiagnosticSignInfo", { text = " ", texthl = "DiagnosticSignInfo" })
-vim.fn.sign_define("DiagnosticSignHint", { text = "󰌵", texthl = "DiagnosticSignHint" })
-
 require("neo-tree").setup({
   -- General settings
   close_if_last_window = false, -- Close Neo-tree if it's the last window open
