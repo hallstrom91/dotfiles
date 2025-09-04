@@ -29,3 +29,7 @@ safe_require("core.keymaps", "keymaps.lua")
 safe_require("core.autocmds", "autocmds.lua")
 safe_require("config.lazy", "lazy.lua")
 safe_require("core.lsp", "lsp.lua")
+safe_require("core.filetypes", "filetypes.lua")
+
+-- set colorscheme
+vim.cmd.colorscheme("vscode")
