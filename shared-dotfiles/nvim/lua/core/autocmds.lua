@@ -45,20 +45,6 @@ autocmd("VimEnter", {
   end,
 })
 
-----| Recognize .bash_* files |----
-autocmd({ "BufRead", "BufNewFile" }, {
-  group = augroup("BashFiles"),
-  pattern = { ".bash_*", "bash_*" },
-  command = "set filetype=bash",
-})
-
-----| set .env files to "conf" |---
-autocmd({ "BufRead", "BufNewFile" }, {
-  group = augroup("EnvFiles"),
-  pattern = ".env*",
-  command = "set filetype=conf",
-})
-
 ----| Highlight on yank |----
 autocmd("TextYankPost", {
   group = augroup("HighlightYank"),

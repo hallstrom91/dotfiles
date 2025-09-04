@@ -53,6 +53,7 @@ vim.lsp.enable({
   "bashls",
   "jsonls",
   "systemd_ls",
+  -- "mdx_analyzer",
   -- "ts_ls",
   -- "csharp_ls",
 })
