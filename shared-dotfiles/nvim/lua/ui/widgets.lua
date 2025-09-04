@@ -1,4 +1,4 @@
-local icons = require("core.icons")
+local icons = require("ui.icons")
 
 local M = {}
 
@@ -39,26 +39,39 @@ function M.lsp_clients()
   local buf_names, buf_seen = extract_names(buf_clients)
   local all_names, _ = extract_names(all_clients)
 
-  local global_only_names = {}
+  local global_only = {}
   for _, name in ipairs(all_names) do
     if not buf_seen[name] then
-      table.insert(global_only_names, name)
+      table.insert(global_only, name)
+    end
+  end
+
+  local function fmt(label, names)
+    if #names == 0 then
+      return nil
+    end
+    if #names == 1 then
+      return string.format("%s %s", label, names[1])
+    else
+      return string.format("%s %s +%d", label, names[1], #names - 1)
     end
   end
 
   if #buf_names == 0 and #all_names == 0 then
-    return " LSP 󰇙 none active"
-  elseif #buf_names > 0 and #global_only_names == 0 then
-    return " LSP 󰇙 (buf) " .. table.concat(buf_names, ", ")
-  elseif #buf_names == 0 and #global_only_names > 0 then
-    return " LSP 󰇙 (global) " .. table.concat(global_only_names, ", ")
-  else
-    return string.format(
-      " LSP 󰇙 (buf) [%s] 󰇙 (global) [%s]",
-      table.concat(buf_names, ", "),
-      table.concat(global_only_names, ", ")
-    )
+    return "LSP 󰇙 none"
   end
+
+  local parts = {}
+  local b = fmt("(b)", buf_names)
+  local g = fmt("(g)", global_only)
+  if b then
+    table.insert(parts, b)
+  end
+  if g then
+    table.insert(parts, g)
+  end
+
+  return " LSP " .. table.concat(parts, " | ")
 end
 
 return M
