@@ -61,6 +61,7 @@ return {
   {
     "nvim-lualine/lualine.nvim",
     event = "BufWinEnter",
+    dependencies = "Mofiqul/vscode.nvim",
     config = function()
       require("config.lualine")
     end,
@@ -91,6 +92,7 @@ return {
   {
     "MeanderingProgrammer/render-markdown.nvim",
     dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
+    -- ft = { "markdown", "mdx" }, -- test
     ft = "markdown",
     config = function()
       require("render-markdown").setup({

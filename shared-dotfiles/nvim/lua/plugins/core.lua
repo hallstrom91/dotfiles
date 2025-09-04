@@ -34,7 +34,6 @@ return {
 
       -- Extra completion sources
       "onsails/lspkind.nvim",
-      --"SergioRibera/cmp-dotenv",
       "roobert/tailwindcss-colorizer-cmp.nvim",
     },
     config = function()
@@ -53,41 +52,32 @@ return {
   ----| Treesitter |----
   {
     "nvim-treesitter/nvim-treesitter",
+    branch = "main", -- latest
     build = ":TSUpdate",
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter-context",
-    },
     config = function()
-      require("nvim-treesitter.configs").setup({
-        ensure_installed = {
-          "vim",
+      require("nvim-treesitter").setup({
+        install_dir = vim.fn.stdpath("data") .. "/site",
+      })
+      require("nvim-treesitter")
+        .install({
           "lua",
           "bash",
-          "markdown",
-          "markdown_inline",
           "html",
           "css",
           "javascript",
-          "tsx",
           "typescript",
           "json",
           "jsonc",
-          "c_sharp",
+          "csharp",
           "gitcommit",
           "git_rebase",
           "git_config",
-          "gitattributes",
           "gitignore",
-        },
-        sync_install = true,
-        auto_install = false,
-        fold = { enable = false },
-        highlight = {
-          enable = true,
-          additional_vim_regex_highlighting = false,
-          disable = { "scheme" },
-        },
-      })
+          "regex",
+          "tsx",
+        })
+        :wait(300000) -- 5min
+      -- vim.treesitter.language.register("markdown", "mdx")
     end,
   },
 

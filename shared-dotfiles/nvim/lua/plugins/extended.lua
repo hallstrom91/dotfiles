@@ -7,6 +7,7 @@ return {
     dependencies = "nvim-treesitter/nvim-treesitter",
     config = function()
       local rainbow_delimiters = require("rainbow-delimiters")
+
       vim.g.rainbow_delimiters = {
         strategy = {
           [""] = rainbow_delimiters.strategy["global"],
@@ -23,6 +24,15 @@ return {
           [""] = 110,
           lua = 210,
         },
+        highlight = {
+          "RainbowDelimiterRed",
+          "RainbowDelimiterYellow",
+          "RainbowDelimiterBlue",
+          "RainbowDelimiterOrange",
+          "RainbowDelimiterGreen",
+          "RainbowDelimiterViolet",
+          "RainbowDelimiterCyan",
+        },
       }
     end,
   },
@@ -30,7 +40,7 @@ return {
   ----| Telescope, FZF   |----
   {
     "nvim-telescope/telescope.nvim",
-    tag = "0.1.8",
+    -- tag = "0.1.8",
     event = "VimEnter",
     keys = { "<leader>f", "<leader>p" },
     dependencies = {
@@ -51,16 +61,6 @@ return {
     dependencies = { "hrsh7th/nvim-cmp" },
     config = function()
       require("config.autopairs").setup()
-    end,
-  },
-
-  ----| Lsp Progress   |----
-  {
-    "linrongbin16/lsp-progress.nvim",
-    dependencies = { "nvim-lualine/lualine.nvim" },
-    event = { "BufReadPre", "BufNewFile" },
-    config = function()
-      require("lsp-progress").setup()
     end,
   },
 
@@ -158,16 +158,16 @@ return {
           inc_rename = false,
           lsp_doc_border = false,
         },
-        -- remove routes ? err fixed?
-        -- routes = {
-        --   {
-        --     filter = {
-        --       event = "notify",
-        --       find = "vim%.deprecated",
-        --     },
-        --     opts = { skip = true },
-        --   },
-        -- },
+        -- remove routes ? err fixed in plugins?
+        routes = {
+          {
+            filter = {
+              event = "notify",
+              find = "vim%.deprecated",
+            },
+            opts = { skip = true },
+          },
+        },
       })
     end,
   },
