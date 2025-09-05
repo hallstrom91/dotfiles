@@ -26,18 +26,18 @@
 
 
 set -Eeuo pipefail
-IFS=$'\n\t'
 
 # -------------- Config -------------- #
 
 REPO_ROOT="$(cd -- "${BASH_SOURCE[0]%/*}" >/dev/null 2>&1 && pwd -P)"
 BACKUP_DIR_DEFAULT="$HOME/.local/share/dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
-MANIFEST_DIR="$HOME/.local/share/dotfiles/dotfiles-installer" # ?
-MANIFEST_FILE="$HOME/.local/share/dotfiles/manifest.txt" # ?
-TARGET_BIN="$HOME/.local/bin"
-TARGET_CONFIG="$HOME/.config"
-TARGET_LOCAL="$HOME/.local"
-TARGET_SHARE="$HOME/.local/share"
+MANIFEST_DIR="$HOME/.local/share/dotfiles-installer" # ?
+MANIFEST_FILE="$MANIFEST_DIR/manifest.txt" # ?
+
+TARGET_XDG_BIN="$HOME/.bin"
+TARGET_XDG_CONFIG="$HOME/.config"
+TARGET_XDG_LOCAL="$HOME/.local"
+TARGET_XDG_SHARE="$HOME/.local/share"
 
 EMOJI=${EMOJI:-1}
 COLOR=${COLOR:-1}
@@ -52,12 +52,13 @@ ONLY_PATHS=()
 # Map xdg_data special subpaths -> ~/.local/*/*
 # here: xdg_data/applications -> ~/.local/share/applications
 map_xdg_data_dest() {
-  local rel="$1"
+  local rel
+  rel="$1"
   case "$rel" in
-    applications/*|applications) printf '%s\n' "$TARGET_SHARE/${rel#applications/}" ;;
-    icons/*|icons)               printf '%s\n' "$TARGET_SHARE/${rel#icons/}" ;;
-    fonts/*|fonts)               printf '%s\n' "$TARGET_SHARE/${rel#fonts/}" ;;
-    *)                           printf '%s\n' "$TARGET_SHARE/$rel" ;;
+    applications/*|applications) printf '%s\n' "$TARGET_XDG_SHARE/${rel#applications/}" ;;
+    icons/*|icons)               printf '%s\n' "$TARGET_XDG_SHARE/${rel#icons/}" ;;
+    fonts/*|fonts)               printf '%s\n' "$TARGET_XDG_SHARE/${rel#fonts/}" ;;
+    *)                           printf '%s\n' "$TARGET_XDG_LOCAL/$rel" ;;
   esac
 }
 
@@ -103,9 +104,9 @@ mkbackdir() {
 
 run() {
   if [[ "$DRY_RUN" -eq 1 ]]; then
-    echoe "${_C}[dry-run]${_N} $*"
+    printf '%b[dry-run]%b %s\n' "$_C" "$_N" "$(printf '%q ' "$@")"
   else
-    verbose "run: $*"
+    verbose "run: $(printf '%q' "$@")"
     "$@"
   fi
 }
@@ -146,10 +147,18 @@ link_file() {
 }
 
 record_manifest() {
-  ensure_dir "$MANIFEST_DIR"
   local p="$1"
+
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    verbose "skip manifest (dry-run): $p"
+    return 0
+  fi
+
+  ensure_dir "$MANIFEST_DIR"
   # avoid duplicate lines
-  grep -Fxq -- "$p" "$MANIFEST_FILE" 2>/dev/null || echo "$p" >> "$MANIFEST_FILE"
+  if ! grep -Fxq -- "$p" "$MANIFEST_FILE" 2>/dev/null; then
+    printf '%s\n' "$p" >> "$MANIFEST_FILE"
+  fi
 }
 
 uninstall_links() {
@@ -185,6 +194,8 @@ should_process() {
 # -------------- Helpers -------------- #
 
 install_home() {
+  [[ -d "$REPO_ROOT/home" ]] || return 0
+
   # Files in home/ -> $HOME/.<name> OR exact name if already dot-prefixed
   while IFS= read -r -d '' path; do
     local rel
@@ -194,67 +205,95 @@ install_home() {
     base="$(basename -- "$rel")"
     case "$base" in
       .* ) dst="$HOME/$base" ;; # file with dot-prefix
-      *  ) dst="$HOME/$base" ;; # file without dot-prefix
+      *  ) dst="$HOME/.${base}" ;; # file without dot-prefix - add dot-prefix in symlink dest
     esac
     should_process "$path" "$dst" || continue
     link_file "$path" "$dst"
   done < <(find "$REPO_ROOT/home" -mindepth 1 -maxdepth 1 -type f -print0)
 
-  # Subdirectory: home/bash/* -> $HOME/.bash/*
-  if [[ -d "$REPO_ROOT/home/bash" ]]; then
-    ensure_dir "$HOME/.bash"
+  # Subdirectory: home/<dir>/* -> $HOME/.<dir>/*
+  while IFS= read -r -d '' subdir; do
+    local dname
+    local dst_dir
+    dname="$(basename -- "$subdir")"
+    dst_dir="$HOME/.${dname}"
+    ensure_dir "$dst_dir"
+
+    #
     while IFS= read -r -d '' f; do
-      local rel dst
-      rel=${f#"${REPO_ROOT}"/home/bash/}
-      dst="$HOME/.bash/$rel"
-      should_process "$f" "$dst" || continue
-      link_file "$f" "$dst"
-    done < <(find "$REPO_ROOT/home/bash" -type f -print0)
-  fi
+      local relf
+      local destf
+      relf=${f#"$subdir"/}
+      destf="$dst_dir/$relf"
+      should_process "$f" "$destf" || continue
+      ensure dir "$(dirname -- "$destf")"
+      link_file "$f" "$destf"
+    done < <(find "$subdir" -type f -print0)
+  done < <(find "$REPO_ROOT/home" -mindepth 1 -maxdepth 1 -type d print0)
 }
 
 install_xdg_config() {
   [[ -d "$REPO_ROOT/xdg_config" ]] || return 0
+
   while IFS= read -r -d '' item; do
-    local rel dst
+    local rel
+    local dst
     rel=${item#"${REPO_ROOT}"/xdg_config/}
-    dst="$TARGET_CONFIG/$rel"
+    dst="$TARGET_XDG_CONFIG/$rel"
     should_process "$item" "$dst" || continue
+
     if [[ -d "$item" ]]; then
       link_file "$item" "$dst"
     else
+      ensure_dir "$(dirname -- "$dst")"
       link_file "$item" "$dst"
     fi
-  done < <(find "$REPO_ROOT/xdg_config" -mindepth 1 -print0)
+  done < <(find "$REPO_ROOT/xdg_config" -mindepth 1 -maxdepth 1 -print0)
 }
 
 install_xdg_data() {
   [[ -d "$REPO_ROOT/xdg_data" ]] || return 0
-  while IFS= read -r -d '' item; do
-    local rel
-    rel=${item#"${REPO_ROOT}"/xdg_data/}
-    local dst
-    dst="$(map_xdg_data_dest "$rel")"
-    should_process "$item" "$dst" || continue
-    if [[ -d "$item" ]]; then
-      link_file "$item" "$dst"
+
+  while IFS= read -r -d '' top; do
+    local reltop
+    local dst_base
+    reltop=${top#"$REPO_ROOT"/xdg_data/}
+    dst_base="$(map_xdg_data_dest "$reltop")"
+
+    if [[ -d "$top" ]]; then
+      ensure_dir "$dst_base"
+      while IFS= read -r -d '' f; do
+        local relf
+        local destf
+        relf=${f#"$top"/}
+        destf="$dst_base/$relf"
+        should_process "$f" "$destf" || continue
+        ensure_dir "$(dirname -- "$destf")"
+        link_file "$f" "$destf"
+      done < <(find "$top" -type f -print0)
     else
-      link_file "$item" "$dst"
+      local dst
+      dst="$dst_base"
+      should_process "$top" "$dst" || continue
+      ensure_dir "$(dirname -- "$dst")"
+      link_file "$top" "$dst"
     fi
-  done < <(find "$REPO_ROOT/xdg_data" -mindepth 1 -print0)
+  done < <(find "$REPO_ROOT/xdg_data" -mindepth 1 -maxdepth 1 -print0)
 }
 
 install_bin() {
   [[ -d "$REPO_ROOT/bin" ]] || return 0
-  ensure_dir "$TARGET_BIN"
+  ensure_dir "$TARGET_XDG_BIN"
+
   while IFS= read -r -d '' f; do
     local base
     local dst
     base="$(basename -- "$f")"
-    dst="$TARGET_BIN/$base"
+    dst="$TARGET_XDG_BIN/$base"
     should_process "$f" "$dst" || continue
+
     # Ensure executable (on source)
-    if [[ ! -x "$f" ]]; then
+    if [[ "$base" == *.sh && ! -x "$f" ]]; then
       log "chmod +x $f"
       run chmod +x -- "$f"
     fi
@@ -309,7 +348,7 @@ main() {
   fi
 
   # pre-flight checks
-  ensure_dir "$TARGET_BIN"; ensure_dir "$TARGET_CONFIG"; ensure_dir "$TARGET_LOCAL"; ensure_dir "$TARGET_SHARE"
+  ensure_dir "$TARGET_XDG_BIN"; ensure_dir "$TARGET_XDG_CONFIG"; ensure_dir "$TARGET_XDG_LOCAL"; ensure_dir "$TARGET_XDG_SHARE"; ensure_dir "$MANIFEST_DIR"
   if [[ "$FORCE" -eq 1 ]]; then
     export FORCE
   fi
