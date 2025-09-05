@@ -46,7 +46,7 @@ DRY_RUN=${DRY_RUN:-0}
 FORCE=${FORCE:-0}
 UNINSTALL=${UNINSTALL:-0}
 BACKUP_DIR=""
-GROUPS=(home xdg_config xdg_data bin)
+INSTALL_GROUPS=(home xdg_config xdg_data bin)
 ONLY_PATHS=()
 
 # Map xdg_data special subpaths -> ~/.local/*/*
@@ -136,7 +136,8 @@ backup_existing() {
 
 
 link_file() {
-  local src="$1" dst="$2"
+  local src="$1"
+  local dst="$2"
   ensure_dir "$(dirname -- "$dst")"
   backup_existing "$dst" "$src"
   log "Link: $dst -> $src"
@@ -186,7 +187,9 @@ should_process() {
 install_home() {
   # Files in home/ -> $HOME/.<name> OR exact name if already dot-prefixed
   while IFS= read -r -d '' path; do
-    local rel dst base
+    local rel
+    local dst
+    local base
     rel=${path#"${REPO_ROOT}"/home/}
     base="$(basename -- "$rel")"
     case "$base" in
@@ -228,7 +231,8 @@ install_xdg_config() {
 install_xdg_data() {
   [[ -d "$REPO_ROOT/xdg_data" ]] || return 0
   while IFS= read -r -d '' item; do
-    local rel=${item#"${REPO_ROOT}"/xdg_data/}
+    local rel
+    rel=${item#"${REPO_ROOT}"/xdg_data/}
     local dst
     dst="$(map_xdg_data_dest "$rel")"
     should_process "$item" "$dst" || continue
@@ -244,7 +248,8 @@ install_bin() {
   [[ -d "$REPO_ROOT/bin" ]] || return 0
   ensure_dir "$TARGET_BIN"
   while IFS= read -r -d '' f; do
-    local base dst
+    local base
+    local dst
     base="$(basename -- "$f")"
     dst="$TARGET_BIN/$base"
     should_process "$f" "$dst" || continue
@@ -259,7 +264,7 @@ install_bin() {
 
 install_groups() {
   local g
-  for g in "${GROUPS[@]}"; do
+  for g in "${INSTALL_GROUPS[@]}"; do
     case "$g" in
       home) install_home ;;
       xdg_config) install_xdg_config ;;
@@ -283,11 +288,11 @@ parse_args() {
       --force) FORCE=1 ;;
       --no-color) COLOR=0 ;;
       --no-emoji) EMOJI=0 ;;
-      --verbose) VERBOSE=0 ;;
-      --uninstall) UNINSTALL=0 ;;
+      --verbose) VERBOSE=1 ;;
+      --uninstall) UNINSTALL=1 ;;
       --backup-dir) BACKUP_DIR="$1"; shift || true ;;
-      --group) IFS=',' read -r -a GROUPS <<< "$1"; shift || true ;;
-      --only) IFS=',' read -r -a GROUPS <<< "$1"; shift || true ;;
+      --group) IFS=',' read -r -a INSTALL_GROUPS <<< "$1"; shift || true ;;
+      --only) IFS=',' read -r -a ONLY_PATHS <<< "$1"; shift || true ;;
       *) fail "Unknown option: $arg"; exit 2 ;;
     esac
   done
