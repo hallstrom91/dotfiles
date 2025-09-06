@@ -19,13 +19,19 @@
 #
 # Expected repo layout
 # dotfiles/
-# |- bin/           -> link to ~/.local/bin (or ~/.bin)
-# |- home/          -> link to $HOME
-# |- xdg_config/    -> link subdirs/files into ~/.config/
-# |- xdg_data/      -> link into ~/.local/ | special-case mapping to ~/.local/share/
-
+# |- bin/                -> link to $HOME/.bin/
+# |- home/               -> link files or subdirs to $HOME
+# |  ├── bash/           -> link to $HOME/.bash/<files>
+# |  └── gnupg/          -> special-case: sensitive to permissions; only copy (hard) *.conf
+# |- xdg_config/         -> link subdirs/files into ~/.config/
+# |  |-- autostart/      -> special-case: only link files
+# |- xdg_data/           -> link into ~/.local/ | special-case mapping to ~/.local/share/
+#    |-- applications/
+#    |-- fonts/
+#    |-- icons/
 
 set -Eeuo pipefail
+IFS=$'\n\t'
 
 # -------------- Config -------------- #
 
@@ -33,12 +39,10 @@ REPO_ROOT="$(cd -- "${BASH_SOURCE[0]%/*}" >/dev/null 2>&1 && pwd -P)"
 BACKUP_DIR_DEFAULT="$HOME/.local/share/dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
 MANIFEST_DIR="$HOME/.local/share/dotfiles-installer" # ?
 MANIFEST_FILE="$MANIFEST_DIR/manifest.txt" # ?
-
-TARGET_XDG_BIN="$HOME/.bin"
+TARGET_BIN="$HOME/.bin"
 TARGET_XDG_CONFIG="$HOME/.config"
 TARGET_XDG_LOCAL="$HOME/.local"
 TARGET_XDG_SHARE="$HOME/.local/share"
-
 EMOJI=${EMOJI:-1}
 COLOR=${COLOR:-1}
 VERBOSE=${VERBOSE:-0}
@@ -48,6 +52,7 @@ UNINSTALL=${UNINSTALL:-0}
 BACKUP_DIR=""
 INSTALL_GROUPS=(home xdg_config xdg_data bin)
 ONLY_PATHS=()
+NONFATAL_ERRORS=0
 
 # Map xdg_data special subpaths -> ~/.local/*/*
 # here: xdg_data/applications -> ~/.local/share/applications
@@ -120,16 +125,19 @@ ensure_dir() { [[ -d "$1" ]] || run mkdir -p -- "$1"; }
 backup_existing() {
   local dst="$1"
   [[ -e "$dst" || -L "$dst" ]] || return 0
+
   # Existing and correct? skip backup
-  if issymlink "$dst" && issame_link "$dst" "$2"; then
+  if [[ -L "$dst" ]] && issame_link "$dst" "$2"; then
+  # if issymlink "$dst" && issame_link "$dst" "$2"; then
     verbose "already linked: $dst -> $2"
     return 0
   fi
+
   # Or create original dotfiles backup
   mkbackdir
   local base
-  base=$(basename -- "$dst")
   local bak
+  base=$(basename -- "$dst")
   bak="$BACKUP_DIR/${base}.$(date +%H%M%S).bak"
   warn "Backing up existing: $dst -> $bak"
   run mv -f -- "$dst" "$bak"
@@ -141,7 +149,8 @@ link_file() {
   local dst="$2"
   ensure_dir "$(dirname -- "$dst")"
   backup_existing "$dst" "$src"
-  log "Link: $dst -> $src"
+  #log "Link: $src -> $dst"
+  success "Link: $src -> $dst"
   run ln -sfn -- "$src" "$dst"
   record_manifest "$dst"
 }
@@ -163,7 +172,7 @@ record_manifest() {
 
 uninstall_links() {
   if [[ ! -f "$MANIFEST_FILE" ]]; then
-    warn "No manifest found: $MANIFEST_FILE"
+    err "No manifest found: $MANIFEST_FILE"
     return 0
   fi
   warn "Removing symlinks listed in manifest ..."
@@ -196,7 +205,7 @@ should_process() {
 install_home() {
   [[ -d "$REPO_ROOT/home" ]] || return 0
 
-  # Files in home/ -> $HOME/.<name> OR exact name if already dot-prefixed
+  # Files in home/ -> $HOME/.<name> (always dot-prefix for top-lvl files)
   while IFS= read -r -d '' path; do
     local rel
     local dst
@@ -205,7 +214,7 @@ install_home() {
     base="$(basename -- "$rel")"
     case "$base" in
       .* ) dst="$HOME/$base" ;; # file with dot-prefix
-      *  ) dst="$HOME/.${base}" ;; # file without dot-prefix - add dot-prefix in symlink dest
+      *  ) dst="$HOME/.${base}" ;; # add dot-prefix in symlink dest
     esac
     should_process "$path" "$dst" || continue
     link_file "$path" "$dst"
@@ -219,17 +228,46 @@ install_home() {
     dst_dir="$HOME/.${dname}"
     ensure_dir "$dst_dir"
 
-    #
+    # Special-case: GnuPG sensitive to permissions. Hard copy + set permission.
+    if [[ "$dname" == "gnupg" ]]; then
+      run chmod 700 -- "$dst_dir"
+      while IFS= read -r -d '' f; do
+        local relf
+        local destf
+        relf=${f#"$subdir"/}
+        destf="$dst_dir/$relf"
+        should_process "$f" "$destf" || continue
+        ensure_dir "$(dirname -- "$destf")"
+        case "$relf" in
+          *conf)
+            # copy (hard) and strict perms
+            run install -m 600 -- "$f" "$destf"
+            verbose "copied (secure): $f -> $destf"
+            ;;
+          *)
+            # default for unexpected file in gnupg/* - deny.
+            if [[ "$DRY_RUN" -eq 1 ]]; then
+              warn "gnupg: skipping unexpected file (dry-run): $f"
+            else
+              warn "gnupg: unexpected file skipped: $f"
+              NONFATAL_ERRORS=1
+            fi
+            ;;
+        esac
+      done < <(find "$subdir" -type f -print0)
+      continue
+    fi
+
     while IFS= read -r -d '' f; do
       local relf
       local destf
       relf=${f#"$subdir"/}
       destf="$dst_dir/$relf"
       should_process "$f" "$destf" || continue
-      ensure dir "$(dirname -- "$destf")"
+      ensure_dir "$(dirname -- "$destf")"
       link_file "$f" "$destf"
     done < <(find "$subdir" -type f -print0)
-  done < <(find "$REPO_ROOT/home" -mindepth 1 -maxdepth 1 -type d print0)
+  done < <(find "$REPO_ROOT/home" -mindepth 1 -maxdepth 1 -type d -print0)
 }
 
 install_xdg_config() {
@@ -243,7 +281,21 @@ install_xdg_config() {
     should_process "$item" "$dst" || continue
 
     if [[ -d "$item" ]]; then
+      if [[ "$rel" == "autostart" ]]; then
+        #special-case: autostart/ -> ~/.config/autostart/*
+        ensure_dir "$dst"
+        while IFS= read -r -d '' f; do
+          local relf
+          local destf
+          relf=${f#"$item"/}
+          destf="$dst/$relf"
+          should_process "$f" "$destf" || continue
+          ensure_dir "$(dirname -- "$destf")"
+          link_file "$f" "$destf"
+        done < <(find "$item" -type f -print0)
+    else
       link_file "$item" "$dst"
+      fi
     else
       ensure_dir "$(dirname -- "$dst")"
       link_file "$item" "$dst"
@@ -283,13 +335,13 @@ install_xdg_data() {
 
 install_bin() {
   [[ -d "$REPO_ROOT/bin" ]] || return 0
-  ensure_dir "$TARGET_XDG_BIN"
+  ensure_dir "$TARGET_BIN"
 
   while IFS= read -r -d '' f; do
     local base
     local dst
     base="$(basename -- "$f")"
-    dst="$TARGET_XDG_BIN/$base"
+    dst="$TARGET_BIN/$base"
     should_process "$f" "$dst" || continue
 
     # Ensure executable (on source)
@@ -298,7 +350,7 @@ install_bin() {
       run chmod +x -- "$f"
     fi
     link_file "$f" "$dst"
-  done < <(find "$REPO_ROOT/bin" --maxdepth 1 -type f -print0)
+  done < <(find "$REPO_ROOT/bin" -maxdepth 1 -type f -print0)
 }
 
 install_groups() {
@@ -348,12 +400,18 @@ main() {
   fi
 
   # pre-flight checks
-  ensure_dir "$TARGET_XDG_BIN"; ensure_dir "$TARGET_XDG_CONFIG"; ensure_dir "$TARGET_XDG_LOCAL"; ensure_dir "$TARGET_XDG_SHARE"; ensure_dir "$MANIFEST_DIR"
+  ensure_dir "$TARGET_BIN"; ensure_dir "$TARGET_XDG_CONFIG"; ensure_dir "$TARGET_XDG_LOCAL"; ensure_dir "$TARGET_XDG_SHARE"; ensure_dir "$MANIFEST_DIR"
   if [[ "$FORCE" -eq 1 ]]; then
     export FORCE
   fi
+
   install_groups
-  success "Done. Re-run safely; only managed paths are touched."
+
+  if [[ "$NONFATAL_ERRORS" -ne 0 ]]; then
+    warn "Completed with non-fatal errors (see logs)."
+    return 2
+  fi
+  success "Done."
 }
 
 main "$@"
