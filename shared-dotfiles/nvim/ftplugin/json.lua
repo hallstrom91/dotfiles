@@ -1,12 +1,16 @@
----@type vim.lsp.Config
+if vim.b._lsp_started then
+  return
+end
+vim.b._lsp_started = true
+vim.treesitter.start()
 
-return {
+require("core.lsp").start({
+  name = "jsonls",
   cmd = { "vscode-json-language-server", "--stdio" },
-  filetypes = { "json", "jsonc" },
   init_options = {
     provideFormatter = true,
   },
-  root_markers = { ".git" },
+  root_markers = { "package.json", ".git" },
   settings = {
     json = {
       schemas = require("schemastore").json.schemas({
@@ -19,4 +23,4 @@ return {
       validate = { enable = true },
     },
   },
-}
+})

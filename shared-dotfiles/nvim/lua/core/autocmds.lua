@@ -19,36 +19,12 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   end,
 })
 
-----| Resession reload |----
--- vim.api.nvim_create_autocmd("User", {
---   group = augroup("session"),
---   pattern = "ResessionLoadPost",
---   callback = function()
---     --> lsp reload
---     vim.cmd("silent! doautocmd BufRead")
---
---     --> indent/hlight reload
---     local ok, hlchunk = pcall(require, "hlchunk")
---     if ok and hlchunk.reload then
---       hlchunk.reload()
---     end
---   end,
--- })
 
 ----| open help window in vertical mode |----
 autocmd("FileType", {
   group = augroup("HelpWindow"),
   pattern = "help",
   command = "wincmd L",
-})
-
-----| Auto update Treesitter Parsers |----
-autocmd("VimEnter", {
-  group = augroup("TreesitterUpdate"),
-  pattern = "VeryLazy",
-  callback = function()
-    vim.cmd("TSUpdate")
-  end,
 })
 
 ----| Highlight on yank |----
@@ -63,7 +39,6 @@ autocmd("TextYankPost", {
 autocmd("FileType", {
   group = augroup("ClosePlugin"),
   pattern = {
-    "PlenaryTestPopup",
     "checkhealth",
     "gitsigns-blame",
     "help",
@@ -109,5 +84,29 @@ autocmd("RecordingEnter", {
 autocmd("RecordingLeave", {
   callback = function()
     vim.notify("Macro recording terminated", vim.log.levels.INFO, { title = "Macro Ended" })
+  end,
+})
+
+-- DetachLSP
+autocmd("LspDetach", {
+  group = augroup("LspAutoStop"),
+  callback = function(args)
+    local id = args.data and args.data.client_id
+    if not id then
+      return
+    end
+    require("core.lsp").kill_or_spare_client(id, 1500)
+  end,
+})
+
+autocmd({ "BufWipeout", "BufDelete" }, {
+  group = augroup("LspAutoStopBuf"),
+  callback = function()
+    local lsp = require("core.lsp")
+    for _, client in pairs(vim.lsp.get_clients()) do
+      if lsp.is_orphan(client) then
+        lsp.kill_or_spare_client(client.id, 1500)
+      end
+    end
   end,
 })
