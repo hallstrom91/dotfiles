@@ -24,6 +24,11 @@ local function safe_require(module_name, description)
   end
 end
 
+local mason_bin = vim.fn.stdpath("data") .. "/mason/bin"
+if not string.find(vim.env.PATH or "", mason_bin, 1, true) then
+  vim.env.PATH = mason_bin .. ":" .. (vim.env.PATH or "")
+end
+
 safe_require("core.options", "options.lua")
 safe_require("core.keymaps", "keymaps.lua")
 safe_require("core.autocmds", "autocmds.lua")

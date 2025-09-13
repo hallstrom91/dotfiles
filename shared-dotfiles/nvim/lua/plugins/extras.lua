@@ -6,6 +6,7 @@ return {
     dependencies = {
       "nvim-lua/plenary.nvim",
       "MunifTanjim/nui.nvim",
+      "nvim-tree/nvim-web-devicons",
       "s1n7ax/nvim-window-picker",
     },
 
@@ -180,4 +181,22 @@ return {
       })
     end,
   },
+
+  -- Testing plugin
+  -- {
+  --   dir = "/media/veracrypt2/ws/lua/kill-lsp.nvim",
+  --   dev = true,
+  --   opts = {
+  --     -- 180000 = 5m
+  --     -- 36000 = 1m
+  --     hidden_timeout_ms = 0,
+  --     stop_on_last_wipe = true,
+  --     notify = true,
+  --     ignore = {
+  --       buftypes = { "nofile", "prompt", "help", "terminal", "quickfix" },
+  --       filetypes = {},
+  --       clients = {},
+  --     },
+  --   },
+  -- },
 }

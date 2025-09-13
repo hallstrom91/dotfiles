@@ -102,9 +102,9 @@ return {
   {
     "stevearc/conform.nvim",
     opts = {},
-    event = { "BufWritePre", "BufWritePost" },
+    event = { "BufReadPre", "BufNewFile" },
     config = function()
-      require("config.conform")
+      require("config.formatter")
     end,
   },
 
@@ -173,11 +173,11 @@ return {
   },
 
   ----| Resession |----
-  {
-    "stevearc/resession.nvim",
-    opts = {},
-    config = function()
-      require("config.resession")
-    end,
-  },
+  -- {
+  --   "stevearc/resession.nvim",
+  --   opts = {},
+  --   config = function()
+  --     require("config.resession")
+  --   end,
+  -- },
 }

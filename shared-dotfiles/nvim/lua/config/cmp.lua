@@ -2,10 +2,77 @@ local cmp = require("cmp")
 local lspkind = require("lspkind")
 local cmp_autopairs = require("nvim-autopairs.completion.cmp")
 local tailwind_formatter = require("tailwindcss-colorizer-cmp").formatter
+local handlers = require("nvim-autopairs.completion.handlers")
 
 require("luasnip.loaders.from_vscode").lazy_load({ paths = "~/.local/share/nvim/lazy/friendly-snippets/" })
 require("luasnip.loaders.from_lua").load({ paths = "~/.config/nvim/lua/snippets/" })
-cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
+
+local function ts_current_node()
+  if vim.treesitter and vim.treesitter.get_node then
+    local ok, node = pcall(vim.treesitter.get_node, { win = 0 })
+  end
+  return nil
+end
+
+local TS_NODE_TYPES = {
+  -- ECMA imports
+  named_imports = true,
+  import_specifier = true,
+  import_clause = true,
+
+  -- JSX/TSX
+  jsx_opening_element = true,
+  jsx_self_closing_element = true,
+  jsx_attribute = true,
+  jsx_element = true,
+  jsx_fragment = true,
+}
+local function autopairs_disabled_context()
+  local node = ts_current_node()
+  if not node then
+    local col = vim.api.nvim_win_get_cursor(0)[2]
+    local before = vim.api.nvim_get_current_line():sub(1, col)
+    if before:match("<%s*[%w_][%w_%.%-]*$") or before:match("^%s*impor%s+{[^]}*$") then
+      return true
+    end
+    return false
+  end
+  while node do
+    local t = node:type()
+    if TS_NODE_TYPES[t] then
+      return true
+    end
+    node = node:parent()
+  end
+  return false
+end
+
+local default_handler = cmp_autopairs.filetypes["*"]["("].handler
+cmp.event:on(
+  "confirm_done",
+  cmp_autopairs.on_confirm_done({
+    filetypes = {
+      ["*"] = {
+        ["("] = {
+          kind = {
+            cmp.lsp.CompletionItemKind.Function,
+            cmp.lsp.CompletionItemKind.Method,
+          },
+          handler = function(char, item, bufnr, rules, commit_character)
+            if autopairs_disabled_context() then
+              if item and item.data then
+                item.data.funcParensDisabled = true
+              else
+                char = ""
+              end
+            end
+            default_handler(char, item, bufnr, rules, commit_character)
+          end,
+        },
+      },
+    },
+  })
+)
 
 local source_mapping = {
   nvim_lsp = "[LSP]",
@@ -20,7 +87,6 @@ cmp.setup({
       require("luasnip").lsp_expand(args.body)
     end,
   },
-
   formatting = {
     format = function(entry, vim_item)
       vim_item = tailwind_formatter(entry, vim_item)
@@ -42,20 +108,20 @@ cmp.setup({
     end,
   },
 
-  sorting = {
-    priority_weight = 2,
-    comparators = {
-      cmp.config.compare.offset,
-      cmp.config.compare.score,
-      cmp.config.compare.exact,
-      cmp.config.compare.locality,
-      cmp.config.compare.recently_used,
-      cmp.config.compare.kind,
-      cmp.config.compare.sort_text,
-      cmp.config.compare.length,
-      cmp.config.compare.order,
-    },
-  },
+  -- sorting = {
+  --   priority_weight = 2,
+  --   comparators = {
+  --     cmp.config.compare.offset,
+  --     cmp.config.compare.score,
+  --     cmp.config.compare.exact,
+  --     cmp.config.compare.locality,
+  --     cmp.config.compare.recently_used,
+  --     cmp.config.compare.kind,
+  --     cmp.config.compare.sort_text,
+  --     cmp.config.compare.length,
+  --     cmp.config.compare.order,
+  --   },
+  -- },
 
   performance = {
     max_view_entries = 15,
@@ -64,11 +130,11 @@ cmp.setup({
   window = {
     completion = {
       border = "rounded",
-      winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
+      --   winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
     },
     documentation = {
       border = "rounded",
-      winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
+      --   winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
     },
   },
 
@@ -103,10 +169,12 @@ cmp.setup({
   }),
 
   sources = cmp.config.sources({
-    { name = "nvim_lsp", keyword_length = 1 },
-    { name = "luasnip", keyword_length = 3 },
-    { name = "buffer", keyword_length = 2 },
-    { name = "path", keyword_length = 5 },
+    -- order of sources determines-> completion order
+    -- higher group_index value -> dont show if lower exist
+    { name = "nvim_lsp", keyword_length = 1, group_index = 1 },
+    { name = "luasnip", keyword_length = 2, group_index = 2 },
+    { name = "buffer", keyword_length = 3, group = 1 },
+    { name = "path", keyword_length = 3, group = 1 },
   }),
 
   completion = {
@@ -140,9 +208,10 @@ cmp.setup({
 cmp.setup.cmdline(":", {
   mapping = cmp.mapping.preset.cmdline(),
   sources = cmp.config.sources({
-    { name = "path", keyword_length = 3 },
+    { name = "path", keyword_length = 1 },
     { name = "cmdline" },
   }),
+  matching = { disallow_symbol_nonprefix_matching = false },
 })
 
 cmp.setup.cmdline({ "/", "?" }, {
@@ -151,8 +220,7 @@ cmp.setup.cmdline({ "/", "?" }, {
     {
       name = "buffer",
       option = {
-        keyword_pattern = [[\k\+]],
-        keyword_length = 3,
+        keyword_length = 2,
       },
     },
   },

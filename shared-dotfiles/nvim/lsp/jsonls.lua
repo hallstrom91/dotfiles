@@ -7,4 +7,16 @@ return {
     provideFormatter = true,
   },
   root_markers = { ".git" },
+  settings = {
+    json = {
+      schemas = require("schemastore").json.schemas({
+        select = {
+          "tsconfig.json",
+          "prettierrc.json",
+        },
+      }),
+      format = { enable = true },
+      validate = { enable = true },
+    },
+  },
 }

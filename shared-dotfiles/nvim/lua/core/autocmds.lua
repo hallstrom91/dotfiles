@@ -9,25 +9,31 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   group = augroup("Formatter"),
   pattern = "*",
   callback = function(args)
-    require("conform").format({ bufnr = args.buf })
+    require("conform").format({
+      bufnr = args.buf,
+      lsp_format = "fallback",
+      timeout_ms = 500,
+      stop_after_first = true,
+      async = false,
+    })
   end,
 })
 
 ----| Resession reload |----
-vim.api.nvim_create_autocmd("User", {
-  group = augroup("session"),
-  pattern = "ResessionLoadPost",
-  callback = function()
-    --> lsp reload
-    vim.cmd("silent! doautocmd BufRead")
-
-    --> indent/hlight reload
-    local ok, hlchunk = pcall(require, "hlchunk")
-    if ok and hlchunk.reload then
-      hlchunk.reload()
-    end
-  end,
-})
+-- vim.api.nvim_create_autocmd("User", {
+--   group = augroup("session"),
+--   pattern = "ResessionLoadPost",
+--   callback = function()
+--     --> lsp reload
+--     vim.cmd("silent! doautocmd BufRead")
+--
+--     --> indent/hlight reload
+--     local ok, hlchunk = pcall(require, "hlchunk")
+--     if ok and hlchunk.reload then
+--       hlchunk.reload()
+--     end
+--   end,
+-- })
 
 ----| open help window in vertical mode |----
 autocmd("FileType", {

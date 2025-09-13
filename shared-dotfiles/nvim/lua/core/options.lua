@@ -1,4 +1,4 @@
-local opt = vim.opt
+local opt = vim.opt -- G
 
 opt.number = true -- Show line numbers
 opt.relativenumber = false
@@ -12,8 +12,6 @@ opt.foldlevel = 99
 opt.foldlevelstart = 99
 opt.foldcolumn = "1"
 opt.foldenable = true
-opt.foldexpr = 'v:lua.require("ufo").foldexpr()'
-opt.foldmethod = "expr"
 opt.linebreak = true
 opt.wrap = false -- disable line wrap
 opt.smoothscroll = true
@@ -24,11 +22,17 @@ opt.confirm = false -- confirm to save changes before exiting buffer
 opt.showmatch = true
 opt.matchtime = 3
 
-vim.g.markdown_recommended_style = 0 -- test ?
-vim.g.loaded_netrw = 1 -- disable netrw
-vim.g.loaded_netrwPlugin = 1 -- disable netrw
---vim.g.loaded_matchparen = 1
+-- tresitter folding
+vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
+vim.wo.foldmethod = "expr"
+vim.wo.foldexpr = "v:lua.vim.tresitter.foldexpr()"
+
+vim.g.markdown_recommended_style = 0
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+-- vim.g.loaded_matchparen = 1
 -- vim.bo.syntax = 0
+vim.g.css_variables_files = { "globals.css" }
 
 opt.guicursor = {
   -- Normal mode: horizontal line _

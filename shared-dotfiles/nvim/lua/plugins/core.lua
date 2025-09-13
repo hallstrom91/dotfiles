@@ -3,10 +3,11 @@ return {
   ----| Always needed (almost) |----
   { "nvim-lua/plenary.nvim" },
   { "nvim-tree/nvim-web-devicons" },
-
+  "b0o/schemastore.nvim",
   ----| Mason |----
   {
     "mason-org/mason.nvim",
+    cmd = { "Mason", "MasonInstall", "MasonUpdate" },
     config = function()
       require("mason").setup({
         registries = {
@@ -58,6 +59,7 @@ return {
       require("nvim-treesitter").setup({
         install_dir = vim.fn.stdpath("data") .. "/site",
       })
+
       require("nvim-treesitter")
         .install({
           "lua",
@@ -88,9 +90,9 @@ return {
       require("treesitter-context").setup({
         enable = true,
         multiwindow = true,
-        additional_vim_regex_highlighting = false,
         max_lines = 10,
-        min_window_height = 50,
+        min_window_height = 20,
+        line_number = true,
       })
 
       vim.keymap.set("n", "[c", function()
@@ -101,5 +103,9 @@ return {
     vim.api.nvim_set_hl(0, "TreesitterContext", {
       bg = "#205781",
     }),
+    -- vim.api.nvim_set_hl(0, "TreesitterContextBottom", {
+    --   gui = "underline",
+    --   guisp = "#F5F5F5",
+    -- }),
   },
 }

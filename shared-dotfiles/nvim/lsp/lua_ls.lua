@@ -9,9 +9,6 @@ return {
     ".luacheckrc",
     ".stylua.toml",
     "stylua.toml",
-    "selene.toml",
-    "selene.yml",
-    ".git",
   },
   settings = {
     Lua = {
@@ -21,7 +18,7 @@ return {
         checkThirdParty = false,
         library = {
           vim.env.VIMRUNTIME,
-          --"${3rd}/luv/library"
+          "${3rd}/luv/library",
         },
       },
       telemetry = { enable = false },

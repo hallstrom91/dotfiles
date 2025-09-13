@@ -9,14 +9,8 @@ require("conform").setup({
     css = { "prettierd" },
     markdown = { "prettierd" },
     yaml = { "prettierd" },
-    bash = { "prettierd" },
-    --json = { "prettierd" },
-    --jsonc = { "prettierd" },
+    bash = { "shfmt" },
     -- csharp = { 'csharpier' },
-  },
-  format_on_save = {
-    timeout_ms = 1000,
-    lsp_fallback = "fallback",
   },
   notify_no_formatters = true,
 })

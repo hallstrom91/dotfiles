@@ -1,14 +1,27 @@
 --- Diagnostics (global)
 vim.diagnostic.config({
+  -- virtual_lines = true,
+  -- virtual_text = { current_line = true },
   virtual_text = true,
-  -- virtual_line = {
-  --   current_line = true
+  -- signs = {
+  --   text = {
+  --     [vim.diagnostic.severity.ERROR] = "",
+  --  [vim.diagnostic.severity.WARN] = "",
+  --     [vim.diagnostic.severity.INFO] = "",
+  --     [vim.diagnostic.severity.HINT ] = "",
+  --   },
   -- },
   signs = true,
   underline = true,
   update_in_insert = false,
   severity_sort = true,
+  float = {
+    border = "rounded",
+    source = "if_many",
+  },
 })
+
+-- vim.lsp.util.open_floating_preview({ border = hl?})
 
 --- Capabilities (global)
 local capabilities = nil
@@ -24,7 +37,7 @@ local function on_attach(client, bufnr)
     return
   end
 
-  -- Conform-plugin handles formatting - add LSP exceptions for default
+  --Conform-plugin handles formatting - add LSP exceptions for default
   local allow_formatting = {
     ["jsonls"] = true,
     --["yamlls"] = true,
@@ -53,7 +66,12 @@ vim.lsp.enable({
   "bashls",
   "jsonls",
   "systemd_ls",
+  "cssls",
   -- "mdx_analyzer",
   -- "ts_ls",
   -- "csharp_ls",
 })
+
+-- To see the capabilities for a given server, try this in a LSP-enabled buffer: >vim
+--
+--     :lua =vim.lsp.get_clients()[1].server_capabilities
