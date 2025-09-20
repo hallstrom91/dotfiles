@@ -1,49 +1,60 @@
 local opt = vim.opt -- G
 
-opt.number = true -- Show line numbers
+opt.number = true
 opt.relativenumber = false
-opt.expandtab = true -- Use spaces instead of tabs
-opt.shiftwidth = 4 -- Indentation width
-opt.tabstop = 4 -- Tab width
-opt.termguicolors = true -- Enable true colors
+opt.expandtab = true
+opt.shiftwidth = 4
+opt.tabstop = 4
+opt.termguicolors = true
 opt.splitbelow = false
 opt.splitright = true
+
+-- Folding (treesitter)
 opt.foldlevel = 99
 opt.foldlevelstart = 99
 opt.foldcolumn = "1"
 opt.foldenable = true
-opt.linebreak = true
+vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.wo.foldmethod = "expr"
+-- vim.bo.syntax = 0
+vim.o.winborder = "rounded"
+
+-- Wrapping
 opt.wrap = false -- disable line wrap
+--opt.linebreak = true -- if wrap = true | uncomment line
 opt.smoothscroll = true
+
 opt.clipboard = vim.env.SSH_TTY and "" or "unnamedplus"
 opt.spelllang = { "en" }
+opt.spell = false
+
 opt.timeoutlen = vim.g.vscode and 1000 or 300 -- trigger whichkey faster
-opt.confirm = false -- confirm to save changes before exiting buffer
+opt.confirm = false -- confirm to save changes
 opt.showmatch = true
 opt.matchtime = 3
 
--- tresitter folding
-vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
-vim.wo.foldmethod = "expr"
-vim.wo.foldexpr = "v:lua.vim.tresitter.foldexpr()"
+vim.o.exrc = true
+vim.o.secure = true
+-- do
+--   local ok = pcall(require, "conform")
+--   if ok then
+--     vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
+--   else
+--     vim.o.formatexpr = ""
+--   end
+-- end
 
 vim.g.markdown_recommended_style = 0
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
--- vim.g.loaded_matchparen = 1
--- vim.bo.syntax = 0
-vim.g.css_variables_files = { "globals.css" }
 
 opt.guicursor = {
-  -- Normal mode: horizontal line _
   "n-v-c:hor25",
-  -- Insert mode: vertical thin line |
   "i-ci-ve:ver25",
-  -- Command line - vertical
   "c:ver25",
 }
 
--- Disable providers
+-- Disable external providers
 vim.g.loaded_node_provider = 0
 vim.g.loaded_python3_provider = 0
 vim.g.loaded_perl_provider = 0

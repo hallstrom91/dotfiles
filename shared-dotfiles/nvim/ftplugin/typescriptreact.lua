@@ -18,7 +18,16 @@ require("lsp.init").start({
     "bun.lock",
   },
   settings = {
-    vtsls = { autoUseWorkspaceTsdk = true },
+    vtsls = {
+      autoUseWorkspaceTsdk = true,
+      -- enableMoveToFileCodeAction = false, -- default
+    },
+  },
+  tsserver = {
+    globalPlugins = {},
+  },
+  typescript = {
+    format = { enable = false },
   },
   replace_on_attach = false,
   disable_fmt = true,

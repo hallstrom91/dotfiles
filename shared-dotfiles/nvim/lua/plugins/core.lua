@@ -1,9 +1,9 @@
 return {
-
   ----| Always needed (almost) |----
   { "nvim-lua/plenary.nvim" },
   { "nvim-tree/nvim-web-devicons" },
   "b0o/schemastore.nvim",
+
   ----| Mason |----
   {
     "mason-org/mason.nvim",
@@ -32,6 +32,9 @@ return {
       "hrsh7th/cmp-buffer",
       "hrsh7th/cmp-path",
       "hrsh7th/cmp-cmdline",
+
+      -- css
+      "roginfarrer/cmp-css-variables",
 
       -- Extra completion sources
       "onsails/lspkind.nvim",

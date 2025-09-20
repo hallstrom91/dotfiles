@@ -4,7 +4,7 @@ end
 vim.b._lsp_started = true
 vim.treesitter.start()
 
-require("core.lsp").start({
+require("lsp.init").start({
   name = "lua_ls",
   cmd = { "lua-language-server" },
   root_markers = {
@@ -37,8 +37,8 @@ require("core.lsp").start({
       },
     },
   },
+  disable_fmt = true,
+  replace_on_attach = false,
+  --on_attach = function(client, bufnr)
+  --end
 })
-
--- local cfg = lsp.load_server_cfg("lua_ls") -- from ./lsp/*.lua
--- cfg.name = cfg.name or "lua_ls"
--- lsp.start(cfg)

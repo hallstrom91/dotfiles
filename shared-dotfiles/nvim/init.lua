@@ -15,26 +15,8 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-local function safe_require(module_name, description)
-  local ok, mod = pcall(require, module_name)
-  if not ok then
-    vim.api.nvim_echo({ { description .. " not found", "WarningMsg" } }, true, {})
-  else
-    vim.notify("Loaded " .. description, vim.log.levels.TRACE)
-  end
-end
-
-local mason_bin = vim.fn.stdpath("data") .. "/mason/bin"
-if not string.find(vim.env.PATH or "", mason_bin, 1, true) then
-  vim.env.PATH = mason_bin .. ":" .. (vim.env.PATH or "")
-end
-
-safe_require("core.options", "options.lua")
-safe_require("core.keymaps", "keymaps.lua")
-safe_require("core.autocmds", "autocmds.lua")
-safe_require("config.lazy", "lazy.lua")
-safe_require("core.lsp", "lsp.lua")
-safe_require("core.filetypes", "filetypes.lua")
+require("core").init()
+require("lsp")
 
 -- set colorscheme
 vim.cmd.colorscheme("vscode")

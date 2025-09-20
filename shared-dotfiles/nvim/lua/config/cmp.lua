@@ -108,29 +108,13 @@ cmp.setup({
     end,
   },
 
-  -- sorting = {
-  --   priority_weight = 2,
-  --   comparators = {
-  --     cmp.config.compare.offset,
-  --     cmp.config.compare.score,
-  --     cmp.config.compare.exact,
-  --     cmp.config.compare.locality,
-  --     cmp.config.compare.recently_used,
-  --     cmp.config.compare.kind,
-  --     cmp.config.compare.sort_text,
-  --     cmp.config.compare.length,
-  --     cmp.config.compare.order,
-  --   },
-  -- },
-
   performance = {
-    max_view_entries = 15,
+    max_view_entries = 20,
   },
 
   window = {
     completion = {
       border = "rounded",
-      --   winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,Search:None",
     },
     documentation = {
       border = "rounded",
@@ -172,6 +156,7 @@ cmp.setup({
     -- order of sources determines-> completion order
     -- higher group_index value -> dont show if lower exist
     { name = "nvim_lsp", keyword_length = 1, group_index = 1 },
+    { name = "css-variables", group_index = 1 },
     { name = "luasnip", keyword_length = 2, group_index = 2 },
     { name = "buffer", keyword_length = 3, group = 1 },
     { name = "path", keyword_length = 3, group = 1 },

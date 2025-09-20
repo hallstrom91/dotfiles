@@ -116,12 +116,6 @@ return {
     end,
   },
 
-  ----| Surround (Brackets etc)  |----
-  {
-    "tpope/vim-surround",
-    event = "BufReadPre",
-  },
-
   ----| Which Key (did i bind to what?)  |----
   {
     "folke/which-key.nvim",
@@ -142,6 +136,9 @@ return {
     config = function()
       require("noice").setup({
         lsp = {
+          hover = {
+            enabled = true,
+          },
           signature = {
             enabled = true,
           },
@@ -171,13 +168,4 @@ return {
       })
     end,
   },
-
-  ----| Resession |----
-  -- {
-  --   "stevearc/resession.nvim",
-  --   opts = {},
-  --   config = function()
-  --     require("config.resession")
-  --   end,
-  -- },
 }

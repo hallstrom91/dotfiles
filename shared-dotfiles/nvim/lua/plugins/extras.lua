@@ -109,40 +109,13 @@ return {
     end,
   },
 
-  ----| Scrollbar |----
-  {
-    "petertriho/nvim-scrollbar",
-    event = { "BufReadPost", "BufWinEnter" },
-    config = function()
-      require("config.scrollbar")
-    end,
-  },
-
-  ----| Multiline cursor |----
-  {
-    "mg979/vim-visual-multi",
-    branch = "master",
-    enabled = false,
-    config = function()
-      -- add config here if enabled
-    end,
-  },
-
-  ----| Comment |----
-  {
-    "folke/ts-comments.nvim",
-    opts = {},
-    event = "VeryLazy",
-    enabled = vim.fn.has("nvim-0.10.0") == 1,
-  },
-
   ----| Gitsigns  |----
   {
     "lewis6991/gitsigns.nvim",
     event = { "BufReadPre", "BufNewFile" },
     config = function()
       require("config.gitsigns")
-      require("scrollbar.handlers.gitsigns").setup()
+      -- require("scrollbar.handlers.gitsigns").setup()
     end,
   },
 
@@ -156,31 +129,31 @@ return {
   },
 
   ----| Git Conflict |----
-  {
-    "akinsho/git-conflict.nvim",
-    version = "*",
-    config = function()
-      require("git-conflict").setup({
-        --default_mappings = true, -- disable buffer local mapping created by this plugin
-        default_commands = true, -- disable commands created by this plugin
-        disable_diagnostics = false, -- This will disable the diagnostics in a buffer whilst it is conflicted
-        list_opener = "copen", -- command or function to open the conflicts list
-        highlights = { -- They must have background color, otherwise the default color will be used
-          incoming = "DiffAdd",
-          current = "DiffText",
-        },
-        -- keymaps
-        default_mappings = {
-          ours = "o",
-          theirs = "t",
-          none = "0",
-          both = "b",
-          next = "n",
-          prev = "p",
-        },
-      })
-    end,
-  },
+  -- {
+  --   "akinsho/git-conflict.nvim",
+  --   version = "*",
+  --   config = function()
+  --     require("git-conflict").setup({
+  --       --default_mappings = true, -- disable buffer local mapping created by this plugin
+  --       default_commands = true, -- disable commands created by this plugin
+  --       disable_diagnostics = false, -- This will disable the diagnostics in a buffer whilst it is conflicted
+  --       list_opener = "copen", -- command or function to open the conflicts list
+  --       highlights = { -- They must have background color, otherwise the default color will be used
+  --         incoming = "DiffAdd",
+  --         current = "DiffText",
+  --       },
+  --       -- keymaps
+  --       default_mappings = {
+  --         ours = "o",
+  --         theirs = "t",
+  --         none = "0",
+  --         both = "b",
+  --         next = "n",
+  --         prev = "p",
+  --       },
+  --     })
+  --   end,
+  -- },
 
   -- Testing plugin
   -- {

@@ -39,7 +39,7 @@ config.initial_cols = 120
 
 config.font = wezterm.font_with_fallback({
   "CaskaydiaCove NF", -- Nerd Font
-  "JetBrainsMono Nerd Font", -- fallback
+  "JetBrainsMono NF", -- fallback
 })
 config.font_size = font_size
 

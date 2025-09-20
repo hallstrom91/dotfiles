@@ -19,7 +19,6 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   end,
 })
 
-
 ----| open help window in vertical mode |----
 autocmd("FileType", {
   group = augroup("HelpWindow"),
@@ -95,14 +94,14 @@ autocmd("LspDetach", {
     if not id then
       return
     end
-    require("core.lsp").kill_or_spare_client(id, 1500)
+    require("lsp.modules").kill_or_spare_client(id, 1500)
   end,
 })
 
 autocmd({ "BufWipeout", "BufDelete" }, {
   group = augroup("LspAutoStopBuf"),
   callback = function()
-    local lsp = require("core.lsp")
+    local lsp = require("lsp.modules")
     for _, client in pairs(vim.lsp.get_clients()) do
       if lsp.is_orphan(client) then
         lsp.kill_or_spare_client(client.id, 1500)
