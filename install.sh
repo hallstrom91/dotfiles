@@ -273,6 +273,18 @@ install_home() {
 install_xdg_config() {
   [[ -d "$REPO_ROOT/xdg_config" ]] || return 0
 
+  # hostname
+  local host
+  local role
+  host="${HOSTNAME:-$(hostname -s 2>/dev/null || hostname || uname -n)}"
+  case "$host" in
+    laptop) role="laptop" ;;
+    desktop) role="desktop" ;;
+    *) role="desktop"
+      warn "Unknown host: '$host' -> defaulting to 'desktop'"
+      ;;
+  esac
+
   while IFS= read -r -d '' item; do
     local rel
     local dst
@@ -280,26 +292,85 @@ install_xdg_config() {
     dst="$TARGET_XDG_CONFIG/$rel"
     should_process "$item" "$dst" || continue
 
-    if [[ -d "$item" ]]; then
-      if [[ "$rel" == "autostart" ]]; then
-        #special-case: autostart/ -> ~/.config/autostart/*
-        ensure_dir "$dst"
-        while IFS= read -r -d '' f; do
-          local relf
-          local destf
-          relf=${f#"$item"/}
-          destf="$dst/$relf"
-          should_process "$f" "$destf" || continue
-          ensure_dir "$(dirname -- "$destf")"
-          link_file "$f" "$destf"
-        done < <(find "$item" -type f -print0)
-    else
-      link_file "$item" "$dst"
-      fi
-    else
-      ensure_dir "$(dirname -- "$dst")"
-      link_file "$item" "$dst"
+
+    # Special-case: autostart/ -> ~/.config/autostart/*
+    if [[ -d "$item"  && "$rel" == "autostart" ]]; then
+      ensure_dir "$dst"
+      while IFS= read -r -d '' f; do
+        local relf
+        local destf
+        relf=${f#"$item"/}
+        destf="$dst/$relf"
+        should_process "$f" "$destf" || continue
+        ensure_dir "$(dirname -- "$destf")"
+        link_file "$f" "$destf"
+      done < <(find "$item" -type f -print0)
+      continue
     fi
+
+    # Special-case: kitty/ -> select cfg based on hostname
+    if [[ "$rel" == "kitty" || "$rel" == "kitty/"* ]]; then
+
+      local kitty_root
+      kitty_root="$REPO_ROOT/xdg_config/kitty"
+
+      # 1) kitty/themes/
+      if [[ -d "$kitty_root/themes" ]]; then
+        ensure_dir "$TARGET_XDG_CONFIG/kitty"
+        link_file "$kitty_root/themes" "$TARGET_XDG_CONFIG/kitty/themes"
+        fi
+
+        # 2) kitty/configs/<role>.conf
+        local cfg_src
+        local cfg_dst
+        cfg_src="$kitty_root/configs/${role}.conf"
+        cfg_dst="$TARGET_XDG_CONFIG/kitty/${role}.conf"
+        if [[ -f "$cfg_src" ]]; then
+          ensure_dir "$(dirname -- "$cfg_dst")"
+          link_file "$cfg_src" "$cfg_dst"
+        else
+          warn "kitty: missing config for role: '$role' at $cfg_src"
+          fi
+
+          #3) other kitty files in top
+          while IFS= read -r -d '' topf; do
+            [[ -d "$topf" ]] && continue
+            case "$topf" in
+              "$kitty_root"/themes/*|"$kitty_root"/configs/*) continue ;;
+            esac
+            local destf
+            destf="$TARGET_XDG_CONFIG/kitty/$(basename -- "$topf")"
+            should_process "$topf" "$destf" || continue
+            ensure_dir "$(dirname -- "$destf")"
+            link_file "$topf" "$destf"
+          done < <(find "$kitty_root" -mindepth 1 -maxdepth 1 -print0)
+          continue
+    fi
+
+    # Special-case: wezterm/ -> select cfg based on hostname
+
+
+
+    #   if [[ "$rel" == "autostart" ]]; then
+    #     #special-case: autostart/ -> ~/.config/autostart/*
+    #     ensure_dir "$dst"
+    #     while IFS= read -r -d '' f; do
+    #       local relf
+    #       local destf
+    #       relf=${f#"$item"/}
+    #       destf="$dst/$relf"
+    #       should_process "$f" "$destf" || continue
+    #       ensure_dir "$(dirname -- "$destf")"
+    #       link_file "$f" "$destf"
+    #     done < <(find "$item" -type f -print0)
+    # else
+    #   link_file "$item" "$dst"
+    #   fi
+
+    # else
+    #   ensure_dir "$(dirname -- "$dst")"
+    #   link_file "$item" "$dst"
+    # fi
   done < <(find "$REPO_ROOT/xdg_config" -mindepth 1 -maxdepth 1 -print0)
 }
 
