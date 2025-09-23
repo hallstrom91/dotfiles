@@ -2,7 +2,6 @@ vim.filetype.add({
   extension = {
     conf = "conf",
     env = "dotenv",
-    mdx = "mdx",
     sh = "sh",
   },
   filename = {
@@ -10,7 +9,7 @@ vim.filetype.add({
   },
   pattern = {
     [".*%.env.*"] = "dotenv", -- match all .env* -files
-    [".*%.bash.*"] = "bash", -- match all .bash* -files
-    ["^bash.*"] = "bash", -- match all bash* -files
+    [".*%.bash.*"] = "sh", -- match all .bash* -files
+    ["^bash.*"] = "sh", -- match all bash* -files
   },
 })

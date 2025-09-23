@@ -1,8 +1,8 @@
 return {
   ----| Always needed (almost) |----
-  { "nvim-lua/plenary.nvim" },
+  { "nvim-lua/plenary.nvim", lazy = true },
   { "nvim-tree/nvim-web-devicons" },
-  "b0o/schemastore.nvim",
+  { "b0o/schemastore.nvim", ft = "json" },
 
   ----| Mason |----
   {
@@ -24,7 +24,6 @@ return {
     event = "InsertEnter",
     dependencies = {
       -- Snippets
-      "L3MON4D3/LuaSnip",
       "saadparwaiz1/cmp_luasnip",
 
       -- Completion sources
@@ -34,23 +33,23 @@ return {
       "hrsh7th/cmp-cmdline",
 
       -- css
-      "roginfarrer/cmp-css-variables",
+      -- "roginfarrer/cmp-css-variables",
 
       -- Extra completion sources
       "onsails/lspkind.nvim",
-      "roobert/tailwindcss-colorizer-cmp.nvim",
+      --      "roobert/tailwindcss-colorizer-cmp.nvim",
     },
     config = function()
       require("config.cmp")
-      require("tailwindcss-colorizer-cmp").setup({
-        color_square_width = 2,
-      })
     end,
   },
 
+  ----| LuaSnip |----
   {
     "L3MON4D3/LuaSnip",
+    version = "v2.*",
     dependencies = { "rafamadriz/friendly-snippets" },
+    build = "make install_jsregexp",
   },
 
   ----| Treesitter |----
@@ -65,7 +64,7 @@ return {
 
       require("nvim-treesitter")
         .install({
-          "lua",
+          -- "lua",
           "bash",
           "html",
           "css",
@@ -81,8 +80,7 @@ return {
           "regex",
           "tsx",
         })
-        :wait(300000) -- 5min
-      -- vim.treesitter.language.register("markdown", "mdx")
+        :wait(300000) -- 5min -- NO-OP if install
     end,
   },
 
@@ -94,7 +92,7 @@ return {
         enable = true,
         multiwindow = true,
         max_lines = 10,
-        min_window_height = 20,
+        min_window_height = 50,
         line_number = true,
       })
 
@@ -106,9 +104,51 @@ return {
     vim.api.nvim_set_hl(0, "TreesitterContext", {
       bg = "#205781",
     }),
-    -- vim.api.nvim_set_hl(0, "TreesitterContextBottom", {
-    --   gui = "underline",
-    --   guisp = "#F5F5F5",
-    -- }),
+  },
+
+  ----| Telescope, FZF   |----
+  {
+    "nvim-telescope/telescope.nvim",
+    -- tag = "0.1.8",
+    event = "VimEnter",
+    keys = { "<leader>f", "<leader>p" },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+    },
+    config = function()
+      require("config.telescope")
+    end,
+  },
+
+  { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+
+  ----| Autopairs (){}[] etc |----
+  {
+    "windwp/nvim-autopairs",
+    event = "InsertEnter",
+    dependencies = { "hrsh7th/nvim-cmp" },
+    config = function()
+      require("config.autopairs").setup()
+    end,
+  },
+
+  ----|  Conform (Formatting) |----
+  {
+    "stevearc/conform.nvim",
+    opts = {},
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      require("config.formatter")
+    end,
+  },
+
+  ----| Whichkey |----
+  {
+    "folke/which-key.nvim",
+    event = "VeryLazy",
+    config = function()
+      local wk = require("which-key")
+      wk.setup({})
+    end,
   },
 }

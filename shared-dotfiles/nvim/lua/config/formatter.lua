@@ -9,7 +9,7 @@ require("conform").setup({
     css = { "prettierd" },
     markdown = { "prettierd" },
     yaml = { "prettierd" },
-    bash = { "shfmt" },
+    sh = { "shfmt" },
     -- csharp = { 'csharpier' },
   },
   notify_no_formatters = true,

@@ -1,5 +1,6 @@
 local map = vim.keymap.set
 local opts = { noremap = true, silent = true }
+local set_map = require("core.keymaps").set_keymap
 
 require("neo-tree").setup({
   -- General settings
@@ -10,15 +11,15 @@ require("neo-tree").setup({
   enable_modified_markers = true, -- Show markers for files with unsaved changes.
   enable_opened_markers = true, -- Enable tracking of opened files. Required for `components.name.highlight_opened_files`
   enable_refresh_on_write = true, -- Refresh the tree when a file is written. Only used if `use_libuv_file_watcher` is false.
-  enable_cursor_hijack = false, -- If enabled neotree will keep the cursor on the first letter of the filename when moving in the tree.
+  enable_cursor_hijack = true, -- If enabled neotree will keep the cursor on the first letter of the filename when moving in the tree.
   git_status_async = true,
   log_level = "info", -- "trace", "debug", "info", "warn", "error", "fatal"
   open_files_in_last_window = true, -- false = open files in top left window
   open_files_do_not_replace_types = { "terminal", "Trouble", "qf", "edgy" }, -- when opening files, do not use windows containing these filetypes or buftypes
 
-  use_popups_for_input = true, -- If false, inputs will use vim.ui.input() instead of custom floats.
+  use_popups_for_input = false, -- If false, inputs will use vim.ui.input() instead of custom floats.
   use_default_mappings = true,
-  -- Default UI settings
+
   default_component_configs = {
     container = {
       enable_character_fade = true,
@@ -42,109 +43,11 @@ require("neo-tree").setup({
       folder_open = "", -- Icon for open folders
       folder_empty = "", -- Icon for empty folders
       folder_empty_open = "󰷏",
+    },
+  },
 
-      provider = function(icon, node, state) -- default icon provider utilizes nvim-web-devicons if available
-        if node.type == "file" or node.type == "terminal" then
-          local success, web_devicons = pcall(require, "nvim-web-devicons")
-          local name = node.type == "terminal" and "terminal" or node.name
-          if success then
-            local devicon, hl = web_devicons.get_icon(name)
-            icon.text = devicon or icon.text
-            icon.highlight = hl or icon.highlight
-          end
-        end
-      end,
-      default = "*",
-      highlight = "NeoTreeFileIcon",
-    },
-
-    --    Git status settings
-    git_status = {
-      symbols = {
-        -- Change type
-        added = "✚", -- Symbol for added files
-        modified = "", -- Symbol for modified files
-        deleted = "✖", -- Symbol for deleted files
-        renamed = "󰁕", -- Symbol for renamed files
-        -- Statustype
-        untracked = "", -- Symbol for untracked files
-        ignored = "", -- Symbol for ignored files
-        unstaged = "󰄱", -- Symbol for unstaged changes
-        staged = "", -- Symbol for staged changes
-        conflict = "", -- Symbol for merge conflicts
-      },
-    },
-    --		    File name settings
-    name = {
-      trailing_slash = false, -- Show trailing slash after folder names
-      use_git_status_colors = true, -- Color file names based on git status
-      highlight = "NeoTreeFileName", -- Highlight group for file names
-    },
-    -- If you don't want to use these columns, you can set `enabled = false` for each of them individually
-    file_size = {
-      enabled = true,
-      width = 12, -- width of the column
-      required_width = 64, -- min width of window required to show this column
-    },
-    type = {
-      enabled = true,
-      width = 10, -- width of the column
-      required_width = 110, -- min width of window required to show this column
-    },
-    last_modified = {
-      enabled = true,
-      width = 20, -- width of the column
-      required_width = 88, -- min width of window required to show this column
-      format = "%Y-%m-%d %I:%M %p", -- format string for timestamp (see `:h os.date()`)
-      -- or use a function that takes in the date in seconds and returns a string to display
-      --format = require("neo-tree.utils").relative_date, -- enable relative timestamps
-    },
-    created = {
-      enabled = false,
-      width = 20, -- width of the column
-      required_width = 120, -- min width of window required to show this column
-      format = "%Y-%m-%d %I:%M %p", -- format string for timestamp (see `:h os.date()`)
-      -- or use a function that takes in the date in seconds and returns a string to display
-      --format = require("neo-tree.utils").relative_date, -- enable relative timestamps
-    },
-    symlink_target = {
-      enabled = false,
-      text_format = " ➛ %s", -- %s will be replaced with the symlink target's path.
-    },
-  }, -- End of default component configs
-
-  -- Filesystem settings
-  filesystem = {
-    filtered_items = {
-      visible = false, -- Show hidden items with a different style
-      hide_dotfiles = false, -- Hide dotfiles by default
-      hide_gitignored = true, -- Hide gitignored files
-      hide_hidden = true, -- Hide hidden files (on Windows only)
-      hide_by_name = { -- Specify items to hide by name
-        "node_modules",
-        "next",
-        ".git",
-        ".yarn",
-      },
-      always_show = { -- Always show these items
-        ".gitignored",
-        "*.log",
-      },
-      always_show_by_pattern = { -- Always show items matching these patterns
-        ".env*",
-      },
-    },
-    -- Automatically follow the current file
-    follow_current_file = {
-      enabled = true, -- Follow the currently active file
-      leave_dirs_open = false, -- Close directories when navigating away
-    },
-    use_libuv_file_watcher = false, -- This will use the OS level file watchers to detect changes
-  }, -- End of filesystem settings
-
-  -- Neo-tree window settings
   window = {
-    position = "left",
+    position = "float",
     width = 40,
     popup = {
       size = {
@@ -153,81 +56,66 @@ require("neo-tree").setup({
       },
       position = "50%",
       popup_border_style = "rounded", -- Border style for popups (rounded, single, double)
+      title = function(state) -- format the text that appears at the top of a popup window
+        return "Neo-tree " .. state.name:gsub("^%l", string.upper)
+      end,
+      -- you can also specify border here, if you want a different setting from
+      -- the global popup_border_style.
     },
-
-    -- git commands from fileexplorer menu!
     mappings = {
-      ["<leader>"] = {
-        "toggle_node",
-        nowait = false,
-      },
-      ["gp"] = { desc = "Git Push", "git_push" },
+      ["<esc>"] = "cancel", -- close preview or floating neo-tree window
       ["P"] = {
         "toggle_preview",
         config = {
-          use_float = false,
+          use_float = true,
+          use_snacks_image = true,
           use_image_nvim = true,
-          title = "Neo-tree Previewer",
+          title = "Preview", -- You can define a custom title for the preview floating window.
         },
       },
-      ["<Esc>"] = { desc = "close neotree", "close_window" },
-      ["<CR>"] = "open_tabnew",
+      ["<CR>"] = { desc = "open (new tab)", "open_tabnew" },
       ["o"] = "open",
       ["/"] = "none", -- remove fuzzyfind in neotree menu
     },
-  }, -- End of window settings
+  },
 
-  -- Buffer management settings
-  buffers = {
-    follow_current_file = {
-      enabled = true, -- Follow the currently active buffer
-      leave_dirs_open = false, -- Close directories when switching buffers
-    },
-  }, -- End of Buffer management
   source_selector = {
     winbar = true,
     statusline = false,
   },
   event_handlers = {
     {
-      event = "file_open_requested",
-      handler = function()
+      event = "file_opened",
+      handler = function(file_path)
+        --auto close
         require("neo-tree.command").execute({ action = "close" })
-      end,
-    },
-
-    {
-      event = "neo_tree_buffer_leave",
-      handler = function()
-        local wins = vim.api.nvim_list_wins()
-
-        for _, win in ipairs(wins) do
-          local config = vim.api.nvim_win_get_config(win)
-          if config.relative ~= "" then
-            return
-          end
-        end
-
-        vim.api.nvim_create_autocmd("WinEnter", {
-          callback = function()
-            local bufname = vim.api.nvim_buf_get_name(0)
-            if not bufname:match("neo%-tree") then
-              require("neo-tree.command").execute({ action = "close" })
-            end
-          end,
-          once = true,
-        })
       end,
     },
   },
 })
 
--- Ctrl + n: Toggle Neo-tree file explorer
-map(
-  "n",
-  "<C-n>",
-  ":Neotree toggle reveal_force_cwd=true<CR>",
-  vim.tbl_extend("force", opts, { desc = "Open File explorer" })
-)
+-- Neotree (file/buf-explorer)
+local ntree_maps = {
 
-vim.api.nvim_set_keymap("n", "<Esc>", ":Neotree close<CR>", { noremap = true, silent = true })
+  { mode = "n", keys = "<C-n>", cmd = ":Neotree toggle reveal_force_cwd=true<CR>", desc = "Open File Explorer" },
+  -- { mode = "n", keys = "<C-n>", cmd = ":NeoTree toggle<cr>", desc = "Open File Explorer" },
+  -- {
+  --   mode = "n",
+  --   keys = "<C-bn",
+  --   cmd = ":Neotree source=buffers float reveal action=focus<CR>",
+  --   desc = "Open Buf Explorer",
+  --   noremap = true,
+  -- },
+}
+
+set_map(ntree_maps)
+
+-- map(
+--   "n",
+--   "<C-n>",
+--   ":Neotree toggle reveal_force_cwd=true<CR>",
+--   vim.tbl_extend("force", opts, { desc = "Open File explorer" })
+-- )
+
+-- map("n", "<C-n>", "<cmd>NeoTree toggle<cr>", opts, { desc = "Open File Explorer"} )
+-- map("n", "-", "<cmd>Neotree source=buffers float reveal action=focus<cr>"

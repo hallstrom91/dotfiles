@@ -1,8 +1,18 @@
 local cmp = require("cmp")
 local lspkind = require("lspkind")
 local cmp_autopairs = require("nvim-autopairs.completion.cmp")
-local tailwind_formatter = require("tailwindcss-colorizer-cmp").formatter
+-- local tailwind_formatter = require("tailwindcss-colorizer-cmp").formatter
 local handlers = require("nvim-autopairs.completion.handlers")
+
+local tailwind_fmt = (function()
+  local ok, m = pcall(require, "tailwind-colorizer-cmp")
+  if ok and m and m.formatter then
+    return m.formatter
+  end
+  return function(_, item)
+    return item
+  end
+end)()
 
 require("luasnip.loaders.from_vscode").lazy_load({ paths = "~/.local/share/nvim/lazy/friendly-snippets/" })
 require("luasnip.loaders.from_lua").load({ paths = "~/.config/nvim/lua/snippets/" })
@@ -87,9 +97,11 @@ cmp.setup({
       require("luasnip").lsp_expand(args.body)
     end,
   },
+
   formatting = {
     format = function(entry, vim_item)
-      vim_item = tailwind_formatter(entry, vim_item)
+      vim_item = tailwind_fmt(entry, vim_item) -- NO-OP if tailwind.formatter is disabled
+
       vim_item = lspkind.cmp_format({
         mode = "symbol_text",
         maxwidth = 50,

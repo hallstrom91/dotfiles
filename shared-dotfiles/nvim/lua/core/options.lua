@@ -1,4 +1,4 @@
-local opt = vim.opt -- G
+local opt = vim.opt
 
 opt.number = true
 opt.relativenumber = false
@@ -47,7 +47,7 @@ vim.o.secure = true
 vim.g.markdown_recommended_style = 0
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
-
+vim.o.cursorline = true
 opt.guicursor = {
   "n-v-c:hor25",
   "i-ci-ve:ver25",

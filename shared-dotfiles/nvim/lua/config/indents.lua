@@ -6,8 +6,14 @@ local function safe_hl_color(hl)
 end
 
 require("hlchunk").setup({
+  line_num = {
+    enable = true,
+    use_treesitter = false,
+    style = "#9112BC",
+  },
   chunk = {
     enable = true,
+    use_treesitter = false, -- def = true -- not recommended after v1.2.1
     chars = {
       horizontal_line = "─",
       vertical_line = "│",
@@ -15,32 +21,34 @@ require("hlchunk").setup({
       left_bottom = "╰",
       --right_arrow = ">",
       right_arrow = "",
-      -- "󰅂"
-      -- ""
-      -- ""
-      -- ""
     },
-    -- style = "#806d9c",
-    style = "#D4C9BE",
+    error_sign = true,
+    style = {
+      "#9112BC",
+      "#c21f30",
+    },
   },
 
   indent = {
     enable = true,
     --chars = { "│" },
-    chars = { "" },
+    chars = {
+      "",
+    },
     style = {
-      safe_hl_color("IndentLevel1"),
-      safe_hl_color("IndentLevel2"),
-      safe_hl_color("IndentLevel3"),
-      safe_hl_color("IndentLevel4"),
-      safe_hl_color("IndentLevel5"),
-      safe_hl_color("IndentLevel6"),
-      safe_hl_color("IndentLevel7"),
+      safe_hl_color("RainbowDelimiterBlue"),
+      safe_hl_color("RainbowDelimiterViolet"),
+      safe_hl_color("RainbowDelimiterCyan"),
+    },
+    filter_list = {
+      function(v)
+        return v.level ~= 1
+      end,
     },
   },
 
   blank = {
-    enable = true,
+    enable = false,
     chars = {
       " ",
     },

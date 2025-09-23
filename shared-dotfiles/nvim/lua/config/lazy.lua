@@ -1,14 +1,11 @@
 require("lazy").setup({
   spec = {
-    { import = "plugins" },
+    { import = "plugins.base" },
+    { import = "plugins.ext" },
+    { import = "plugins.webdev" },
   },
   install = { colorscheme = { "habamax" } },
   -- automatically check for plugin updates
   checker = { enabled = true, frequency = 86400 },
-  opts = {
-    rocks = {
-      enabled = false,
-      hererocks = false,
-    },
-  },
+  ui = { border = "rounded" },
 })
