@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # install.sh - idempotent, fail-safe dotfiles-script.
+set -Eeuo pipefail
+IFS=$'\n\t'
 
 # -- Globals / Cfg -----------------------------------
 REPO_ROOT="$(cd -- "${BASH_SOURCE[0]%/*}" >/dev/null 2>&1 && pwd -P)"
@@ -39,8 +41,10 @@ declare -A APP_ENTRYPOINT_SRC_FMT=(
 
 # detect role (desktop/laptop env)
 detect_role() {
-  local host="${HOSTNAME:-$(hostname -s 2>/dev/null || hostname || uname -n)}"
-  local role="${DOTFILES_ROLE:-}"
+  local host role
+  host="${HOSTNAME:-$(hostname -s 2>/dev/null || hostname || uname -n)}"
+  role="${DOTFILES_ROLE:-}"
+
   [[ -n $role ]] || case "$host" in
   laptop) role="laptop" ;;
   desktop) role="desktop" ;;
@@ -58,9 +62,9 @@ map_xdg_data_dest() {
   local rel
   rel="$1"
   case "$rel" in
-  applications/* | applications) printf '%s\n' "$TARGET_XDG_SHARE/${rel#applications/}" ;;
-  icons/* | icons) printf '%s\n' "$TARGET_XDG_SHARE/${rel#icons/}" ;;
-  fonts/* | fonts) printf '%s\n' "$TARGET_XDG_SHARE/${rel#fonts/}" ;;
+  applications | applications/*) printf '%s\n' "$TARGET_XDG_SHARE/${rel#applications/}" ;;
+  icons/ | icons/*) printf '%s\n' "$TARGET_XDG_SHARE/${rel#icons/}" ;;
+  fonts | fonts/*) printf '%s\n' "$TARGET_XDG_SHARE/${rel#fonts/}" ;;
   *) printf '%s\n' "$TARGET_XDG_LOCAL/$rel" ;;
   esac
 }
@@ -79,7 +83,7 @@ usage() {
   --verbose           Extra debug logging
   --no-color          Disable colored output
   --no-emoji          Disable icons/emoji (requires nerd-fonts)
-  --force             Reserverd flag (no prompt)
+  --force             Reserved flag (no prompt)
   --uninstall         Remove symlinks listed in manifest.txt
   --backup-dir <path> Override default backup directory
   --group <list>      Comma-separated groups to install: home,bin,xdg_config,xdg_data
@@ -202,6 +206,22 @@ ensure_dir() {
     return 0
   fi
 
+  # path exists, but not dir, file or slink
+  if [[ -e "$dir" || -L "$dir" ]]; then
+    if ((FORCE == 1)); then
+      require_under_home "$dir" || return 1
+      if ((DRY_RUN == 1)); then
+        warn "Would replace non-directory path with directory: $dir"
+      else
+        warn "Replacing non-directory path with directory: $dir"
+      fi
+      run rm -rf -- "$dir"
+    else
+      fail "Path exists and is not a directory: $dir (remove manually or run with --force)."
+      return 1
+    fi
+  fi
+
   #or CREATE
   run mkdir -p -- "$dir"
   #save in mem
@@ -263,9 +283,31 @@ backup_existing() {
   local dst="$1" src="$2"
   [[ -e "$dst" || -L "$dst" ]] || return 0
 
+  # broken sl - remove only
+  if [[ -L "$dst" && ! -e "$dst" ]]; then
+    if ((DRY_RUN == 1)); then
+      warn "Would remove broken symlink: $dst"
+    else
+      warn "Removing broken symlink: $dst"
+    fi
+    run rm -f -- "$dst"
+    return 0
+  fi
+
   # correct? no-op
-  if issame_link "$dst" "$src"; then
+  if [[ -L "$dst" ]] && issame_link "$dst" "$src"; then
     verbose "already linked: $dst -> $src"
+    return 0
+  fi
+
+  # symlink? but wrong ? remove only.
+  if [[ -L "$dst" ]]; then
+    if ((DRY_RUN == 1)); then
+      warn "Would replace symlink: $dst"
+    else
+      warn "Replacing symlink: $dst"
+    fi
+    run rm -f -- "$dst"
     return 0
   fi
 
@@ -308,6 +350,13 @@ link_file() {
   fi
 
   ensure_dir "$(dirname -- "$dst")"
+
+  if issame_link "$dst" "$src"; then
+    verbose "up-to-date: $src"
+    record_manifest "$dst" "$src"
+    return 0
+  fi
+
   backup_existing "$dst" "$src" || return 1
   require_under_home "$dst" || return 1
 
@@ -400,37 +449,127 @@ install_home() {
 
   # Subdirectory: home/<dir>/* -> $HOME/.<dir>/*
   while IFS= read -r -d '' subdir; do
-    local dname dst_dir
+    local dname #dst_dir
     dname="$(basename -- "$subdir")"
-    dst_dir="$HOME/.${dname}"
-    ensure_dir "$dst_dir"
+    # dst_dir="$HOME/.${dname}"
+    # ensure_dir "$dst_dir"
 
-    # Special-case GnuPG: Strict Policy
+    # Special-case GnuPG: Strict Policy (no symlink)
     if [[ "$dname" == "gnupg" ]]; then
-      run chmod 700 -- "$dst_dir"
+      local dst_root="$HOME/.gnupg"
+      # only create ~/.gnupg IF missing, w 0700.
+      if [[ ! -d "$dst_root" ]]; then
+        if ((DRY_RUN == 1)); then
+          log "Would create dir (0700): $dst_root"
+        else
+          # install -d respect -m
+          run install -d -m 700 "$dst_root"
+        fi
+      fi
+
+      # only copy *.conf -files; keep subdir structure (if any)
       while IFS= read -r -d '' f; do
         local relf destf
         relf=${f#"$subdir"/}
-        destf="$dst_dir/$relf"
+        destf="$dst_root/$relf"
         should_process "$f" "$destf" || continue
         ensure_dir "$(dirname -- "$destf")"
+
         case "$relf" in
         *conf)
-          run install -m 600 -- "$f" "$destf"
-          verbose "copied (secure): $f -> $destf"
+          if [[ -L "$destf" && ! -e "$destf" ]]; then
+            if ((DRY_RUN == 1)); then
+              warn "Would remove broken symlink: $destf"
+            else
+              run rm -f -- "$destf"
+            fi
+          fi
+
+          # IF file exists: skip (or b.up/owrite w --force)
+          if [[ -e "$destf" || -L "$destf" ]]; then
+            if ((FORCE == 1)); then
+              backup_existing "$destf" "$f" || continue
+            else
+              verbose "exists, skipping (use --force to overwrite): $destf"
+              continue
+            fi
+          fi
+
+          # copy *.conf-file with 600
+          if ((DRY_RUN == 1)); then
+            log "Would copy (0600): $f -> $destf"
+          else
+            run install -m 600 -- "$f" "$destf"
+            verbose "copied (secure): $f -> $destf"
+          fi
           ;;
+
         *)
           if ((DRY_RUN == 1)); then
-            warn "gnupg: skipping unexpected file (dry-run): $f"
+            verbose "gnupg: ignoring non-conf file (dry-run): $f"
           else
-            warn "GnuPG: unexpected file skipped: $f"
-            NONFATAL_ERRORS=1
+            verbose "gnupg: ignoring non-conf file: $f"
           fi
           ;;
         esac
       done < <(find "$subdir" -type f -print0)
       continue
     fi
+
+    # Special-case: templates (no symlink)
+    if [[ "$dname" == "templates" ]]; then
+      local dst_root="$HOME/Templates"
+
+      # only create ~/Templates IF missing, w 0755.
+      if [[ ! -d "$dst_root" ]]; then
+        if ((DRY_RUN == 1)); then
+          log "Would create dir (0755): $dst_root"
+        else
+          run install -d -m 755 "$dst_root"
+        fi
+      fi
+
+      # Copy files (keep subdirs),
+      while IFS= read -r -d '' f; do
+        local relf destf
+        relf=${f#"$subdir"/}
+        destf="$dst_root/$relf"
+        should_process "$f" "$destf" || continue
+        ensure_dir "$(dirname -- "$destf")"
+
+        # remove broken symlink @ dest (if any)
+        if [[ -L "$destf" && ! -e "$destf" ]]; then
+          if ((DRY_RUN)); then
+            warn "Would remove broken symlink: $destf"
+          else
+            run rm -f -- "$destf"
+          fi
+        fi
+
+        # Dest exists ? Skip, if not --FORCE (b.up/owrite)
+        if [[ -e "$destf" || -L "$destf" ]]; then
+          if ((FORCE == 1)); then
+            backup_existing "$destf" "$f" || continue
+          else
+            verbose "exists, skipping (use --force to overwrite): $destf"
+            continue
+          fi
+        fi
+
+        # copy with 0644
+        if ((DRY_RUN == 1)); then
+          log "Would copy (0644): $f -> $destf"
+        else
+          run install -m 644 -- "$f" "$destf"
+          success "Copied: $destf"
+        fi
+      done < <(find "$subdir" -type f -print0)
+      continue
+    fi
+
+    local dst_dir
+    dst_dir="$HOME/.${dname}"
+    ensure_dir "$dst_dir"
 
     while IFS= read -r -d '' f; do
       local relf destf
@@ -463,7 +602,6 @@ install_xdg_config() {
     local app dst_root entry_name
     app="${appdir##*/}"
     dst_root="$TARGET_XDG_CONFIG/$app"
-    ensure_dir "$dst_root"
 
     entry_name=""
     if [[ -n ${APP_ENTRYPOINT_DEST[$app]:-} ]]; then
@@ -471,29 +609,31 @@ install_xdg_config() {
     fi
 
     while IFS= read -r -d '' f; do
-      local rel dest pdir
+      local rel dest
       rel=${f#"$appdir"/}
       case "$rel" in
-      configs/*) continue ;;
-      "$entry_name") continue ;;
+      configs/* | "$entry_name") continue ;;
       esac
       dest="$dst_root/$rel"
       should_process "$f" "$dest" || continue
-      pdir=$(dirname -- "$dest")
-      ensure_dir "$pdir"
+      #pdir=$(dirname -- "$dest")
+      ensure_dir "$(dirname -- "$dest")"
       link_file "$f" "$dest"
     done < <(find "$appdir" -type f -print0)
 
     # entrypoint (IF DEFINED)
     if [[ -n ${APP_ENTRYPOINT_DEST[$app]:-} ]]; then
-      local fmt src_rel src dest
+      local fmt src_rel src dest role
+      role="$(detect_role)"
       fmt="${APP_ENTRYPOINT_SRC_FMT[$app]}"
       src_rel="${fmt//%s/$role}"
       src="$REPO_ROOT/xdg_config/$src_rel"
       dest="$TARGET_XDG_CONFIG/${APP_ENTRYPOINT_DEST[$app]}"
+      should_process "$src" "$dest" || continue
+      ensure_dir "$(dirname -- "$dest")"
       if [[ -f "$src" ]]; then
-        should_process "$src" "$dest" || continue
-        ensure_dir "$(dirname -- "$dest")"
+        #should_process "$src" "$dest" || continue
+        #ensure_dir "$(dirname -- "$dest")"
         link_file "$src" "$dest"
       else
         warn "$app: missing role config for '$role' at $src"
@@ -505,10 +645,13 @@ install_xdg_config() {
 install_xdg_data() {
   [[ -d "$REPO_ROOT/xdg_data" ]] || return 0
 
+  local fonts_changed=0
+
   while IFS= read -r -d '' top; do
-    local reltop dst_base
+    local reltop dst_base is_fonts=0
     reltop=${top#"$REPO_ROOT"/xdg_data/}
     dst_base="$(map_xdg_data_dest "$reltop")"
+    [[ "$reltop" == fonts || "$reltop" == fonts/* ]] && is_fonts=1
 
     if [[ -d "$top" ]]; then
       ensure_dir "$dst_base"
@@ -518,16 +661,35 @@ install_xdg_data() {
         destf="$dst_base/$relf"
         should_process "$f" "$destf" || continue
         ensure_dir "$(dirname -- "$destf")"
-        link_file "$f" "$destf"
+
+        if link_file "$f" "$destf"; then
+          ((is_fonts == 1)) && fonts_changed=1
+        fi
       done < <(find "$top" -type f -print0)
     else
       local dst
       dst="$dst_base"
       should_process "$top" "$dst" || continue
       ensure_dir "$(dirname -- "$dst")"
-      link_file "$top" "$dst"
+      if link_file "$top" "$dst"; then
+        ((is_fonts == 1)) && fonts_changed=1
+      fi
     fi
   done < <(find "$REPO_ROOT/xdg_data" -mindepth 1 -maxdepth 1 -print0)
+
+  #POST-OP: IF fonts installed update font-cache
+  if ((fonts_changed == 1)); then
+    if command -v fc-cache >dev/null 2>&1; then
+      if ((DRY_RUN == 1)); then
+        log "Would refresh font cache: fc-cache -f '$TARGET_XDG_SHARE/fonts'"
+      else
+        run fc-cache -f -- "$TARGET_XDG_SHARE/fonts"
+        success "Font cache refreshed."
+      fi
+    else
+      warn "fc-cache not found. Skipping f-cache refresh."
+    fi
+  fi
 }
 
 install_bin() {
