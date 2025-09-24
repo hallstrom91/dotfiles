@@ -19,7 +19,7 @@ MOUNT_POINTS=(
 )
 
 # Defaults
-DEFAULT_WSDIR="/media/veracrypt2"
+DEFAULT_WORKDIR="/media/veracrypt2"
 DEFAULT_SIGNAL_FILE="/tmp/mount_success.signal" # or ""
 
 # FS-owner & mask
@@ -170,26 +170,6 @@ read_passphrase_once() {
   }
 }
 
-#-- CLI -------------------------------
-
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-  -h | --help)
-    usage
-    exit 0
-    ;;
-  --dry-run) DRY_RUN=1 ;;
-  --verbose) VERBOSE=1 ;;
-  --no-color) COLOR=0 ;;
-  --no-emoji) EMOJI=0 ;;
-  *)
-    fail "Unknown flag: $1"
-    exit 2
-    ;;
-  esac
-  shift
-done
-
 #-- Main ------------------------------
 mount_all() {
   preflight
@@ -277,54 +257,125 @@ unmount_all() {
 }
 
 # Get status for volumes
-status_all() {}
+status_all() {
+  local i part mp
+  for i in "${!MOUNT_POINTS[@]}"; do
+    part="${PARTITIONS[$i]}"
+    mp="${MOUNT_POINTS[$i]}"
+    if is_mounted "$mp"; then
+      echoe "${_G}mounted${_N} $mp (from $part)"
+    else
+      echoe "${_Y}no parition mounted${_N} $mp (from $part)"
+    fi
+  done
+}
 
 # For WezTerm Terminal
-enter_mode() {}
+enter_mode() {
+  local workdir="$DEFAULT_WORKDIR"
+  local signal_file="$DEFAULT_SIGNAL_FILE"
 
-# read passphrase from TTY
-# if ((DRY_RUN)); then
-#   log "Would prompt for VeraCrypt passphrase on TTY"
-# else
-#   printf "Enter veracrypt passphrase: " >&2
-#   IFS= read -r -s PASSPHRASE </dev/tty
-#   printf '\n' >&2
-#   if [[ -z "$PASSPHRASE" ]]; then
-#     fail "Empty passphrase - operation canceled."
-#     exit 1
-#   fi
-# fi
-#
-# for i in "${!PARTITIONS[@]}"; do
-#   part="${PARTITIONS[$i]}"
-#   mp="${MOUNT_POINTS[$i]}"
-#
-#   if is_mounted "$mp"; then
-#     warn "Already mounted: $part @ $mp"
-#     continue
-#   fi
-#
-#   ensure_mount_dir "$mp"
-#
-#   log "Mounting $part -> $mp ..."
-#   if ((DRY_RUN)); then
-#     log "Would run: veracrypt --text --non-interactive --stdin --fs-options='$FSOPTS' --mount '$part' '$mp'"
-#   else
-#     # send passphrase thru FD 3, dont mix with future stdin
-#     if veracrypt --text --non-interactive --stdin-fd=3 --fs-options="$FSOPTS" --mount "$part" "$mp" 3<<<"$PASSPHRASE"; then
-#       : else fail "Mount failed: $part"
-#       exit 1
-#     fi
-#   fi
-#
-#   # Verify
-#   if is_mounted "$mp"; then
-#     success "$part mounted @ $mp"
-#   else
-#     fail "$part: not mounted after attempt."
-#     exit 1
-#   fi
-# done
-#
-# success "Done, Done, Done!"
-# exit
+  # parse "enter-mode" specific flags
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+    --workdir)
+      workdir="$2"
+      shift 2
+      ;;
+    --signal-fiile)
+      signal_file="$2"
+      shift 2
+      ;;
+    *)
+      fail "Unknown flag for 'enter': $1"
+      exit 2
+      ;;
+    esac
+  done
+
+  preflight
+
+  # check missing mounts
+  local need_mount=0
+  for mp in "${MOUNT_POINTS[@]}"; do
+    if ! is_mounted "$mp"; then
+      need_mount=1
+      break
+    fi
+  done
+
+  if ((need_mount)); then
+    mount_all
+  else
+    warn "All mountpoints are already mounted."
+  fi
+
+  # wait for ws
+  local tries=10
+  while ((tries-- > 0)); do
+    [[ -d "$workdir" ]] && break
+    sleep 1
+  done
+
+  if [[ ! -d "$workdir" ]]; then
+    fail "Workdir saknas: $workdir"
+    exit 1
+  fi
+
+  # create signal file
+  if ((need_mount)) && [[ -n "$signal_file" ]]; then
+    if ((DRY_RUN)); then
+      log "Would touch signal file: $signal_file"
+    else
+      run touch -- "$signal_file"
+      verbose "signal: $signal_file created."
+    fi
+  fi
+
+  # cd + exec (wezterm navigates to ws ?)
+  if ((DRY_RUN)); then
+    log "Would cd: $workdir"
+    log "Would exec: \$SHELL -l"
+  else
+    cd -- "$workdir"
+    log "Entering shell in: $workdir"
+    exec "${SHELL:-/bin/bash}" -l # or ?
+  fi
+}
+
+#-- CLI -------------------------------
+#subcmd is first non-flag arg
+cmd=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  --dry-run) DRY_RUN=1 ;;
+  --verbose) VERBOSE=1 ;;
+  --no-color) COLOR=0 ;;
+  --no-emoji) EMOJI=0 ;;
+  mount | unmount | status | enter)
+    cmd="$1"
+    shift
+    break
+    ;;
+  *)
+    fail "Unknown flag: $1"
+    exit 2
+    ;;
+  esac
+  shift
+done
+
+[[ -n "$cmd" ]] || {
+  usage
+  exit 2
+}
+case "$cmd" in
+mount) mount_all ;;
+unmount) unmount_all ;;
+status) status_all ;;
+enter) enter_mode "$@" ;;
+esac
