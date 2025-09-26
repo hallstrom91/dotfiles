@@ -1,0 +1,40 @@
+#---- Universal extract function
+extract() {
+  if [ $# -eq 0 ]; then
+    echo "Usage: extract <archive-file>" >&2
+    return 2
+  fi
+
+  local file=$1
+  if [ ! -f "$file" ]; then
+    echo "'$file' is not a valid file."
+    return 1
+  fi
+
+  case "$file" in
+  *.tar.gz | *.tgz) tar xvzf -- "$file" ;;
+  *.tar.bz2 | *.tbz2) tar xvjf -- "$file" ;;
+  *.tar.xz) tar xvJf -- "$file" ;;
+  *.tar) tar xvf -- "$file" ;;
+  *.zip) unzip -- "$file" ;;
+  *.rar) unrar x -- "$file" ;;
+  *.7z) 7z x -- "$file" ;;
+  *)
+    echo "extract: '$file' - format not supported" >&2
+    return 3
+    ;;
+  esac
+}
+
+#---- BAT-alias (adaptable)
+
+#clear alias before setting new
+alias bat &>/dev/null && unalias bat 2>/dev/null
+
+if command -v bat >/dev/null 2>&1; then
+  alias bat="bat"
+elif command -v batcat >/dev/null 2>&1; then
+  alias bat="batcat"
+else
+  alias bat="cat"
+fi

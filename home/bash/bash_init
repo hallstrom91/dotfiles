@@ -1,6 +1,0 @@
-#starship
-eval "$(starship init bash)"
-
-#fzf
-# [ -f ~/.fzf.bash ] && source ~/.fzf.bash
-

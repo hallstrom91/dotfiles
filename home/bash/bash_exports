@@ -1,26 +1,44 @@
-# NVM
+#---- Terminal / Starship -------------
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" #load nvm
+[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
 
-NODE_PATH=$(npm root -g)
-export NODE_PATH
+# set TERM if kitty is not set
+export TERM="${TERM:-xterm-256color}"
 
-# Git Credential Manager (PGP)
-GPG_TTY=$(tty)
-export GPG_TTY
+if [ -d "$HOME/.local/kitty.app/lib/kitty/terminfo" ]; then
+  export TERMINFO="$HOME/.local/kitty.app/lib/kitty/terminfo"
+fi
 
-# Kitty / Starship (Term-related)
-export TERM="xterm-256color"
-export TERMINFO="$HOME/.local/kitty.app/lib/kitty/terminfo"
 export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
 export STARSHIP_CACHE="$HOME/.config/starship/cache/"
 
-# NVIM
-export PATH="/opt/nvim-linux-x86_64/bin:$PATH"
+#---- GPG: TTY-pinentry ------------
+GPG_TTY=$(tty)
 
+# only if TTY exists (IA-shell)
+if [ -t 1 ]; then
+  export GPG_TTY
+fi
 
-# Dotnet
-export DOTNET_THREADPOOL_MINTHREADS=2
-export PATH="$HOME/.dotnet/tools:$PATH"
+#---- Node / NP M
+export NVM_DIR="$HOME/.nvm"
+NODE_PATH="$(npm root -g 2>/dev/null)"
 
+if command -v npm >/dev/null 2>&1; then
+  export NODE_PATH
+fi
+
+#---- Neovim
+if [ -d "/opt/nvim-linux-x86_64/bin" ]; then
+  export PATH="/opt/nvim-linux-x86_64/bin:$PATH"
+#export EDITOR="nvim" # ?
+fi
+
+#---- .NET
+export DOTNET_THREADPOOL_MINTHREADS
+if [ -d "$HOME/.dotnet/tools" ]; then
+  export PATH="$HOME/.dotnet/tools:$PATH"
+fi
+
+export SHELLCHECK_OPTS="-f json1"

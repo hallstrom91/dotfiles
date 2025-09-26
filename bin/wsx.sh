@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
-# mountext.sh - mount veracrypt containers/partitions/drives on pre-dest volume.
-# wsx.sh - workspace external mount, dismount, and custom.
-# Idempotent and clear error msgs.
 
-set -Eeuo pipefail
+# wsx.sh - mount,unmount,status,enter for VeraCrypt workspaces.
+
+set -Euo pipefail
 IFS=$'\n\t'
+
 #-- Config / Global -------------------
+
+PW_TIMEOUT="${VC_TIMEOUT:-60}" # 1min
 
 # Device/Parition (left) -> Mount points (right)
 PARTITIONS=(
-  "/dev/sda1" # external
-  "/dev/sda2" # external
+  "/dev/sdc1" # external
+  "/dev/sdc2" # external
 )
 
 MOUNT_POINTS=(
@@ -20,7 +22,9 @@ MOUNT_POINTS=(
 
 # Defaults
 DEFAULT_WORKDIR="/media/veracrypt2"
-DEFAULT_SIGNAL_FILE="/tmp/mount_success.signal" # or ""
+#DEFAULT_SIGNAL_FILE="mount_success.signal" # or ""
+DEFAULT_SIGNAL_FILE="/run/user/$(id -u)/wsx.mount.signal"
+LOCK_FILE="${WSX_LOCK_FILE:-/run/user/$(id -u)/wsx.mount.lock}"
 
 # FS-owner & mask
 FS_UID="$(id -u)"
@@ -85,7 +89,7 @@ err_trap() {
   exit "$ec"
 }
 trap cleanup EXIT
-trap err trap ERR
+trap err_trap ERR
 
 #-- Helpers ---------------------------
 usage() {
@@ -119,10 +123,15 @@ EOF
 
 is_mounted() {
   local mp="$1"
+
+  if veracrypt -t -l 2>/dev/null | awk 'NF{print $NF}' | grep -Fxq -- "$mp"; then
+    return 0
+  fi
+
   if command -v mountpoint >/dev/null 2>&1; then
     mountpoint -q -- "$mp"
   else
-    findmnt -rno TARGET -- "$mp" &>/dev/null
+    findmnt -rno TARGET -- "$mp" &>/dev/null 2>&1
   fi
 }
 
@@ -151,7 +160,7 @@ preflight() {
 ensure_mount_dir() {
   local mp="$1"
   if [[ ! -d "$mp" ]]; then
-    run sudo isntall -d -m 775 -- "$mp"
+    run sudo install -d -m 775 -- "$mp"
   fi
 }
 
@@ -160,21 +169,65 @@ read_passphrase_once() {
     log "Would prompt for veracrypt passphrase"
     return 0
   }
+
   if [[ -n "${PASSPHRASE-}" ]]; then return 0; fi
-  printf "Enter veracrypt passphrase: " >&2
-  IFS= read -r -s PASSPHRASE </dev/tty
+  local t="${PW_TIMEOUT:-30}"
+  printf "Enter veracrypt passphrase: (timeout %ss) " "$t" >&2
+
+  # -s = silent , -t = timeout ,
+  if ! IFS= read -r -s -t "$t" PASSPHRASE </dev/tty; then
+    printf '\n' >&2
+    fail "No passphrase entered within ${t}s."
+    return 1
+  fi
+
   printf '\n' >&2
   [[ -n "$PASSPHRASE" ]] || {
     fail "Empty passphrase - aborting..."
-    exit 1
+    return 1
   }
+}
+
+vc_mount() {
+  local part="$1" mp="$2"
+  local cmd=(sudo veracrypt --text --non-interactive --stdin --fs-options="$FSOPTS" --keyfiles= --protect-hidden=no --mount "$part" "$mp")
+
+  if command -v timeout >/dev/null 2>&1; then
+    # fg dont disturb sudo
+    cmd=(timeout --foreground "${VC_TIMEOUT}s" "${cmd[@]}")
+  else
+    warn "timeout(1) missing - going without timeout (if err, press CTRL+C)"
+  fi
+
+  if ! printf "%s" "$PASSPHRASE" | "${cmd[@]}"; then
+    local ec=$?
+    if [[ $ec -eq 124 ]]; then
+      fail "VeraCrypt timeout after ${VC_TIMEOUT}s: $part"
+    else
+      fail "Mount unsuccessful (exit $ec): $part"
+    fi
+    return 1
+  fi
+}
+
+wait_for_dir() {
+  local dir="$1" s="${2:-15}"
+  while ((s-- > 0)); do
+    [[ -d "$dir" ]] && return 0
+    sleep 1
+  done
+  return 1
+}
+
+signal_file_path() {
+  printf '%s\n' "${WSX_SIGNAL_FILE:-$DEFAULT_SIGNAL_FILE}"
 }
 
 #-- Main ------------------------------
 mount_all() {
   preflight
 
-  all_ok=1
+  local all_ok=1
   for mp in "${MOUNT_POINTS[@]}"; do
     if ! is_mounted "$mp"; then
       all_ok=0
@@ -184,10 +237,12 @@ mount_all() {
 
   if ((all_ok)); then
     warn "All mount points already mounted."
-    exit 0
+    return 0
   fi
 
-  read_passphrase_once
+  if ! read_passphrase_once; then
+    return 1
+  fi
 
   local i part mp
   for i in "${!PARTITIONS[@]}"; do
@@ -204,10 +259,8 @@ mount_all() {
     if ((DRY_RUN)); then
       log "Would run: veracrypt --text --non-interactive --stdin --fs-options='$FSOPTS' --mount '$part' '$mp'"
     else
-      # send passphrase thru FD 3, dont mix with future stdin
-      if veracrypt --text --non-interactive --stdin-fd=3 --fs-options="$FSOPTS" --mount "$part" "$mp" 3<<<"$PASSPHRASE"; then
-        : else fail "Mount failed: $part"
-        exit 1
+      if ! vc_mount "$part" "$mp"; then
+        return 1
       fi
     fi
 
@@ -220,6 +273,7 @@ mount_all() {
   done
 }
 
+# Unmount all containers/volumes
 unmount_all() {
   preflight
   local all_success=1
@@ -231,9 +285,9 @@ unmount_all() {
       # check if VC-volume
       if sudo veracrypt -t -l | grep -Fq -- "$mp"; then
         if run sudo veracrypt --text --dismount "$mp" --non-interactive; then
-          success "Dismounted: $mp"
+          success "Unmounted: $mp"
         else
-          warn "Could not dismount (busy busy busy?): $mp"
+          warn "Could not unmount (busy busy busy?): $mp"
           all_success=0
           any_busy=1
         fi
@@ -242,15 +296,18 @@ unmount_all() {
         all_success=0
       fi
     else
-      warn "$mp: already dismounted."
+      warn "$mp: already unmounted."
     fi
   done
 
   if ((all_success)); then
-    success "All volumes dismounted."
+    success "All volumes unmounted."
+    local sf
+    sf="$DEFAULT_SIGNAL_FILE"
+    [[ -n "$sf" ]] && run rm -f -- "$sf" && verbose "signal file: $sf removed."
   else
     if ((any_busy)); then
-      warn "Some volumes could not be dismounted. Tip of the day: lsof +D /media/veracryptX"
+      warn "Some volumes could not be unmounted. Tip of the day: lsof +D /media/veracryptX"
     fi
     return 1
   fi
@@ -265,7 +322,7 @@ status_all() {
     if is_mounted "$mp"; then
       echoe "${_G}mounted${_N} $mp (from $part)"
     else
-      echoe "${_Y}no parition mounted${_N} $mp (from $part)"
+      echoe "${_Y}not mounted${_N} $mp (from $part)"
     fi
   done
 }
@@ -274,6 +331,7 @@ status_all() {
 enter_mode() {
   local workdir="$DEFAULT_WORKDIR"
   local signal_file="$DEFAULT_SIGNAL_FILE"
+  local EXEC_SHELL=0
 
   # parse "enter-mode" specific flags
   while [[ $# -gt 0 ]]; do
@@ -282,9 +340,13 @@ enter_mode() {
       workdir="$2"
       shift 2
       ;;
-    --signal-fiile)
+    --signal-file)
       signal_file="$2"
       shift 2
+      ;;
+    --exec-shell)
+      EXEC_SHELL=1
+      shift
       ;;
     *)
       fail "Unknown flag for 'enter': $1"
@@ -292,8 +354,6 @@ enter_mode() {
       ;;
     esac
   done
-
-  preflight
 
   # check missing mounts
   local need_mount=0
@@ -305,42 +365,44 @@ enter_mode() {
   done
 
   if ((need_mount)); then
-    mount_all
-  else
-    warn "All mountpoints are already mounted."
-  fi
+    exec 9>"$LOCK_FILE"
+    if flock -n 9; then
+      preflight
+      if ! mount_all; then
+        warn "Mount failed."
+      else
 
-  # wait for ws
-  local tries=10
-  while ((tries-- > 0)); do
-    [[ -d "$workdir" ]] && break
-    sleep 1
-  done
-
-  if [[ ! -d "$workdir" ]]; then
-    fail "Workdir saknas: $workdir"
-    exit 1
-  fi
-
-  # create signal file
-  if ((need_mount)) && [[ -n "$signal_file" ]]; then
-    if ((DRY_RUN)); then
-      log "Would touch signal file: $signal_file"
+        if [[ -n "$signal_file" ]]; then
+          if ((DRY_RUN)); then
+            log "Would touch signal file: $signal_file"
+          else
+            run touch -- "$signal_file"
+            verbose "signal: $signal_file created."
+          fi
+        fi
+      fi
     else
-      run touch -- "$signal_file"
-      verbose "signal: $signal_file created."
+      warn "Mount is ongoing in another process. "
+      wait_for_dir "$workdir" 30 || warn "workdir missing: $workdir"
     fi
   fi
 
-  # cd + exec (wezterm navigates to ws ?)
-  if ((DRY_RUN)); then
-    log "Would cd: $workdir"
-    log "Would exec: \$SHELL -l"
-  else
-    cd -- "$workdir"
-    log "Entering shell in: $workdir"
-    exec "${SHELL:-/bin/bash}" -l # or ?
+  # navigate
+  if ! wait_for_dir "$workdir" 5; then
+    warn "Workdir missing: $workdir - redirect to \$HOME."
+    workdir="$HOME"
   fi
+
+  cd -- "$workdir" || {
+    fail "Could not cd into: $workdir"
+    exit1
+  }
+
+  log "Opening shell in: $workdir"
+  if ((EXEC_SHELL)); then
+    exec "${SHELL:-/bin/bash}"
+  fi
+
 }
 
 #-- CLI -------------------------------
