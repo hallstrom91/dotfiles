@@ -142,6 +142,26 @@ return {
     end,
   },
 
+  ----| Nvim Lint |----
+  {
+    "mfussenegger/nvim-lint",
+    opts = {},
+    event = { "BufReadPost", "BufNewFile" },
+    config = function()
+      local lint = require("lint")
+
+      lint.linters_by_ft = {
+        sh = { "shellcheck" },
+        bash = { "shellcheck" },
+      }
+
+      lint.linters.shellcheck = vim.tbl_extend("force", lint.linters.shellcheck or {}, {
+        env = { SHELLCHECK_OPTS = "-f json1" }, -- no external!
+        ignore_exitcode = true,
+      })
+    end,
+  },
+
   ----| Whichkey |----
   {
     "folke/which-key.nvim",

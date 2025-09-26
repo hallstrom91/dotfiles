@@ -23,6 +23,8 @@ $character\
 
 palette = 'vscdark'
 add_newline = true
+scan_timeout = 50
+command_timeout = 1000
 
 [palettes.dracula]
 foreground = '#F8F8F2'

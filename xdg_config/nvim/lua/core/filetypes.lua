@@ -5,11 +5,17 @@ vim.filetype.add({
     sh = "sh",
   },
   filename = {
-    -- ["filename"] = "name"
+    [".bash_functions"] = "sh",
+    [".bash_aliases"] = "sh",
+    [".bash_exports"] = "sh",
+    ["bash_functions"] = "sh",
+    ["bash_aliases"] = "sh",
+    ["bash_exports"] = "sh",
   },
   pattern = {
     [".*%.env.*"] = "dotenv", -- match all .env* -files
-    [".*%.bash.*"] = "sh", -- match all .bash* -files
-    ["^bash.*"] = "sh", -- match all bash* -files
+    [".*%.bash*"] = "sh", -- match all .bash* -files
+    ["^bash*"] = "sh", -- match all bash* -files
+    -- [".*/%.bash/bash_*"] = "sh",
   },
 })
