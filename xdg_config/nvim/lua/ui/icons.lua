@@ -32,4 +32,33 @@ icons.git_signs_staged = {
   untracked = { text = "󱀶" },
 }
 
+icons.cmpkind_icons = {
+  Text = "󰦨", -- nf-md-text
+  Method = "", -- nf-cod-symbol_method
+  Function = "󰊕", --nf-md-function |-- or "󰡱" -- nf-md-function-variant
+  Constructor = "󰒓", --nf-md-cog
+  Field = "", --nf-cod-symbol_field
+  Variable = "󰫧", --nf-md-variable
+  Class = "", --mf-cod-symbol_class
+  Interface = "", --nf-cod-symbol_interface
+  --
+  Module = "",
+  Property = "󰜢",
+  Unit = "",
+  Value = "󰎠",
+  Enum = "",
+  Keyword = "󰌋",
+  Snippet = "",
+  Color = "󰏘",
+  File = "󰈙",
+  Reference = "",
+  Folder = "󰉋",
+  EnumMember = "",
+  Constant = "󰏿",
+  Struct = "",
+  Event = "",
+  Operator = "󰆕",
+  TypeParameter = "󰅲",
+}
+
 return icons
