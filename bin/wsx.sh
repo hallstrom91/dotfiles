@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 # wsx.sh - mount,unmount,status,enter for VeraCrypt workspaces.
 
 set -Euo pipefail
@@ -7,24 +6,50 @@ IFS=$'\n\t'
 
 #-- Config / Global -------------------
 
-PW_TIMEOUT="${VC_TIMEOUT:-60}" # 1min
-
 # Device/Parition (left) -> Mount points (right)
 PARTITIONS=(
-  "/dev/sdc1" # external
-  "/dev/sdc2" # external
+  "/dev/sda1" # external
+  "/dev/sda2" # external
 )
 
 MOUNT_POINTS=(
   "/media/veracrypt1"
   "/media/veracrypt2"
 )
-
 # Defaults
+VC_TIMEOUT="${VC_TIMEOUT:-30}" # 30s
+PW_TIMEOUT="${PW_TIMEOUT:-60}" # 1min
 DEFAULT_WORKDIR="/media/veracrypt2"
-#DEFAULT_SIGNAL_FILE="mount_success.signal" # or ""
-DEFAULT_SIGNAL_FILE="/run/user/$(id -u)/wsx.mount.signal"
-LOCK_FILE="${WSX_LOCK_FILE:-/run/user/$(id -u)/wsx.mount.lock}"
+
+# runtime dir resolution
+uid="$(id -u)"
+runtime_dir="${XDG_RUNTIME_DIR:-/run/user/$uid}"
+[[ -d "$runtime_dir" && -w "$runtime_dir" ]] || runtime_dir="/tmp/"
+
+DEFAULT_LOCK_FILE="$runtime_dir/wsx.$uid.mount.lock"
+DEFAULT_SIGNAL_FILE="$runtime_dir/wsx.$uid.mount.signal"
+
+signal_file_path() {
+  printf '%s\n' "${WSX_SIGNAL_FILE:-$DEFAULT_SIGNAL_FILE}"
+}
+
+lock_file_path() {
+  printf "%s\n" "${WSX_LOCK_FILE:-$DEFAULT_LOCK_FILE}"
+}
+
+# runtime_dir() {
+#   local d="${XDG_RUNTIME_DIR:-/run/user/${uid}}"
+#   [[ -d "$d" && -w "$d" ]] || d="/tmp"
+#   printf "%s\n" "$d"
+# }
+# RUNTIME_DIR="$"
+# LOCK_FILE="${WSX_LOCK_FILE:-/run/user/$(id -u)/wsx.mount.lock}"
+# DEFAULT_SIGNAL_FILE="/run/user/$(id -u)/wsx.mount.signal"
+#
+# if [[ ! -d "/run/user/$(id -u)" ]]; then
+#   LOCK_FILE="/tmp/wsx.$(id -u).mount.lock"
+#   DEFAULT_SIGNAL_FILE="/tmp/wsx.$(id -u).mount.signal"
+# fi
 
 # FS-owner & mask
 FS_UID="$(id -u)"
@@ -121,6 +146,7 @@ usage() {
 EOF
 }
 
+# helper - is mounted ?
 is_mounted() {
   local mp="$1"
 
@@ -131,10 +157,11 @@ is_mounted() {
   if command -v mountpoint >/dev/null 2>&1; then
     mountpoint -q -- "$mp"
   else
-    findmnt -rno TARGET -- "$mp" &>/dev/null 2>&1
+    findmnt -rno TARGET -- "$mp" >/dev/null 2>&1
   fi
 }
 
+# helper - preflight check
 preflight() {
   command -v veracrypt >/dev/null 2>&1 || {
     fail "Veracrypt is missing from \$PATH"
@@ -157,6 +184,7 @@ preflight() {
   fi
 }
 
+# helper - ensure mounted disk and dir is accessable
 ensure_mount_dir() {
   local mp="$1"
   if [[ ! -d "$mp" ]]; then
@@ -164,6 +192,7 @@ ensure_mount_dir() {
   fi
 }
 
+# helper - read passphrase
 read_passphrase_once() {
   ((DRY_RUN)) && {
     log "Would prompt for veracrypt passphrase"
@@ -171,7 +200,7 @@ read_passphrase_once() {
   }
 
   if [[ -n "${PASSPHRASE-}" ]]; then return 0; fi
-  local t="${PW_TIMEOUT:-30}"
+  local t="${PW_TIMEOUT}"
   printf "Enter veracrypt passphrase: (timeout %ss) " "$t" >&2
 
   # -s = silent , -t = timeout ,
@@ -188,18 +217,18 @@ read_passphrase_once() {
   }
 }
 
+# helper - VC mount
 vc_mount() {
   local part="$1" mp="$2"
-  local cmd=(sudo veracrypt --text --non-interactive --stdin --fs-options="$FSOPTS" --keyfiles= --protect-hidden=no --mount "$part" "$mp")
+  local vc_argv=(sudo veracrypt --text --non-interactive --stdin --fs-options="$FSOPTS" --keyfiles= --protect-hidden=no --mount "$part" "$mp")
 
   if command -v timeout >/dev/null 2>&1; then
-    # fg dont disturb sudo
-    cmd=(timeout --foreground "${VC_TIMEOUT}s" "${cmd[@]}")
+    vc_argv=(timeout --foreground "${VC_TIMEOUT}s" "${vc_argv[@]}")
   else
     warn "timeout(1) missing - going without timeout (if err, press CTRL+C)"
   fi
 
-  if ! printf "%s" "$PASSPHRASE" | "${cmd[@]}"; then
+  if ! printf "%s" "$PASSPHRASE" | "${vc_argv[@]}"; then
     local ec=$?
     if [[ $ec -eq 124 ]]; then
       fail "VeraCrypt timeout after ${VC_TIMEOUT}s: $part"
@@ -209,7 +238,7 @@ vc_mount() {
     return 1
   fi
 }
-
+# wait for mounted volume and dir
 wait_for_dir() {
   local dir="$1" s="${2:-15}"
   while ((s-- > 0)); do
@@ -217,10 +246,6 @@ wait_for_dir() {
     sleep 1
   done
   return 1
-}
-
-signal_file_path() {
-  printf '%s\n' "${WSX_SIGNAL_FILE:-$DEFAULT_SIGNAL_FILE}"
 }
 
 #-- Main ------------------------------
@@ -303,7 +328,7 @@ unmount_all() {
   if ((all_success)); then
     success "All volumes unmounted."
     local sf
-    sf="$DEFAULT_SIGNAL_FILE"
+    sf="$(signal_file_path)"
     [[ -n "$sf" ]] && run rm -f -- "$sf" && verbose "signal file: $sf removed."
   else
     if ((any_busy)); then
@@ -330,7 +355,9 @@ status_all() {
 # For WezTerm Terminal
 enter_mode() {
   local workdir="$DEFAULT_WORKDIR"
-  local signal_file="$DEFAULT_SIGNAL_FILE"
+  local signal_file="" # CLI signal_file set ?
+  # local signal_file="$DEFAULT_SIGNAL_FILE"
+
   local EXEC_SHELL=0
 
   # parse "enter-mode" specific flags
@@ -365,7 +392,8 @@ enter_mode() {
   done
 
   if ((need_mount)); then
-    exec 9>"$LOCK_FILE"
+    exec 9>"$(lock_file_path)"
+    # exec 9>"$LOCK_FILE"
     if flock -n 9; then
       preflight
       if ! mount_all; then
@@ -373,11 +401,13 @@ enter_mode() {
       else
 
         if [[ -n "$signal_file" ]]; then
+          # CLI > env > default
+          local effective_signal="${signal_file:-$(signal_file_path)}"
           if ((DRY_RUN)); then
-            log "Would touch signal file: $signal_file"
+            log "Would touch signal file: $effective_signal"
           else
-            run touch -- "$signal_file"
-            verbose "signal: $signal_file created."
+            run touch -- "$effective_signal"
+            verbose "signal: $effective_signal created."
           fi
         fi
       fi
@@ -395,7 +425,7 @@ enter_mode() {
 
   cd -- "$workdir" || {
     fail "Could not cd into: $workdir"
-    exit1
+    exit 1
   }
 
   log "Opening shell in: $workdir"
@@ -406,7 +436,7 @@ enter_mode() {
 }
 
 #-- CLI -------------------------------
-#subcmd is first non-flag arg
+#cmd is first non-flag arg
 cmd=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
