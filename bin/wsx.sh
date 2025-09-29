@@ -37,20 +37,6 @@ lock_file_path() {
   printf "%s\n" "${WSX_LOCK_FILE:-$DEFAULT_LOCK_FILE}"
 }
 
-# runtime_dir() {
-#   local d="${XDG_RUNTIME_DIR:-/run/user/${uid}}"
-#   [[ -d "$d" && -w "$d" ]] || d="/tmp"
-#   printf "%s\n" "$d"
-# }
-# RUNTIME_DIR="$"
-# LOCK_FILE="${WSX_LOCK_FILE:-/run/user/$(id -u)/wsx.mount.lock}"
-# DEFAULT_SIGNAL_FILE="/run/user/$(id -u)/wsx.mount.signal"
-#
-# if [[ ! -d "/run/user/$(id -u)" ]]; then
-#   LOCK_FILE="/tmp/wsx.$(id -u).mount.lock"
-#   DEFAULT_SIGNAL_FILE="/tmp/wsx.$(id -u).mount.signal"
-# fi
-
 # FS-owner & mask
 FS_UID="$(id -u)"
 FS_GID="$(id -g)"
