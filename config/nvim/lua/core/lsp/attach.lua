@@ -2,6 +2,7 @@ local M = {}
 
 function M.on_attach(client, bufnr)
 	local mod = require("utils.lsp_utils")
+	local ok_t, builtin = pcall(require, "telescope.builtin")
 	-- base keymaps
 	mod.set_lsp_keymap(client, bufnr, "K", vim.lsp.buf.hover, { desc = "Hover", requires = "textDocument/hover" })
 	mod.set_lsp_keymap(
@@ -13,7 +14,6 @@ function M.on_attach(client, bufnr)
 	)
 
 	-- basic telescope lsp pickers
-	local ok_t, builtin = pcall(require, "telescope.builtin")
 	if ok_t then
 		mod.set_lsp_keymap(
 			client,

@@ -3,12 +3,12 @@ return {
 		"lewis6991/gitsigns.nvim",
 		event = { "BufReadPre", "BufNewFile" },
 		opts = function()
-			local icons = require(utils.icons_utils)
+			local icons = require("utils.icons_utils")
 			local ic_gitsigns = icons.git_signs
-			local ic_gitstaged = require
+			local ic_gitstaged = icons.git_signs_staged
 			return {
-				signs = ic_gitsigns,
-				signs_staged_enable = ic_gitstaged,
+				 signs = ic_gitsigns,
+				signs_staged = ic_gitstaged,
 				-- signs = icons.git_signs,
 				-- signs_staged = icons.git_signs_staged,
 				signs_staged_enable = true,
@@ -44,5 +44,5 @@ return {
 				},
 			}
 		end,
-	},
+	}
 }

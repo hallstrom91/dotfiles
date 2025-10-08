@@ -5,13 +5,13 @@ return {
 		local editor_utils = require("utils.editor_utils")
 		local clock = editor_utils.clock
 		local lsp_clients = editor_utils.lsp_clients
-
 		return {
 			options = {
 				theme = "vscode",
 				component_separators = "",
 				section_separators = { left = " ", right = " " },
 				always_divide_middle = true,
+				always_show_tabline = true,
 				disabled_filetypes = {
 					statusline = { "neo-tree", "git", "fugitive", "trouble", "dashboard" },
 					winbar = { "neo-tree", "DiffviewFiles", "git", "dashboard" },

@@ -1,7 +1,9 @@
 -- To see the capabilities for a given server, try this in a LSP-enabled buffer:
 --     :lua =vim.lsp.get_clients()[1].server_capabilities
-local on_attach = require("core.lsp.attach")
 local ok, cmp = pcall(require, "cmp_nvim_lsp")
+local on_attach = require("core.lsp.attach")
+-- local lsp_utils = require("utils.lsp_utils")
+
 local base = vim.lsp.protocol.make_client_capabilities()
 local capabilities = ok and cmp.default_capabilities(base) or base
 
@@ -23,4 +25,4 @@ vim.lsp.config("*", {
 	root_markers = { ".git" },
 })
 
-vim.lsp.enable()
+vim.lsp.enable({ "lua_ls" })

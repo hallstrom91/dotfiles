@@ -2,9 +2,12 @@ return {
 	----| File Explorer/Tree |----
 	{
 		"nvim-neo-tree/neo-tree.nvim",
-		keys = {
-			{ "<C-n>", ":Neotree toggle reveal_force_cwd=true<CR>", desc = "Open File Explorer" },
-		},
+		branch = "v3.x",
+		init = function()
+			vim.keymap.set("n", "<C-n>", ":Neotree<CR>", { desc = "File Explorer" })
+			-- vim.keymap.set("n", "<C-n>", ":Neotree toggle reveal_force_cwd=true<CR>", { desc = "File Explorer" })
+		end,
+		lazy = false,
 		opts = {
 			close_if_last_window = false,
 			popup_border_style = "rounded",
@@ -68,7 +71,7 @@ return {
 				if pick_win_id then
 					vim.api.nvim_set_current_win(pick_win_id)
 				else
-					vim.notify("Action aborted", vim.log.levels.INFO)
+					vim.notify("Action aborted", vim.log.levels.DEBUG)
 				end
 			end, { desc = "Window picker" })
 

@@ -2,7 +2,12 @@ return {
 	----| Autopairs (){}[]  |----
 	"windwp/nvim-autopairs",
 	event = "InsertEnter",
-	opts = function()
+	opts = {
+		check_ts = true,
+		enable_check_bracket_line = true,
+		disable_filetype = { "TelescopePrompt", "spectre_panel", "neo-tree" },
+	},
+	config = function(_, opts)
 		local npairs = require("nvim-autopairs")
 		npairs.setup(opts)
 

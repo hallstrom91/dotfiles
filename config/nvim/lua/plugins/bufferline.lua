@@ -1,15 +1,18 @@
 return {
 	"akinsho/bufferline.nvim",
 	version = "*",
+	event = "VimEnter",
 	keys = {
 		{ "<Tab>", "<cmd>BufferLineCycleNext<cr>", desc = "Next buffer", mode = "n", silent = true },
 		{ "<S-Tab>", "<cmd>BufferLineCyclePrev<cr>", desc = "Prev buffer", mode = "n", silent = true },
-		{ "<leader>tn" "<cmd>tabnew<cr>", desc = "New tab", mode = "n", silent = true },
+		{ "<leader>tn", "<cmd>tabnew<cr>", desc = "New tab", mode = "n", silent = true },
 	},
-	opts = {
+	opts = function()
+		local bfl = require("bufferline")
+		return {
 			options = {
 				mode = "tabs",
-				style_preset = require("bufferline").style_preset.default,
+				style_preset = bfl.style_preset.default,
 				themable = true,
 				numbers = "ordinal", -- (can be "none", "ordinal", "buffer_id", or "both")
 				diagnostics = "nvim_lsp",
@@ -32,5 +35,6 @@ return {
 					style = "icon", -- can be 'icon', 'underline', or 'none'
 				},
 			},
-		},
+		}
+	end,
 }

@@ -24,8 +24,8 @@ return {
 			--	require("telescope").load_extension("noice")
 			return {
 				defaults = {
-					-- prompt_prefix = ""
-					-- selection_caret = ""
+					prompt_prefix = " ", -- nf-fa-search
+					selection_caret = " ", -- nf-fa-caret_right
 					path_display = { "truncate" },
 					file_ignore_patterns = { "node_modules", ".git/" },
 					-- mappings = {

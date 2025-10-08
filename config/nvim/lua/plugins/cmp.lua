@@ -2,7 +2,7 @@ return {
 	----| autocomplete/intellisense |----
 	{
 		"hrsh7th/nvim-cmp",
-		event = "InsertEnter",
+		event = { "InsertEnter", "CmdlineEnter" },
 		dependencies = {
 			-- Completion sources
 			"hrsh7th/cmp-nvim-lsp",
@@ -13,7 +13,10 @@ return {
 			"saadparwaiz1/cmp_luasnip",
 		},
 		opts = function()
-			local cmp = require("nvim-cmp")
+			local ok_cmp, cmp = pcall(require, "cmp")
+			if not ok_cmp then
+				return
+			end
 			local cmpkind = require("utils.icons_utils").cmpkind_icons
 
 			-- pcall other plugins needed
