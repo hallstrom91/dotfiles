@@ -8,8 +8,8 @@ IFS=$'\n\t'
 
 # Device/Parition (left) -> Mount points (right)
 PARTITIONS=(
-	"/dev/sda1" # external
-	"/dev/sda2" # external
+	"/dev/sdc1" # external
+	"/dev/sdc2" # external
 )
 
 MOUNT_POINTS=(

@@ -13,9 +13,27 @@ LINK_CREATED=1   # create new
 LINK_REPLACE=2   # wrong/broken replaced
 LINK_OVERWROTE=3 # file/dir (non sl) overwritten.
 
+: "${DOTFILES:?DOTFILES must be set}"
 : "${NO_BAK:=0}" # 1 = write over files/dirs without backup
 : "${BACKUP_ROOT:=$HOME/.local/state/dotfiles/backups}"
 
+# prettier paths in logs
+_link::shorten() {
+	local path=$1
+	local df=${DOTFILES-}
+	local hm=${HOME-}
+	case "$path" in
+	"$df"/*)
+		printf 'dotfiles/%s\n' "${path#"$df"/}"
+		;;
+	"$hm"/*)
+		printf '~%s\n' "${path#"$hm"}"
+		;;
+	*) printf '%s\n' "$path" ;;
+	esac
+}
+
+# link::ensure SRC DST
 link::ensure() {
 	local src=$1 dst=$2
 
@@ -24,13 +42,8 @@ link::ensure() {
 	dst_dir_abs="$(readlink -f -- "$(dirname -- "$dst")")" || return 3
 	dst_abs="${dst_dir_abs}/$(basename -- "$dst")"
 
-	if [[ "$dst_abs" == "$dot_root"* ]]; then
-		logger::fail "refusing to create symlink inside repo: $dst_abs"
-		return 3
-	fi
-
 	[[ -z $src || -z $dst ]] && {
-		logger::fail "usage: link::ensure SRC $(logger::arrow) DST"
+		logger::fail "Usage: link::ensure SRC $(logger::arrow) DST"
 		return 2
 	}
 
@@ -38,9 +51,20 @@ link::ensure() {
 	repo::assert_inside "$src" || return 1  # only out from dotfiles
 	repo::assert_outside "$dst" || return 1 # never in to dotfiles
 
+	# prettier paths for logs
+	# only for usage in loggger::* msgs (not in VERBOSE == 1)
+	local src_p dst_p
+	src_p=$(_link::shorten "$src")
+	dst_p=$(_link::shorten "$dst")
+
+	if [[ "$dst_abs" == "$dot_root"* ]]; then
+		logger::fail "Refusing to create symlink inside repo: $dst_p"
+		return 3
+	fi
+
 	# already correct ?
 	if fs::is_symlink_to "$src" "$dst"; then
-		logger::success "Symlink is valid and correct: $src $(logger::arrow) $dst"
+		logger::success "Symlink is correct: $src_p $(logger::arrow) $dst_p"
 		return "$LINK_OK"
 	fi
 
@@ -50,7 +74,7 @@ link::ensure() {
 	if [[ -e $dst || -L $dst ]]; then
 		if [[ -L $dst ]]; then
 			if ((NO_BAK == 1)); then
-				logger::warn "Overwriting broken/wrong symlink: $dst"
+				logger::warn "Overwriting broken/wrong symlink: $dst_p"
 				fs::safe_rm "$dst" || return $?
 			else
 				backup::optional "$dst" "$BACKUP_ROOT" || {
@@ -64,7 +88,7 @@ link::ensure() {
 		else
 			# ordinary file/dir
 			if ((NO_BAK == 1)); then
-				logger::warn "Overwriting without backup: $dst"
+				logger::warn "Overwriting without backup: $dst_p"
 				fs::safe_rm "$dst" || return $?
 				cmd::run ln -s -- "$src" "$dst" || return $?
 				return "$LINK_OVERWROTE"
@@ -79,7 +103,7 @@ link::ensure() {
 		fi
 	fi
 
-	# or just create (new) symlink
+	# create (new) symlink
 	cmd::run ln -s -- "$src" "$dst" || return $?
 	return "$LINK_CREATED"
 }
