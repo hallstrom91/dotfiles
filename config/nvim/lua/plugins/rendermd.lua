@@ -1,6 +1,6 @@
 return {
 	"MeanderingProgrammer/render-markdown.nvim",
-	ft = "markdown",
+	ft = { "md", "markdown" },
 	opts = {
 		completions = { lsp = { enabled = true } },
 	},

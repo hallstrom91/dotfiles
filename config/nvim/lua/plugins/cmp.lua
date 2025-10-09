@@ -9,8 +9,8 @@ return {
 			"hrsh7th/cmp-buffer",
 			"hrsh7th/cmp-path",
 			"hrsh7th/cmp-cmdline",
-			-- snippet integration
 			"saadparwaiz1/cmp_luasnip",
+			"roginfarrer/cmp-css-variables",
 		},
 		opts = function()
 			local ok_cmp, cmp = pcall(require, "cmp")
@@ -223,6 +223,7 @@ return {
 
 	{
 		"roginfarrer/cmp-css-variables",
+		ft = { "javascript", "javascriptreact", "typescript", "typescriptreact", "css" },
 		lazy = true,
 	},
 }

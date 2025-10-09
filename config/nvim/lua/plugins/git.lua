@@ -7,10 +7,9 @@ return {
 			local ic_gitsigns = icons.git_signs
 			local ic_gitstaged = icons.git_signs_staged
 			return {
-				 signs = ic_gitsigns,
+				signs = ic_gitsigns,
 				signs_staged = ic_gitstaged,
-				-- signs = icons.git_signs,
-				-- signs_staged = icons.git_signs_staged,
+
 				signs_staged_enable = true,
 				signcolumn = true, -- Toggle with `:Gitsigns toggle_signs`
 				numhl = false,
@@ -44,5 +43,5 @@ return {
 				},
 			}
 		end,
-	}
+	},
 }
