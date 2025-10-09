@@ -192,6 +192,7 @@ link_tree() {
 
 	shopt -s globstar nullglob dotglob
 	local src rel dst rc pat
+	local -A _skip_once=()
 
 	for src in "$src_root"/**; do
 		[[ -e $src || -L $src ]] || continue  # broken symlinks include?
@@ -203,7 +204,23 @@ link_tree() {
 			[[ -z $pat ]] && continue
 			# shellcheck disable=SC2254
 			case "$rel" in
-			"$pat") continue 2 ;; # match globpattern and skip file
+			$pat)
+				if [[ "$pat" == */** ]]; then
+					local base="${pat%/**}"
+					if [[ -z ${_skip_once[$base]-} ]]; then
+						logger::info "Skip: ${base}/"
+						_skip_once[$base]=1
+					fi
+					# skip/silent all subdirs/files in logs
+					if ((VERBOSE == 1)); then
+						logger::verbose "Skip: $rel"
+					fi
+					continue 2
+				else
+					logger::info "Skip: $rel"
+					continue 2
+				fi
+				;;
 			esac
 		done
 
@@ -226,6 +243,73 @@ link_tree() {
 	done
 
 	shopt -u globstar dotglob nullglob
+}
+
+# link children (ex: config/nvim/<dirs>)
+link_children() {
+	local src_root=$1 dst_root=$2 what=$3
+	shift 3
+	local -a skip_globs=("$@") # optional globpattern to skip (depth-1)
+
+	# repo/dst guards
+	local dot_root src_abs dst_abs
+	dot_root="$(readlink -f -- "${DOTFILES}")" || return 3
+	src_abs="$(readlink -f -- "${src_root}")" || return 3
+	dst_abs="$(readlink -f -- "${dst_root}")" || return 3
+
+	# source MUST be inside repo
+	if [[ "$src_abs" != "$dot_root"* ]]; then
+		logger::fail "source not in DOTFILES: $src_abs"
+		return 3
+	fi
+
+	# dst NEVER inside repo
+	if [[ "$dst_abs" == "$dot_root" ]]; then
+		logger::fail "destination inside DOTFILES: $dst_abs"
+		return 3
+	fi
+
+	[[ -d $src_root ]] || {
+		logger::fail "Skip $what: no dir $src_root"
+		return 0
+	}
+
+	logger::info "Link (children) $what: $src_root $(logger::arrow) $dst_root"
+	fs::mkparent "$dst_root" || return $?
+
+	shopt -s dotglob nullglob
+
+	local src name dst pat rc
+	for src in "$src_root"/*; do
+		[[ -e $src || -L $src ]] || continue  # broken symlinks include?
+		[[ $src == "$src_root" ]] && continue # skip dir-root copy
+
+		name="${src##*/}"
+
+		# depth-1 skip pattern
+		for pat in "${skip_globs[@]}"; do
+			[[ -z $pat ]] && continue
+			# shellcheck disable=SC2254
+			case "$name" in
+			$pat)
+				logger::info "Skip: $name"
+				continue 2
+				;; # match globpattern and skip file
+			esac
+		done
+
+		dst="$dst_root/$name"
+
+		link::ensure "$src" "$dst"
+		rc=$?
+		if ((rc > 3)); then
+			logger::fail "link error - ($rc): $src $(logger:arrow) $dst"
+			shopt -u dotglob nullglob
+			return $rc
+		fi
+		logger::verbose "Link status - ($rc): $src $(logger::arrow) $dst"
+	done
+	shopt -u dotglob nullglob
 }
 
 # link src: wezterm/configs/{host}.lua
@@ -277,6 +361,8 @@ host::_infer() {
 	esac
 }
 
+# select correct cfg from `desktop|laptop` opt (if any)
+# based on hostname user@desktop or user@laptop
 host::resolve() {
 	local kind=$1 inferred
 	if [[ $kind == "desktop" || $kind == "laptop" ]]; then
@@ -312,14 +398,14 @@ fonts::_fccache() {
 	fi
 
 	if ! command -v fc-cache >/dev/null 2>&1; then
-		logger::warn "fc-cache not found: skipping font cache rebuild"
+		logger::warn "Command fc-cache not found: skipping font cache rebuild"
 	fi
 
 	#
 	if cmd::run "${prefix[@]}" fc-cache -f -- "${dirs[@]}"; then
-		logger::success "font cache rebuilt for: ${dirs[*]}"
+		logger::success "Font cache rebuilt for: ${dirs[*]}"
 	else
-		logger::fail "fc-cache failed for: ${dirs[*]}"
+		logger::fail "Failed to rebuild font cache: ${dirs[*]}"
 	fi
 }
 
@@ -334,27 +420,35 @@ main() {
 	KIND="$(host::resolve "$HOST_KIND")" || return $?
 	logger::info "Using host kind: $KIND"
 
-	local -a CONFIG_SKIP=('wezterm/configs/**' 'kitty/configs/**') # skip  wezterm,kitty main-cfgs
-	local -a DATA_SKIP=('fonts/**' "icons/**")                     # skip fonts,icons
+	local -a CONFIG_SKIP=('wezterm/configs/**' 'kitty/configs/**' 'nvim/**' 'starship/**') # skip values for SRC_CONFIG
+	local -a DATA_SKIP=('fonts/**' "icons/**")                                             # skip values for SRC_DATA
+	local -a HOME_SKIP=('gnupg/**')                                                        # skip values for SRC_HOME
 
 	case "$ONLY" in
 	all)
-		link_tree "$SRC_HOME" "$TARGET_HOME" "home"
+		link_tree "$SRC_HOME" "$TARGET_HOME" "home" "${HOME_SKIP[@]}"
+		copy::file "$SRC_HOME/gnupg/gpg-agent.conf" "$TARGET_HOME/.gnupg/gpg-agent.conf" 0600 || return $?
+
 		link_tree "$SRC_CONFIG" "$TARGET_CONFIG" "config" "${CONFIG_SKIP[@]}"
+		link_children "$SRC_CONFIG/nvim" "$TARGET_CONFIG/nvim" "nvim config"
+
 		link_tree "$SRC_DATA" "$TARGET_DATA" "data" "${DATA_SKIP[@]}"
 		link_tree "$SRC_BIN" "$TARGET_BIN" "bin"
+
 		# host-specific links (laptop|desktop)
 		link_wezterm_for_host "$KIND" || return $?                               # sl {desktop,laptop}.lua -> ~/.config/wezterm/wezterm.lua
 		link_kitty_for_host "$KIND" || return $?                                 # sl {desktop,laptop}.conf -> ~/.config/kitty/kitty.conf
 		copy::tree "$SRC_DATA/fonts" "$TARGET_DATA/fonts" 0644 0755 || return $? # copy fonts to dst (no sl)
 		copy::tree "$SRC_DATA/icons" "$TARGET_DATA/icons" 0644 0755 || return $? # copy icons to dst (no sl)
-		# rebuild font cache
-		fonts::_fccache
+		fonts::_fccache                                                          # rebuild font cache
 		;;
-	home) link_tree "$SRC_HOME" "$TARGET_HOME" "home" ;;
+	home)
+		link_tree "$SRC_HOME" "$TARGET_HOME" "home" "${HOME_SKIP[@]}"
+		copy::file "$SRC_HOME/gnupg/gpg-agent.conf" "$TARGET_HOME/.gnupg/gpg-agent.conf" 0600 || return $?
+		;;
 	config)
-		# logs::info "Installing dotfiles/config tree"
 		link_tree "$SRC_CONFIG" "$TARGET_CONFIG" "config" "${CONFIG_SKIP[@]}"
+		link_children "$SRC_CONFIG/nvim" "$TARGET_CONFIG/nvim" "nvim config"
 		link_wezterm_for_host "$KIND" || return $?
 		link_kitty_for_host "$KIND" || return $?
 		;;
@@ -362,7 +456,6 @@ main() {
 		link_tree "$SRC_DATA" "$TARGET_DATA" "data" "${DATA_SKIP[@]}"
 		copy::tree "$SRC_DATA/fonts" "$TARGET_DATA/fonts" 0644 0755 || return $?
 		copy::tree "$SRC_DATA/icons" "$TARGET_DATA/icons" 0644 0755 || return $?
-		# add call to fonts::_fccache if anything changed ?
 		fonts::_fccache
 		;;
 	bin) link_tree "$SRC_BIN" "$TARGET_BIN" "bin" ;;
