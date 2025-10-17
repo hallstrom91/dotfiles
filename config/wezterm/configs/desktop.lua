@@ -18,17 +18,17 @@ config.key_tables = keymaps.key_tables
 ---------------------
 ---- Core settings
 ---------------------
-local font_size = 10.5
+-- local font_size = 10.5
 
 ---------------------
 ---- Window
 ---------------------
 
 config.window_padding = {
-  top = 2,
-  right = 12,
-  bottom = 2,
-  left = 2,
+	top = 2,
+	right = 12,
+	bottom = 2,
+	left = 2,
 }
 
 config.initial_rows = 40
@@ -36,12 +36,12 @@ config.initial_cols = 120
 ---------------------
 ---- Fonts
 ---------------------
-
 config.font = wezterm.font_with_fallback({
-  "CaskaydiaCove NF", -- Nerd Font
-  "JetBrainsMono NF", -- fallback
+	"IosevkaTerm NFM",
+	"JetBrainsMono NF",
 })
-config.font_size = font_size
+
+config.font_size = 10.5
 
 ---------------------
 ---- Scrollbar
@@ -69,8 +69,8 @@ config.use_fancy_tab_bar = true
 config.enable_tab_bar = true
 config.tab_max_width = 60
 config.inactive_pane_hsb = {
-  saturation = 0.4,
-  brightness = 0.5,
+	saturation = 0.4,
+	brightness = 0.5,
 }
 
 ---------------------
@@ -79,10 +79,10 @@ config.inactive_pane_hsb = {
 
 config.audible_bell = "Disabled"
 config.visual_bell = {
-  fade_in_function = "EaseIn",
-  fade_in_duration_ms = 150,
-  fade_out_function = "EaseOut",
-  fade_out_duration_ms = 150,
+	fade_in_function = "EaseIn",
+	fade_in_duration_ms = 150,
+	fade_out_function = "EaseOut",
+	fade_out_duration_ms = 150,
 }
 ---------------------
 ---- Graphics & BG
