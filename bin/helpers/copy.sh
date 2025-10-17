@@ -165,7 +165,26 @@ copy::tree() {
 		fi
 
 		# file or symlin -> copy as filecontent
-		copy::file "$src" "$dst" "$fmode" || return $?
+		local ok=0 created=0 replaced=0 overwrote=0 # counters
+		copy::file "$src" "$dst" "$fmode"
+		rc=$?
+		case $rc in
+		"$COPY_OK") ((ok++)) ;;
+		"$COPY_CREATED") ((created++)) ;;
+		"$COPY_REPLACE") ((replaced++)) ;;
+		"$COPY_OVERWROTE") ((overwrote++)) ;;
+		*) # fatal
+			shopt -u globstar dotglob nullglob
+			return "$rc"
+			;;
+		esac
+		# log actions
+		((VERBOSE == 1)) && logger::verbose "copy::tree summary: ok=$ok created=$created replaced=$replaced overwrote=$overwrote"
+		# rc=$?
+		# if ((rc > COPY_OVERWROTE)); then
+		# 	shopt -u globstar dotglob nullglob
+		# 	return $rc
+		# fi
 	done
 	shopt -u globstar dotglob nullglob
 }
