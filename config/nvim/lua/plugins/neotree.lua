@@ -28,6 +28,40 @@ return {
 				name = {
 					trailing_slash = true,
 				},
+				symlink_target = {
+					enabled = false, -- default
+					text_format = " -> %s", -- %s will be replaced by target path
+				},
+			},
+			filesystem = {
+				filtered_items = {
+					visible = false, -- if true = show different style
+					hide_dotfiles = false, -- hide if dotprefix (.name)
+					hide_gitignored = true, -- only windows ?
+					hide_hidden = true,
+					hide_by_name = {
+						"node_modules",
+						"next",
+						".git",
+						".yarn",
+					},
+					always_show = {
+						".gitignored",
+						"*.log",
+					},
+					always_show_by_pattern = {
+						".env*",
+					},
+				},
+				follow_current_file = {
+					enabled = true, -- ?
+					leave_dirs_open = false,
+				},
+			},
+
+			source_selector = {
+				winbar = true,
+				statusline = false,
 			},
 
 			window = {

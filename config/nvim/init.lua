@@ -38,3 +38,15 @@ req_safe("core.lsp", { desc = "core.lsp" }) -- load lsp
 
 -- set colorscheme
 vim.cmd.colorscheme("vscode")
+
+-- move to standalone file
+vim.filetype.add({
+	filename = {
+		[".bash_functions"] = "bash",
+		[".bash_aliases"] = "bash",
+		[".bash_exports"] = "bash",
+		["bash_functions"] = "bash",
+		["bash_aliases"] = "bash",
+		["bash_exports"] = "bash",
+	},
+})

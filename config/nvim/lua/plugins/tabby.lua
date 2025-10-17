@@ -16,7 +16,7 @@ return {
 		-- local hl_tline = util.extract_nvim_hl("lualine_b_normal")
 		-- local hl_tline_fill = util.extract_nvim_hl("lualine_c_normal")
 		-- local hl_tline_sel = util.extract_nvim_hl("lualine_c_normal")
-
+		require("vscode.colors").get_colors()
 		return {
 			preset = "active_wins_at_tail",
 			option = {

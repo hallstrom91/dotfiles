@@ -24,6 +24,7 @@ opt.guicursor = {
 	"i-ci-ve:ver25",
 	"c:ver25",
 }
+
 -- defaults (buf/win)
 o.exrc = true
 o.secure = true
@@ -31,11 +32,11 @@ o.winborder = "rounded"
 o.cursorline = true
 -- o.cursorcolumn = "cursorcolumn"
 o.cursorlineopt = "both"
-o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-o.foldmethod = "expr"
-o.foldenable = false -- switch with keys: zi
-o.foldcolumn = 1
-o.foldlevelstart = 99
+-- o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+-- o.foldmethod = "expr"
+-- o.foldenable = false -- switch with keys: zi
+-- o.foldcolumn = 1
+-- o.foldlevelstart = 99
 
 -- external providers (disable = 0)
 vim.g.loaded_node_provider = 0

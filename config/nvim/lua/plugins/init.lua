@@ -12,6 +12,7 @@ return {
 	require("plugins.conform"),
 	require("plugins.neotree"),
 	require("plugins.winpicker"),
+	require("plugins.rendermd"),
 	require("plugins.git"),
 	require("plugins.lualine"),
 	require("plugins.mason"),
@@ -23,5 +24,6 @@ return {
 	require("plugins.yanky"),
 	require("plugins.highlight"),
 	require("plugins.themes"),
+	require("plugins.colorizer"),
 	-- undotree / telescope-undotree ?
 }
