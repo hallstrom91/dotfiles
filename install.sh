@@ -5,7 +5,7 @@ set -Euo pipefail
 ### global cfg-flags + defaults ###
 DRY_RUN=0               # OFF
 VERBOSE=0               # OFF
-NO_BAK=1                # OFF (later ON BY DEFAULT)
+NO_BAK=0                # ON (default)
 ICONS=1                 # ON (requires nerdfonts)
 COLOR=1                 # ON
 ONLY="all"              # all|home|config|data|bin
@@ -208,16 +208,16 @@ link_tree() {
 				if [[ "$pat" == */** ]]; then
 					local base="${pat%/**}"
 					if [[ -z ${_skip_once[$base]-} ]]; then
-						logger::info "Skip: ${base}/"
+						logger::info "link::tree skip: ${base}/"
 						_skip_once[$base]=1
 					fi
 					# skip/silent all subdirs/files in logs
 					if ((VERBOSE == 1)); then
-						logger::verbose "Skip: $rel"
+						logger::verbose "link::tree skip: $rel"
 					fi
 					continue 2
 				else
-					logger::info "Skip: $rel"
+					logger::info "link::tree skip: $rel"
 					continue 2
 				fi
 				;;
@@ -236,7 +236,7 @@ link_tree() {
 		link::ensure "$src" "$dst"
 		rc=$?
 		if ((rc > 3)); then
-			logger::fail "link error ($rc): $src $(logger::arrow) $dst"
+			logger::fail "Link failed ($rc): $src $(logger::arrow) $dst"
 			shopt -u globstar dotglob nullglob
 			return $rc
 		fi
@@ -259,18 +259,18 @@ link_children() {
 
 	# source MUST be inside repo
 	if [[ "$src_abs" != "$dot_root"* ]]; then
-		logger::fail "source not in DOTFILES: $src_abs"
+		logger::fail "Failed - source not in DOTFILES: $src_abs"
 		return 3
 	fi
 
 	# dst NEVER inside repo
 	if [[ "$dst_abs" == "$dot_root" ]]; then
-		logger::fail "destination inside DOTFILES: $dst_abs"
+		logger::fail "Failed - destination inside DOTFILES: $dst_abs"
 		return 3
 	fi
 
 	[[ -d $src_root ]] || {
-		logger::fail "Skip $what: no dir $src_root"
+		logger::fail "Failed - skip $what: no dir $src_root"
 		return 0
 	}
 
@@ -303,7 +303,7 @@ link_children() {
 		link::ensure "$src" "$dst"
 		rc=$?
 		if ((rc > 3)); then
-			logger::fail "link error - ($rc): $src $(logger:arrow) $dst"
+			logger::fail "Link error - ($rc): $src $(logger:arrow) $dst"
 			shopt -u dotglob nullglob
 			return $rc
 		fi
@@ -420,31 +420,33 @@ main() {
 	KIND="$(host::resolve "$HOST_KIND")" || return $?
 	logger::info "Using host kind: $KIND"
 
-	local -a CONFIG_SKIP=('wezterm/configs/**' 'kitty/configs/**' 'nvim/**' 'starship/**') # skip values for SRC_CONFIG
-	local -a DATA_SKIP=('fonts/**' "icons/**")                                             # skip values for SRC_DATA
-	local -a HOME_SKIP=('gnupg/**')                                                        # skip values for SRC_HOME
+	local -a CONFIG_SKIP=('wezterm/configs/**' 'kitty/configs/**' 'nvim/**') # skip values for SRC_CONFIG
+	local -a DATA_SKIP=('fonts/**' "icons/**")                               # skip values for SRC_DATA
+	local -a HOME_SKIP=('gnupg/**')                                          # skip values for SRC_HOME
 
 	case "$ONLY" in
 	all)
 		link_tree "$SRC_HOME" "$TARGET_HOME" "home" "${HOME_SKIP[@]}"
-		copy::file "$SRC_HOME/gnupg/gpg-agent.conf" "$TARGET_HOME/.gnupg/gpg-agent.conf" 0600 || return $?
+		copy::file "$SRC_HOME/gnupg/gpg-agent.conf" "$TARGET_HOME/.gnupg/gpg-agent.conf" 0600
 
 		link_tree "$SRC_CONFIG" "$TARGET_CONFIG" "config" "${CONFIG_SKIP[@]}"
 		link_children "$SRC_CONFIG/nvim" "$TARGET_CONFIG/nvim" "nvim config"
 
 		link_tree "$SRC_DATA" "$TARGET_DATA" "data" "${DATA_SKIP[@]}"
+		copy::tree "$SRC_DATA/fonts" "$TARGET_DATA/fonts" 0644 0755 # copy fonts to dst (no sl)
+		copy::tree "$SRC_DATA/icons" "$TARGET_DATA/icons" 0644 0755 # copy icons to dst (no sl)
+
 		link_tree "$SRC_BIN" "$TARGET_BIN" "bin"
 
 		# host-specific links (laptop|desktop)
-		link_wezterm_for_host "$KIND" || return $?                               # sl {desktop,laptop}.lua -> ~/.config/wezterm/wezterm.lua
-		link_kitty_for_host "$KIND" || return $?                                 # sl {desktop,laptop}.conf -> ~/.config/kitty/kitty.conf
-		copy::tree "$SRC_DATA/fonts" "$TARGET_DATA/fonts" 0644 0755 || return $? # copy fonts to dst (no sl)
-		copy::tree "$SRC_DATA/icons" "$TARGET_DATA/icons" 0644 0755 || return $? # copy icons to dst (no sl)
-		fonts::_fccache                                                          # rebuild font cache
+		link_wezterm_for_host "$KIND" || return $? # sl {desktop,laptop}.lua -> ~/.config/wezterm/wezterm.lua
+		link_kitty_for_host "$KIND" || return $?   # sl {desktop,laptop}.conf -> ~/.config/kitty/kitty.conf
+
+		fonts::_fccache # rebuild font cache
 		;;
 	home)
 		link_tree "$SRC_HOME" "$TARGET_HOME" "home" "${HOME_SKIP[@]}"
-		copy::file "$SRC_HOME/gnupg/gpg-agent.conf" "$TARGET_HOME/.gnupg/gpg-agent.conf" 0600 || return $?
+		copy::file "$SRC_HOME/gnupg/gpg-agent.conf" "$TARGET_HOME/.gnupg/gpg-agent.conf" 0600
 		;;
 	config)
 		link_tree "$SRC_CONFIG" "$TARGET_CONFIG" "config" "${CONFIG_SKIP[@]}"
@@ -454,8 +456,8 @@ main() {
 		;;
 	data)
 		link_tree "$SRC_DATA" "$TARGET_DATA" "data" "${DATA_SKIP[@]}"
-		copy::tree "$SRC_DATA/fonts" "$TARGET_DATA/fonts" 0644 0755 || return $?
-		copy::tree "$SRC_DATA/icons" "$TARGET_DATA/icons" 0644 0755 || return $?
+		copy::tree "$SRC_DATA/fonts" "$TARGET_DATA/fonts" 0644 0755
+		copy::tree "$SRC_DATA/icons" "$TARGET_DATA/icons" 0644 0755
 		fonts::_fccache
 		;;
 	bin) link_tree "$SRC_BIN" "$TARGET_BIN" "bin" ;;
