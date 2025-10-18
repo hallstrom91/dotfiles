@@ -1,44 +1,54 @@
-#---- Terminal / Starship -------------
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" #load nvm
-[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+#---- Terminal / Starship  -------------
+
+# set PATH so it includes user's private bin if it exists
+if [ -d "$HOME/bin" ]; then
+	PATH="$HOME/bin:$PATH"
+fi
+
+# set PATH so it includes user's private bin if it exists
+if [ -d "$HOME/.local/bin" ]; then
+	PATH="$HOME/.local/bin:$PATH"
+fi
 
 # set TERM if kitty is not set
 export TERM="${TERM:-xterm-256color}"
 
 if [ -d "$HOME/.local/kitty.app/lib/kitty/terminfo" ]; then
-  export TERMINFO="$HOME/.local/kitty.app/lib/kitty/terminfo"
+	export TERMINFO="$HOME/.local/kitty.app/lib/kitty/terminfo"
 fi
 
 export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
 export STARSHIP_CACHE="$HOME/.config/starship/cache/"
 
-#---- GPG: TTY-pinentry ------------
+# set GPG: TTY-pinentry
 GPG_TTY=$(tty)
 
 # only if TTY exists (IA-shell)
 if [ -t 1 ]; then
-  export GPG_TTY
+	export GPG_TTY
 fi
 
-#---- Node / NP M
+# set Node / NPM
 export NVM_DIR="$HOME/.nvm"
+# shellcheck source=/dev/null
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" #load nvm
+# shellcheck source=/dev/null
+[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion" #load completion
+
 NODE_PATH="$(npm root -g 2>/dev/null)"
 
 if command -v npm >/dev/null 2>&1; then
-  export NODE_PATH
+	export NODE_PATH
 fi
 
-#---- Neovim
+# set Neovim
 if [ -d "/opt/nvim-linux-x86_64/bin" ]; then
-  export PATH="/opt/nvim-linux-x86_64/bin:$PATH"
-#export EDITOR="nvim" # ?
+	export PATH="/opt/nvim-linux-x86_64/bin:$PATH"
+	export EDITOR="nvim"
 fi
 
 #---- .NET
 export DOTNET_THREADPOOL_MINTHREADS
 if [ -d "$HOME/.dotnet/tools" ]; then
-  export PATH="$HOME/.dotnet/tools:$PATH"
+	export PATH="$HOME/.dotnet/tools:$PATH"
 fi
-
-export SHELLCHECK_OPTS="-f json1"
