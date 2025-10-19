@@ -2,85 +2,145 @@
 # based on:
 #  https://github.com/haideralipunjabi/polybar-kdeconnect/blob/master/polybar-kdeconnect.sh
 
+kdeconnectd_up() {
+	"${QDBUS_CMD[@]}" org.freedesktop.DBus / org.freedesktop.DBus.ListNames 2>/dev/null |
+		grep -q 'org.kde.kdeconnect'
+}
+
+if ! pgrep -x kdeconnectd >/dev/null 2>&1; then
+	# kdeconnectd >/dev/null 2>&1 &
+	/usr/lib/x86_64-linux-gnu/libexec/kdeconnectd >/dev/null 2>&1 &
+	disown
+	sleep 0.2
+fi
+
 ### Settings ###
-ICON_FONT="${ICON_FONT:-4}" # polybar font-index (icons)
-TEXT_FONT="${ICON_FONT:-1}" # polybar font-index (default)
+
+FONT_ICON="${FONT_ICON:-4}" # polybar font-index (icons)
+FONT_TEXT="${FONT_TEXT:-1}" # polybar font-index (default)
+
 ICON_PHONE="󰄜"
 ICON_DISCON="󰥍"
 SEP=" "
 
+# control
 have() {
 	command -v "$1" >/dev/null 2>&1
 }
 
-### Helpers (CLI) ###
+####################################
+### qdbus based listing (faster) ###
+### is if available ###
 
-first_available() {
-	# first reachable and paired
-	local line
-	line="$(kdeconnect-cli --list-devices --id-name-only 2>/dev/null | head -n1 || true)"
-	[[ -n "$line" ]] && {
-		echo "$line"
-		return
-	}
-	# other: first paired could be offline
-	kdeconnect-cli --list-devices --id-name-only 2>/dev/null | head -n1 || true
+_qdbus_ok() {
+	local -a cmd=("$@")
+	"${cmd[@]}" --version >/dev/null 2>&1 ||
+		"${cmd[@]}" org.freedesktop.DBus / org.freedesktop.DBus.ListNames >/dev/null 2>&1
 }
 
-dev_battery() {
-	# return 0..100 or empty
-	kdeconnect-cli --device "$1" --battery 2>/dev/null | grep -Eo '[0-9]+' | head -n1 || true
+QDBUS_CMD=()
+
+for cand in \
+	"/usr/lib/qt6/bin/qdbus6" \
+	"$(command -v qdbus6 2>/dev/null)" \
+	"/usr/lib/x86_64-linux-gnu/qt5/bin/qdbus" \
+	"/usr/lib/qt5/bin/qdbus" \
+	"$(command -v qdbus-qt5 2>/dev/null)" \
+	"$(command -v qdbus 2>/dev/null)"; do
+	[[ -n "$cand" && -x "$cand" ]] || continue
+	if _qdbus_ok "$cand"; then
+		QDBUS_CMD=("$cand")
+		break
+	fi
+done
+
+if ((${#QDBUS_CMD[@]} == 0)) && command -v qtchooser >/dev/null 2>&1; then
+	if _qdbus_ok qtchooser -run-tool=qdbus6 -qt=qt6; then
+		QDBUS_CMD=(qtchooser -run-tool=qdbus6 -qt=qt6)
+	elif _qdbus_ok qtchooser -run-tool=qdbus -qt=qt5; then
+		QDBUS_CMD=(qtchooser -run-tool=qdbus -qt=qt5)
+	fi
+fi
+
+have_qdbus() { ((${#QDBUS_CMD[@]} > 0)); }
+_qdbus() { "${QDBUS_CMD[@]}" "$@"; }
+
+qdbus_list_ids() {
+	_qdbus --literal org.kde.kdeconnect /modules/kdeconnect org.kde.kdeconnect.daemon.devices |
+		awk -F'"' '{for(i=2;i<=NF;i+=2) print $i}'
 }
 
-dev_is_reachable() {
-	kdeconnect-cli --device "$1" --is-reachable >/dev/null 2>&1
-}
+qdbus_dev_name() { _qdbus org.kde.kdeconnect "/modules/kdeconnect/devices/$1" org.kde.kdeconnect.device.name; }
+qdbus_dev_reachable() { _qdbus org.kde.kdeconnect "/modules/kdeconnect/devices/$1" org.kde.kdeconnect.device.isReachable; }
+qdbus_dev_paired() { _qdbus org.kde.kdeconnect "/modules/kdeconnect/devices/$1" org.kde.kdeconnect.device.isTrusted; }
+qdbus_dev_battery() { _qdbus org.kde.kdeconnect "/modules/kdeconnect/devices/$1/battery" org.kde.kdeconnect.device.battery.charge 2>/dev/null; }
 
-dev_is_paired() {
-	# encryption-info returns 0 if paired
-	kdeconnect-cli --device "$1" --encryption-info >/dev/null 2>&1
-}
+###############
+### Helpers ###
 
-list_devices_all() {
-	# returns rows in format: id|name|reachable|paired
-	local ids
-	ids="$(kdeconnect-cli --list-devices --id-only 2>/dev/null || true)"
-	while IFS= read -r id; do
-		[[ -z "$id" ]] && continue
-		local name reachable paired
-		name="$(kdeconnect-cli --device "$id" --name 2>/dev/null || echo "$id")"
-		dev_is_reachable "$id" && reachable=1 || reachable=0
-		dev_is_paired "$id" && paired=1 || paired=0
-		printf '%s|%s|%s|%s\n' "$id" "$name" "$reachable" "$paired"
-	done <<<"$ids"
-}
+dev_is_reachable() { kdeconnect-cli --device "$1" --is-reachable >/dev/null 2>&1; }
+dev_is_paired() { kdeconnect-cli --device "$1" --encryption-info >/dev/null 2>&1; }
 
-### Polybar: fast, minimal status ###
 status_line() {
-	local line id name bat reachable paired
-	line="$(first_available || true)"
-	if [[ -z "$line" ]]; then
-		printf '%%{T%s}%s%%{T%s}%sno device\n' "$ICON_FONT" "$ICON_DISCON" "$TEXT_FONT" "$SEP"
+	local id name bat
+
+	if have_qdbus; then
+		# first reachable + paired (qdbus)
+		while IFS= read -r id; do
+			[[ -z "$id" ]] && continue
+
+			if [[ "$(qdbus_dev_reachable "$id")" == "true" && "$(qdbus_dev_paired "$id")" == "true" ]]; then
+				name="$(qdbus_dev_name "$id" 2>/dev/null || echo "$id")"
+				bat="$(qdbus_dev_battery "$id" | grep -Eo '[0-9]+' || true)"
+
+				if [[ -n "$bat" ]]; then
+					printf '%%{T%s}%s%%{T%s}%s%s %s%%%s\n' "$FONT_ICON" "$ICON_PHONE" "$FONT_TEXT" "$SEP" "$name" "$bat" "$SEP"
+				else
+					printf '%%{T%s}%s%%{T%s}%s%s\n' "$FONT_ICON" "$ICON_PHONE" "$FONT_TEXT" "$SEP" "$name"
+				fi
+				return
+			fi
+		done < <(qdbus_list_ids)
+
+		# no reachable/paired: display offline (if exists)
+		id="$(qdbus_list_ids | head -n1 || true)"
+		if [[ -n "$id" ]]; then
+			name="$(qdbus_dev_name "$id" 2>/dev/null || echo "$id")"
+			printf '%%{T%s}%s%%{T%s}%s%s (offline)\n' "$FONT_ICON" "$ICON_DISCON" "$FONT_TEXT" "$SEP" "$name"
+			return
+		fi
+		printf '%%{T%s}%s%%{T%s}%sno device\n' "$FONT_ICON" "$ICON_DISCON" "$FONT_TEXT" "$SEP"
 		return
 	fi
 
-	# line is: "- <id> <name>" - pick id & name
-	id="$(awk '{print $2}' <<<"$line")"
-	name="$(sed -E 's/^- [^ ]+ (.*)$/\1/' <<<"$line")"
+	# fallback kdeconnect-cli (slower)
+	local cli_id
+	cli_id="$(kdeconnect-cli --list-available --id-only 2>/dev/null | head -n1 || true)"
 
-	if dev_is_reachable "$id"; then
-		bat="$(dev_battery "$id")"
+	if [[ -n "$cli_id" ]]; then
+		name="$(kdeconnect-cli --device "$cli_id" --name 2>/dev/null || echo "$cli_id")"
+		bat="$(kdeconnect-cli --device "$cli_id" --battery 2>/dev/null | grep -Eo '[0-9]+' | head -n1 || true)"
+
 		if [[ -n "$bat" ]]; then
-			printf '%%{T%s}%s%%{T%s}%s%s %s%%%s\n' "$ICON_FONT" "$ICON_PHONE" "$TEXT_FONT" "$SEP" "$name" "$bat" "$SEP"
+			printf '%%{T%s}%s%%{T%s}%s%s %s%%%s\n' "$FONT_ICON" "$ICON_PHONE" "$FONT_TEXT" "$SEP" "$name" "$bat" "$SEP"
 		else
-			printf '%%{T%s}%s%%{T%s}%s%s\n' "$ICON_FONT" "$ICON_PHONE" "$TEXT_FONT" "$SEP" "$name"
+			printf '%%{T%s}%s%%{T%s}%s%s\n' "$FONT_ICON" "$ICON_PHONE" "$FONT_TEXT" "$SEP" "$name"
 		fi
+		return
+	fi
+
+	# no reachable devices
+	name="$(kdeconnect-cli --list-devices --name-only 2>/dev/null | head -n1 || true)"
+	if [[ -n "$name" ]]; then
+		printf '%%{T%s}%s%%{T%s}%s%s (offline)\n' "$FONT_ICON" "$ICON_DISCON" "$FONT_TEXT" "$SEP" "$name"
 	else
-		printf '%%{T%s}%s%%{T%s}%s%s (offline)\n' "$ICON_FONT" "$ICON_DISCON" "$TEXT_FONT" "$SEP" "$name"
+		printf '%%{T%s}%s%%{T%s}%sno device\n' "$FONT_ICON" "$ICON_DISCON" "$FONT_TEXT" "$SEP"
 	fi
 }
 
-### Rofi: dmenu helpers ###
+#########################################
+### Rofi: dmenu helpers - run @ click ###
+
 choose() {
 	local prompt="${1:-Select}"
 	if have rofi; then
@@ -112,156 +172,121 @@ clip_text() {
 	fi
 }
 
+list_all_structured() {
+	#DISPLAY|ID|PAIRED|REACHABLE
+	local id name paired reachable display
+	if have_qdbus; then
+		while IFS= read -r id; do
+			[[ -z "$id" ]] && continue
+			name="$(qdbus_dev_name "$id" 2>/dev/null || echo "$id")"
+			[[ "$(qdbus_dev_paired "$id")" == "true" ]] && paired=1 || paired=0
+			[[ "$(qdbus_dev_reachable "$id")" == "true" ]] && reachable=1 || reachable=0
+			if ((paired == 1 && reachable == 1)); then
+				display="connected ${name}"
+			elif ((paired == 1)); then
+				display="paired ${name}"
+			else
+				display="available ${name}"
+			fi
+			printf '%s|%s|%s|%s\n' "$display" "$id" "$paired" "$reachable"
+		done < <(qdbus_list_ids)
+		return
+	fi
+
+	# kdeconnect-cli (slower)
+	local ids names i
+	mapfile -t ids < <(kdeconnect-cli --list-devices --id-only 2>/dev/null || true)
+	mapfile -t names < <(kdeconnect-cli --list-devices --name-only 2>/dev/null || true)
+
+	for i in "${!ids[@]}"; do
+		id="${ids[$i]}"
+		name="${names[$i]:-$id}"
+		dev_is_paired "$id" && paired=1 || paired=0
+		dev_is_reachable "$id" && reachable=1 || reachable=0
+		if ((paired == 1 && reachable == 1)); then
+			display="connected ${name}"
+		elif ((paired == 1)); then
+			display="paired ${name}"
+		else
+			display="available ${name}"
+		fi
+		printf '%s|%s|%s|%s\n' "$display" "$id" "$paired" "$reachable"
+	done
+}
+
 device_actions_menu() {
 	local id="$1" name="$2" paired="$3" reachable="$4"
-	local opts rel
-	if [[ "$paired" -eq 1 ]]; then
-		opts="Ping\nFind Device\nSend File\nShare Clipboard\nShare Text\nBrowse Files\nUnpair"
-		sel="$(printf '%b' "$opts" | choose "$name")" || exit 0
-
-		case "$rel" in
+	local sel
+	if ((paired == 1)); then
+		sel="$(printf '%s\n' \
+			"Ping" "Find Device" "Send File" "Share Clipboard" "Share Text" "Browse Files" "Unpair" |
+			choose "$name")" || exit 0
+		case "$sel" in
 		"Ping") kdeconnect-cli --device "$id" --ping ;;
 		"Find Device") kdeconnect-cli --device "$id" --ring ;;
 		"Send File")
 			f="$(pick_file)"
-			[[ -n "$f" ]] && kdeconnect-cli --device "$id" --share "file://$f"
+			[[ -n "${f:-}" ]] && kdeconnect-cli --device "$id" --share "file://$f"
 			;;
 		"Share Clipboard")
 			t="$(clip_text)"
-			[[ -n "$t" ]] && kdeconnect-cli --device "$id" --share-text "$t"
+			[[ -n "${t:-}" ]] && kdeconnect-cli --device "$id" --share-text "$t"
 			;;
 		"Share Text")
-			t="$(printf '' | choose 'Share text')"
-			[[ -n "$t" ]] && kdeconnect-cli --device "$id" --share-text "$t"
+			f="$(pick_file)"
+			[[ -n "${f:-}" ]] && kdeconnect-cli --device "$id" --share-text "$t"
 			;;
 		"Browse Files") xdg-open "kdeconnect://$id/" >/dev/null 2>&1 || kdeconnect-app & ;;
 		"Unpair") kdeconnect-cli --device "$id" --unpair ;;
 		*) : ;;
 		esac
 	else
-		sel="$(printf 'Pair Device\nCancel\n' | choose "$name")" || exit 0
+		sel="$(printf '%s\n' "Pair Device" "Cancel" | choose "$name")" || exit 0
 		[[ "$sel" == "Pair Device" ]] && kdeconnect-cli --device "$id" --pair
 	fi
-	# "Pair Device") kdeconnect-cli --device "$id" --pair ;;
-	# "Unpair") kdeconnect-cli --device "$id" --unpair ;;
-	# "Ping") kdeconnect-cli --device "$id" --ping ;;
-
 }
 
 main_menu() {
-	kdeconnect-cli --refresh >/dev/null 2>&1 || true
+	local lines choice line id name paired reachable
+	# build list
+	mapfile -t lines < <(list_all_structured)
 
-	local rows choice id name reachable paired
-	mapfile -t rows < <(list_devices_all)
-
-	if ((${#rows[@]} == 0)); then
-		choice="$(printf 'Open KDE Connect\n' | choose 'KDE Connect')" || exit 0
+	# Extra opts
+	if ((${#lines[@]} == 0)); then
+		choice="$(printf '%s\n' "Refresh" "Open KDE Connect" | choose 'KDE Connect')" || exit 0
+		[[ "$choice" == "Refresh" ]] && {
+			kdeconnect-cli --refresh >/dev/null 2>&1 || true
+			exec "$0" --menu
+		}
 		[[ "$choice" == "Open KDE Connect" ]] && kdeconnect-app &
 		exit 0
 	fi
 
-	# build minimal device-list
-	choice="$(printf '%s\n' "${rows[@]}" |
-		awk -F'|' 'BEGIN{OFS="|"}{print $3,$4,$2,$1}' |
-		sort -r |
-		awk -F'|' -v IF="$ICON_FONT" -v TF="$TEXT_FONT" -v ip="$ICON_PHONE" -v ic"$ICON_DISCON" '
-	$1==1 && $2==1 {printf("connected |%s|%s\n",$3,$4); next}
-	$1==0 && $2==1 {printf("paired |%s|%s\n",$3,$4); next}
-	{printf("available |%s|%s\n",$3,$4)}' |
-		awk -F'|' '{print $1 " " $2 "|" $3}' |
-		choose "Devices")" exit 0
+	choice="$(
+		{
+			printf '%s\n' "${lines[@]}"
+			echo "Refresh|_|0|0"
+		} |
+			sort -r |
+			cut -d'|' -f1 |
+			choose "Devices"
+	)" || exit 0
 
 	[[ -z "$choice" ]] && exit 0
 
-	id="$(cut -d'|' -f2 <<<"$choice")"
-	name="$(cut -d' ' -f3- <<<"$(cut -d'|' -f1 <<<"$choice")")"
+	line="$(printf '%s\n' "${lines[@]}" | grep -F "^$choice|" | head -n1)"
+	id="$(cut -d'|' -f2 <<<"$line")"
+	paired="$(cut -d'|' -f3 <<<"$line")"
+	reachable="$(cut -d'|' -f4 <<<"$line")"
 
-	dev_is_reachable "$id" && reachable=1 || reachable=0
-	dev_is_paired "$id" && paired=1 || paired=0
+	name="${choice#connected }"
+	name="${name#paired }"
+	name="${name#available }"
 
 	device_actions_menu "$id" "$name" "$paired" "$reachable"
 }
 
-# actions
-# device_menu() {
-# 	local id="$1" name="$2" paired="$3" reachable="$4"
-# 	local entries=""
-# 	if [[ "$paired" -eq 1 ]]; then
-# 		entries+="Battery: $(device_battery "$id")%|"
-# 		entries+="Ping|Find Device|Send File|Share Clipboard|Share Text|Browse Files|Unpair"
-# 	else
-# 		entries+="Pair Device"
-# 	fi
-# 	local sel
-# 	sel="$(printf '%s\n' "$entries" | tr '|' '\n' | choose "$name")" || exit 0
-#
-# 	case "$sel" in
-# 	"Pair Device") kdeconnect-cli --device "$id" --pair ;;
-# 	"Unpair") kdeconnect-cli --device "$id" --unpair ;;
-# 	"Ping") kdeconnect-cli --device "$id" --ping ;;
-# 	"Find Device") kdeconnect-cli --device "$id" --ring ;;
-# 	"Send File")
-# 		file="$(pick_file)"
-# 		[[ -n "${file:-}" ]] && kdeconnect-cli --device "$id" --share "file://$file"
-# 		;;
-# 	"Share Clipboard")
-# 		if have xclip; then
-# 			txt="$(xclip -0 -selection clipboard 2>/dev/null || true)"
-# 		elif have wl-paste; then
-# 			txt="$(wl-pase 2>/dev/null || true)"
-# 		else
-# 			txt=""
-# 		fi
-# 		[[ -n "${txt:-}" ]] && kdeconnect-cli --device "$id" --share-text "$txt"
-# 		;;
-# 	"Browse Files")
-# 		# try GVfs URL; Works in Nautilus/dolphin
-# 		if have xdg-open; then
-# 			xdg-open "kdeconnect://$id/" >/dev/null 2>&1 || kdeconnect-app &
-# 		else
-# 			kdeconnect-app &
-# 		fi
-# 		;;
-# 	*) : ;;
-# 	esac
-# }
-#
-# show_menu() {
-# 	kdeconnect-cli --refresh >/dev/null 2>&1 || true
-#
-# 	local lines name id reachable paired tag
-# 	mapfile -t lines < <(list_devices)
-# 	if ((${#lines[@]} == 0)); then
-# 		choose "KDE Connect" <<<"No devices|Open app" | grep -q "Open app" && kdeconnect-app &
-# 		exit 0
-# 	fi
-#
-# 	menu=""
-# 	for l in "${lines[@]}"; do
-# 		IFS="|" read -r id name reachable paired <<<"$l"
-# 		if [[ "$paired" -eq 1 && "$reachable" -eq 1 ]]; then
-# 			tag="connected"
-# 			icon="$ICON_PHONE"
-# 		elif [[ "$paired" -eq 1 ]]; then
-# 			tag="paired"
-# 			icon="$ICON_DISCON"
-# 		else
-# 			tag="available"
-# 			icon="$ICON_DISCON"
-# 		fi
-# 		menu+="${icon} ${name} [${tag}]|${id}|${name}|${paired}|${reachable}"$'\n'
-# 	done
-#
-# 	# select device
-# 	choice="$(printf '%s' "$menu" | awk -F'|' '{printf $1}' | choose "Devices")" || exit 0
-# 	[[ -z "$choice" ]] && exit 0
-#
-# 	meta="$(printf '%s' "$menu" | grep -F "^$choice|" | head -n1)"
-# 	IFS="|" read -r _ id name paired reachable <<<"$meta"
-# 	device_menu "$id" "$name" "$paired" "$reachable"
-# }
-#
 case "${1:-}" in
---menu) show_menu ;;
+--menu) main_menu ;;
 *) status_line ;;
 esac
