@@ -75,21 +75,6 @@ _log_detect() {
 	fi
 }
 
-# _pick_backend_for : log-helper dbus|cli|none as backend
-# _pick_backend_for() {
-# 	local what="$1" dev="${2:-}"
-# 	if have_qdbus && _kdeconnectd_up; then
-# 		_log "[backend:$what] dbus (dev=${dev:-n/a})"
-# 		printf '%s' dbus
-# 	elif have_cli; then
-# 		_log "[backend:$what] cli (dev=${dev:-n/a})"
-# 		printf '%s' cli
-# 	else
-# 		_log "[backend:$what] none (dev=${dev:-n/a})"
-# 		printf '%s' none
-# 	fi
-# }
-
 # _notify : Non-blocking user feedback
 # never fail outward; dont let notification effect $rc upwards.
 _notify() {
@@ -247,7 +232,7 @@ _start_kdeconnectd() {
 	return 1
 }
 
-_pick_pick_backend_for() {
+_pick_backend_for() {
 	local what="$1" dev="${2:-}" choice
 	if [[ -n $FORCE_BACKEND ]]; then
 		case "$FORCE_BACKEND" in
@@ -306,17 +291,20 @@ _dbg_dump_device() {
 
 # _wait_until : "cmd ..." timeout_secs interval_secs
 _wait_until() {
-	local cmd="$1" timeout="${2:-1.5}" interval="${3:-0.1}"
+	local timeout="${2:-1.5}" interval="${3:-0.1}"
+	shift 2
+	if [[ ${1-} == -- ]]; then shift; fi
+
 	local start now
 	start=$(printf '%(%s)T' -1)
 	while :; do
-		# run command silent; true => done
-		eval "$cmd" >/dev/null 2>&1 && return 0
+		"$@" >/dev/null 2>&1 && return 0
+
 		now=$(printf '%(%s)T' -1)
-		(($(awk -v n=$now -v s=$start "BEGIN{print (n-s)>=0}"))) || true
+
 		# abort on timeout
-		awk -v n="$now" -v s="$start" -v t="$timeout" 'BEGIN{exit ((n - s) > t ? 0 : 1)}' && return 1
-		# wait - sleep (blocks stdin/out ?)
+		awk -v n="$now" -v s="$start" -v t="$timeout" 'BEGIN{exit ((n - s) > t ? 0 : 1})' && return 1
+
 		sleep "$interval"
 	done
 }
@@ -472,13 +460,6 @@ _action_unpair() {
 		_notify "KDE Connect" "Unpair failed (rc=$rc)"
 	fi
 	return $rc
-	# old
-	# if ((rc == 0)); then
-	# 	_notify "KDE Connect" "unpair request sent to device $id"
-	# else
-	# 	_notify "KDE Connect" "unpair request failed (rc=$rc)"
-	# fi
-	# return $rc
 }
 
 # _action_pair: create new (instance of) active connection between devices
@@ -516,45 +497,45 @@ _action_pair() {
 		_notify "KDE Connect" "Pair failed (rc=$rc)"
 	fi
 	return $rc
-	# old
-	# if ((rc == 0)); then
-	# 	_notify "KDE Connect" "Pair request sent to device $id"
-	# else
-	# 	_notify "KDE Connect" "Pair request failed (rc=$rc)"
-	# fi
-	# return $rc
-}
 
-############################################################################
-##### REMOVE THIS: CONTINUE HERE WHEN LITTLE LELLE SLEEPS AGAIN TONIGHT ####
-############################################################################
+}
 
 # _action_browse : mounted|mount|browse
 _action_browse() {
-	local id="$1" b rc i
+	local id="$1" b rc
 	b="$(_pick_backend_for browse "$id")"
 
 	case "$b" in
 	dbus)
+		# requires sftp-plugin in device
+		if ! _has_plugin "$id" "kdeconnect_sftp"; then
+			_notify "KDE Connect" "SFTP not supported on this device"
+			return 95
+		fi
+
+		# mount if not already mounted
 		if [[ "$(_dbus_sftp_mounted "$id" 2>/dev/null)" != "true" ]]; then
 			_run _dbus_sftp_mount "$id" || true
-
-			# TODO: below
-			# avoid creating subprocess that takes up sys-resources
-			# dont block stdin/out anywhere with sleep
-			for ((i = 0; i < 10; i++)); do
-				[[ "$(_dbus_sftp_mounted "$id" 2>/dev/null)" == "true" ]] && break
-				usleep 100000 2>/dev/null || sleep 0.1
-			done
+			_wait_until "[[ \"$(_dbus_sftp_mounted \""$id"\" 2>/dev/null)\" == \"true\" ]]" 1.5 0.15 || true
 		fi
-		_run _dbus_sftp_browse "$id" || true
+		# open browse
+		_run _dbus_sftp_mount "$id"
+		rc=$?
+		if ((rc == 0)); then
+			_notify "KDE Connect" "Opening SFTP browse"
+		else
+			_notify "KDE Connect" "Browse failed (rc=$rc)"
+		fi
+		return $rc
 		;;
+		# CLI dont have browse option; try URL handler
 	cli)
-		# no CLI browse: try generic URL handler
-		_run xdg-open "kdeconnect://$id/" >/dev/null 2>&1 || _run kdeconnect-app &
+		_run xdg-open "kdeconnect://$id/" >/dev/null 2>&1 || _run kdeconnect-app >/dev/null 2>&1 &
+		disown || true
+		return 0
 		;;
 	*)
-		_log "No DBus/CLI available for 'mounted|mount|browse' action (device $id)"
+		_log "No DBus/CLI available for 'browse' (device $id)"
 		return 127
 		;;
 	esac
@@ -604,7 +585,6 @@ _pick_file() {
 	elif have kdialog; then
 		kdialog --getopenfilename 2>/dev/null || true
 	else
-		# last resort
 		echo ""
 	fi
 }
@@ -634,11 +614,9 @@ _prompt_text() {
 
 # ====> Status: Polybar <==== #
 
-# printf helper
 _print_device_line() {
 	local icon="$1" name="${2:-}" battery="${3:-}" suffix="${4:-}"
 
-	# E.g., icon-only "no device"
 	if [[ -z $name ]]; then
 		printf '%%{T%s}%s%%{T%s}%sno device\n' "$FONT_ICON" "$icon" "$FONT_TEXT" "$SEP"
 		return
@@ -652,10 +630,12 @@ _print_device_line() {
 }
 
 status_line() {
-	local id name bat out
+	local backend id name bat out
+	backend="$(_pick_backend_for status)"
 
-	if have_qdbus && _kdeconnectd_up; then
+	if [[ "$backend" == "dbus" ]]; then
 		# Opt 1) Preferred connected device (via qdbus)
+		# if have_qdbus && _kdeconnectd_up; then
 		if out="$(_pick_first_connected)"; then
 			id="${out%%|*}"
 			name="${out#*|}"
@@ -663,47 +643,51 @@ status_line() {
 			_print_device_line "$ICON_PHONE" "$name" "$bat"
 			return 0
 		fi
-
 		# Opt 2) No connected device: show first known as offline (if any)
 		id="$(_qdbus_list_ids | head -n1 || true)"
 		if [[ -n "$id" ]]; then
 			name="$(_qdbus_dev_name "$id" || echo "$id")"
 			_print_device_line "$ICON_DISCON" "$name" "" "(offline)"
-			return
+			return 0
 		fi
-
 		# Opt 3) No devices at all
 		_print_device_line "$ICON_DISCON"
-		return
+		return 0
 	fi
 
-	# Opt 4) Fallback using kdeconnect-cli: same logic as above, but not as fast.
-	local cli_id
-	cli_id="$(_run _cli --list-available --id-only | head -n1 || true)"
+	if [[ "$backend" == "cli" ]]; then
+		# Opt 4) Fallback using kdeconnect-cli: same logic as above, but not as fast.
+		local cli_id
+		cli_id="$(_run _cli --list-available --id-only | head -n1 || true)"
 
-	if [[ -n "$cli_id" ]]; then
-		name="$(_run _cli --device "$cli_id" --name || echo "$cli_id")"
-		bat="$(_run _cli --device "$cli_id" --battery | grep -Eo '[0-9]+' | head -n1 || true)"
-		_print_device_line "$ICON_PHONE" "$name" "$bat"
-		return
-	fi
-	name="$(_run _cli --list-devices --name-only | head -n1 || true)"
-
-	if [[ -n "$name" ]]; then
-		_print_device_line "$ICON_DISCON" "$name" "" "(offline)"
-	else
+		if [[ -n "$cli_id" ]]; then
+			name="$(_run _cli --device "$cli_id" --name || echo "$cli_id")"
+			bat="$(_run _cli --device "$cli_id" --battery | grep -Eo '[0-9]+' | head -n1 || true)"
+			_print_device_line "$ICON_PHONE" "$name" "$bat"
+			return 0
+		fi
+		name="$(_run _cli --list-devices --name-only | head -n1 || true)"
+		if [[ -n "$name" ]]; then
+			_print_device_line "$ICON_DISCON" "$name" "" "(offline)"
+			return 0
+		fi
 		_print_device_line "$ICON_DISCON"
+		return 0
 	fi
+
+	# no backend
+	_print_device_line "$ICON_DISCON"
+	return 0
 }
 
-###########################################
-# Build list for menu
-###########################################
+# ====> Build list for menu actions <==== #
 
-# List Device Options; Output: DISPLAY|ID|PAIRED|REACHABLE
+# Output: DISPLAY|ID|PAIRED|REACHABLE
 list_all_structured() {
-	local id name paired reachable display
-	if have_qdbus && _kdeconnectd_up; then
+	local backend id name paired reachable display
+	backend="$(_pick_backend_for list)"
+
+	if [[ "$backend" == "dbus" ]]; then
 		while IFS= read -r id; do
 			[[ -z "$id" ]] && continue
 			name="$(_qdbus_dev_name "$id" || echo "$id")"
@@ -723,31 +707,32 @@ list_all_structured() {
 		return
 	fi
 
-	#  CLI fallback
-	local -a ids names
-	local i
-	mapfile -t ids < <(_run _cli --list-devices --id-only || true)
-	mapfile -t names < <(_run _cli --list-devices --name-only || true)
+	if [[ "$backend" == "cli" ]]; then
+		local -a ids names
+		local i
+		mapfile -t ids < <(_run _cli --list-devices --id-only || true)
+		mapfile -t names < <(_run _cli --list-devices --name-only || true)
+		for i in "${!ids[@]}"; do
+			id="${ids[$i]}"
+			name="${names[$i]:-$id}"
+			_dev_is_paired "$id" && paired=1 || paired=0
+			_dev_is_reachable "$id" && reachable=1 || reachable=0
+			if ((paired == 1 && reachable == 1)); then
+				display="Connected: ${name}"
+			elif ((paired == 1)); then
+				display="Paired: ${name}"
+			else
+				display="Available: ${name}"
+			fi
+			printf '%s|%s|%s|%s\n' "$display" "$id" "$paired" "$reachable"
+		done
+		return 0
+	fi
 
-	for i in "${!ids[@]}"; do
-		id="${ids[$i]}"
-		name="${names[$i]:-$id}"
-		_dev_is_paired "$id" && paired=1 || paired=0
-		_dev_is_reachable "$id" && reachable=1 || reachable=0
-		if ((paired == 1 && reachable == 1)); then
-			display="Connected: ${name}"
-		elif ((paired == 1)); then
-			display="Paired: ${name}"
-		else
-			display="Available: ${name}"
-		fi
-		printf '%s|%s|%s|%s\n' "$display" "$id" "$paired" "$reachable"
-	done
+	return 0
 }
 
-###############################
-# Actions Menu
-###############################
+# ====> Actions Menu <==== #
 
 _device_actions_menu() {
 	local id="$1" name="$2" paired="$3" reachable="$4"
@@ -778,7 +763,10 @@ _device_actions_menu() {
 			_action_unpair "$id"
 			_dbg_dump_device "$id"
 			;;
-		"Open Settings") _run kdeconnect-settings >/dev/null 2>&1 & ;;
+		"Open Settings")
+			_run kdeconnect-settings >/dev/null 2>&1 &
+			disown || true
+			;;
 		*) : ;;
 		esac
 	else
@@ -789,8 +777,67 @@ _device_actions_menu() {
 			_action_pair "$id"
 			_dbg_dump_device "$id"
 			;;
-		"Open Settings") _run kdeconnect-settings >/dev/null 2>&1 & ;;
+		"Open Settings")
+			_run kdeconnect-settings >/dev/null 2>&1 &
+			disown || true
+			;;
 		*) : ;;
 		esac
 	fi
+}
+
+# ====> Main Menu (--menu flag) <==== #
+
+_main_menu() {
+	local -a lines
+	local choice line id name paired reachable
+	mapfile -t lines < <(list_all_structured)
+
+	if ((${#lines[@]} == 0)); then
+		choice="$(printf '%s\n' "Refresh" "Open Settings" | _choose 'KDE Connect')" || return 0
+		if [[ "$choice" == "Refresh" ]]; then
+			_run _cli --refresh || true
+			exec "$0" --menu ${_VERBOSE:+--verbose}
+		elif [[ "$choice" == "Open Settings" ]]; then
+			_run kdeconnect-settings >/dev/null 2>&1 &
+			disown || true
+		fi
+		return 0
+	fi
+
+	# stable sort: Connected(3), Paired(2), Available(1), Refresh(0)
+	choice="$(
+		{
+			local line
+			for line in "${lines[@]}"; do
+				case "$line" in
+				Connected:\ *) echo "3|$line" ;;
+				Paired:\ *) echo "2|$line" ;;
+				Available:\ *) echo "1|$line" ;;
+				esac
+			done
+			echo "0|Refresh|_|0|0"
+		} | sort -t'|' -k1,1nr -k2,2 |
+			cut -d'|' -f2 |
+			cut -d'|' -f1 |
+			_choose "Devices"
+	)" || return 0
+
+	[[ -z "$choice" ]] && return 0
+
+	if [[ "$choice" == "Refresh" ]]; then
+		_run _cli --refresh || true
+		exec "$0" --menu ${_VERBOSE:+--verbose}
+	fi
+
+	line="$(printf '%s\n' "${lines[@]}" | grep -F "^$choice|" | head -n1)"
+	id="$(cut -d'|' -f2 <<<"$line")"
+	paired="$(cut -d'|' -f3 <<<"$line")"
+	reachable="$(cut -d'|' -f4 <<<"$line")"
+
+	name="${choice#Connected: }"
+	name="${choice#Paired: }"
+	name="${name#Available: }"
+
+	_device_actions_menu "$id" "$name" "$paired" "@reachable"
 }
