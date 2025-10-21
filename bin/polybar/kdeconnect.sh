@@ -75,8 +75,8 @@ _log_detect() {
 	fi
 }
 
-# _backend_for : log-helper dbus|cli|none as backend
-# _backend_for() {
+# _pick_backend_for : log-helper dbus|cli|none as backend
+# _pick_backend_for() {
 # 	local what="$1" dev="${2:-}"
 # 	if have_qdbus && _kdeconnectd_up; then
 # 		_log "[backend:$what] dbus (dev=${dev:-n/a})"
@@ -247,7 +247,7 @@ _start_kdeconnectd() {
 	return 1
 }
 
-_pick_backend_for() {
+_pick_pick_backend_for() {
 	local what="$1" dev="${2:-}" choice
 	if [[ -n $FORCE_BACKEND ]]; then
 		case "$FORCE_BACKEND" in
@@ -352,80 +352,95 @@ _cli_pair() { _cli --device "$1" --pair; }
 
 # _action_ping : send ping to device
 _action_ping() {
-	local b rc
-	b="$(_backend_for ping "$1")"
+	local id="$1" b rc
+	b="$(_pick_backend_for ping "$id")"
 	case "$b" in
-	dbus) _run _dbus_ping "$1" ;;
-	cli) _run _cli_ping "$1" ;;
+	dbus) _run _dbus_ping "$id" ;;
+	cli) _run _cli_ping "$id" ;;
 	*)
-		_log "No DBus/CLI available for 'ping' action (device $1)"
+		_log "No DBus/CLI available for 'ping' (device $id)"
 		return 127
 		;;
 	esac
+	rc=$?
+	((_VERBOSE)) && _notify "KDE Connect" "Ping ${rc:+(rc=$rc)}"
+	return $rc
 }
 
 # _action_ring : find device
 _action_ring() {
 	local id="$1" b rc
-	b="$(_backend_for ring "$id")"
+	b="$(_pick_backend_for ring "$id")"
 
 	case "$b" in
 	dbus) _run _dbus_ring "$id" ;;
 	cli) _run _cli_ring "$id" ;;
 	*)
-		_log "No DBus/CLI available for 'ring' action (device $1)"
+		_log "No DBus/CLI available for 'ring' action (device $id)"
 		return 127
 		;;
 	esac
 	rc=$?
 	if ((rc == 0)); then
-		_notify "KDE Connect" "ring (find device) request sent to device $1"
+		_notify "KDE Connect" "Find device: request sent"
 	else
-		_notify "KDE Connect" "ring (find device) request failed (rc=$rc)"
+		_notify "KDE Connect" "Find device: request failed (rc=$rc)"
 	fi
 	return $rc
 }
 
-# _action_share_url: send file(path) for sharing or between browsers
+# _action_share_url : send file(path) for sharing or between browsers
 _action_share_url() {
 	local id="$1" fpath="$2" b rc
-	b="$(_backend_for share_url "$id")"
+	b="$(_pick_backend_for share_url "$id")"
+
+	# plugin check (dbus)
+	if [[ "$b" == "dbus" ]] && ! _has_plugin "$id" "kdeconnect_share"; then
+		_notify "KDE Connect" "Share not supported on this device"
+		return 95
+	fi
 
 	case "$b" in
 	dbus) _run _dbus_share_url "$id" "$fpath" ;;
 	cli) _run _cli_share_url "$id" "$fpath" ;;
 	*)
-		_log "No DBus/CLI available for 'share-url' action (device $id)"
+		_log "No DBus/CLI available for 'share-url' (device $id)"
 		return 127
 		;;
 	esac
 	rc=$?
 	if ((rc == 0)); then
-		_notify "KDE Connect" "share-url request sent to device $id"
+		_notify "KDE Connect" "Shared URL/file"
 	else
-		_notify "KDE Connect" "share-url request failed (rc=$rc)"
+		_notify "KDE Connect" "Share failed (rc=$rc)"
 	fi
 	return $rc
 }
 
-# _action_share_text: send clipboard or selected text
+# _action_share_text : send clipboard or selected text
 _action_share_text() {
 	local id="$1" txt="$2" b rc
-	b="$(_backend_for share_text "$id")"
+	b="$(_pick_backend_for share_text "$id")"
+
+	# plugin check (dbus)
+	if [[ "$b" == "dbus" ]] && ! _has_plugin "$id" "kdeconnect_share"; then
+		_notify "KDE Connect" "Share text not supported on this device"
+		return 95
+	fi
 
 	case "$b" in
 	dbus) _run _dbus_share_text "$id" "$txt" ;;
 	cli) _run _cli_share_text "$id" "$txt" ;;
 	*)
-		_log "No DBus/CLI available for 'share-text' action (device $id)"
+		_log "No DBus/CLI available for 'share-text' (device $id)"
 		return 127
 		;;
 	esac
 	rc=$?
 	if ((rc == 0)); then
-		_notify "KDE Connect" "share-text request sent to device $id"
+		_notify "KDE Connect" "Shared text"
 	else
-		_notify "KDE Connect" "share-text request failed (rc=$rc)"
+		_notify "KDE Connect" "Share text failed (rc=$rc)"
 	fi
 	return $rc
 }
@@ -433,54 +448,91 @@ _action_share_text() {
 # _action_unpair: close active (old instance of) connection between devices
 _action_unpair() {
 	local id="$1" b rc
-	b="$(_backend_for unpair "$id")"
+	b="$(_pick_backend_for unpair "$id")"
 
 	case "$b" in
 	dbus) _run _dbus_unpair "$id" ;;
 	cli) _run _cli_unpair "$id" ;;
 	*)
-		_log "No DBus/CLI available for 'unpair' action (device $id) - makes no sense?! how did you get here?"
+		_log "No DBus/CLI available for 'unpair' (device $id) - makes no sense?! how did you get here?"
 		return 127
 		;;
 	esac
 	rc=$?
+
+	# after control
 	if ((rc == 0)); then
-		_notify "KDE Connect" "unpair request sent to device $id"
+		if [[ "$b" == "dbus" ]]; then
+			_wait_until "[[ \"$(_qdbus_dev_paired \""$id"\")\" != \"true\" ]]" 1.0 0.1 || true
+		else
+			_dev_is_paired "$id" || true
+		fi
+		_notify "KDE Connect" "Unpair requested"
 	else
-		_notify "KDE Connect" "unpair request failed (rc=$rc)"
+		_notify "KDE Connect" "Unpair failed (rc=$rc)"
 	fi
 	return $rc
+	# old
+	# if ((rc == 0)); then
+	# 	_notify "KDE Connect" "unpair request sent to device $id"
+	# else
+	# 	_notify "KDE Connect" "unpair request failed (rc=$rc)"
+	# fi
+	# return $rc
 }
 
 # _action_pair: create new (instance of) active connection between devices
 _action_pair() {
 	local id="$1" b rc
-	b="$(_backend_for pair "$id")"
+	b="$(_pick_backend_for pair "$id")"
 
 	case "$b" in
 	dbus) _run _dbus_pair "$id" ;;
 	cli) _run _cli_pair "$id" ;;
 	*)
-		_log "No DBus/CLI available for 'pair' action (device $id)"
+		_log "No DBus/CLI available for 'pair' (device $id)"
 		return 127
 		;;
 	esac
 	rc=$?
+
 	if ((rc == 0)); then
-		_notify "KDE Connect" "Pair request sent to device $id"
+		if [[ "$b" == "dbus" ]]; then
+			if [[ "$(_qdbus_dev_has_pairreq "$id")" == "true" ]]; then
+				_notify "KDE Connect" "Pair requested - approve on phone"
+			else
+				# await isPaired = true ?
+				_wait_until "[[ \"$(_qdbus_dev_paired \""$id"\")\" != \"true\" ]]" 2.0 0.2 || true
+				if [[ "$(_qdbus_dev_paired "$id")" == "true" ]]; then
+					_notify "KDE Connect" "Paired successfully"
+				else
+					_notify "KDE Connect" "Pair request sent - awaiting approval"
+				fi
+			fi
+		else
+			_notify "KDE Connect" "Pair request sent (CLI)"
+		fi
 	else
-		_notify "KDE Connect" "Pair request failed (rc=$rc)"
+		_notify "KDE Connect" "Pair failed (rc=$rc)"
 	fi
 	return $rc
+	# old
+	# if ((rc == 0)); then
+	# 	_notify "KDE Connect" "Pair request sent to device $id"
+	# else
+	# 	_notify "KDE Connect" "Pair request failed (rc=$rc)"
+	# fi
+	# return $rc
 }
 
-# _action_browse: mounted|mount|browse
-#DBus sftp
-#CLI fallback: open kdeconnect://
+############################################################################
+##### REMOVE THIS: CONTINUE HERE WHEN LITTLE LELLE SLEEPS AGAIN TONIGHT ####
+############################################################################
 
+# _action_browse : mounted|mount|browse
 _action_browse() {
 	local id="$1" b rc i
-	b="$(_backend_for browse "$id")"
+	b="$(_pick_backend_for browse "$id")"
 
 	case "$b" in
 	dbus)
@@ -508,11 +560,9 @@ _action_browse() {
 	esac
 }
 
-########################################
-# UI Helpers
-########################################
+# ====> UI Helpers <==== #
 
-# _pick_first_connected: select first connected / trusted device to display name+status
+# _pick_first_connected : select first connected / trusted device to display name+status
 _pick_first_connected() {
 	local id name
 	while IFS= read -r id; do
@@ -537,7 +587,7 @@ _pick_first_connected() {
 	return 1
 }
 
-# _choose: select/choose options in menu (rofi|dmenu)
+# _choose : select/choose options in menu (rofi|dmenu)
 _choose() {
 	local prompt="${1:-Select}"
 	if have rofi; then
@@ -547,7 +597,7 @@ _choose() {
 	fi
 }
 
-# _pick_file: pick file to share or url to browser (zenity|kdialog)
+# _pick_file : pick file to share or url to browser (zenity|kdialog)
 _pick_file() {
 	if have zenity; then
 		zenity --file-selection 2>/dev/null || true
@@ -559,7 +609,7 @@ _pick_file() {
 	fi
 }
 
-# _clip-text: send clipboard (wl-paste|xclip)
+# _clip-text : send clipboard (wl-paste|xclip)
 _clip_text() {
 	# prefer wl-paste on wayland, otherwise xclip; quiet on failure.
 	if [[ -n ${WAYLAND_DISPLAY-} ]] && have wl-paste; then
@@ -571,7 +621,7 @@ _clip_text() {
 	fi
 }
 
-# helper: send free-text
+# _prompt_text : send free-text
 _prompt_text() {
 	local prompt="${1:-Text}"
 	if have rofi; then
@@ -582,9 +632,7 @@ _prompt_text() {
 	fi
 }
 
-###############################
-# Status: Polybar
-###############################
+# ====> Status: Polybar <==== #
 
 # printf helper
 _print_device_line() {
@@ -643,66 +691,16 @@ status_line() {
 
 	if [[ -n "$name" ]]; then
 		_print_device_line "$ICON_DISCON" "$name" "" "(offline)"
-		# printf '%%{T%s}%s%%{T%s}%s%s (offline)\n' "$FONT_ICON" "$ICON_DISCON" "$FONT_TEXT" "$SEP" "$name"
 	else
 		_print_device_line "$ICON_DISCON"
 	fi
 }
 
-############################
-### Rofi / dmenu helpers ###
-############################
-
-# helper: select/choose options in menu
-# _choose() {
-# 	local prompt="${1:-Select}"
-# 	if have rofi; then
-# 		rofi -dmenu -i -p "$prompt"
-# 	else
-# 		dmenu -i -p "$prompt"
-# 	fi
-# }
-#
-# # helper: pick file to share
-# _pick_file() {
-# 	if have zenity; then
-# 		zenity --file-selection 2>/dev/null || true
-# 	elif have kdialog; then
-# 		kdialog --getopenfilename 2>/dev/null || true
-# 	else
-# 		# last resort
-# 		echo ""
-# 	fi
-# }
-#
-# # helper: send clipboard
-# _clip_text() {
-# 	# prefer wl-paste on wayland, otherwise xclip; quiet on failure.
-# 	if [[ -n ${WAYLAND_DISPLAY-} ]] && have wl-paste; then
-# 		wl-paste 2>/dev/null || true
-# 	elif have xclip; then
-# 		xclip -o -selection clipboard 2>/dev/null || true
-# 	else
-# 		echo ""
-# 	fi
-# }
-#
-# # helper: send free-text
-# _prompt_text() {
-# 	local prompt="${1:-Text}"
-# 	if have rofi; then
-# 		# rofi -dmenu with empty input, single-line txt entry
-# 		rofi -dmenu -p "$prompt" <<<""
-# 	else
-# 		dmenu -i -p "$prompt" <<<""
-# 	fi
-# }
-
 ###########################################
 # Build list for menu
 ###########################################
 
-# List Device Options: Output: DISPLAY|ID|PAIRED|REACHABLE
+# List Device Options; Output: DISPLAY|ID|PAIRED|REACHABLE
 list_all_structured() {
 	local id name paired reachable display
 	if have_qdbus && _kdeconnectd_up; then
@@ -796,127 +794,3 @@ _device_actions_menu() {
 		esac
 	fi
 }
-
-# _device_actions_menu() {
-# 	local id="$1" name="$2" paired="$3" reachable="$4"
-# 	local sel f t
-# 	if ((paired == 1)); then
-# 		sel="$(printf '%s\n' \
-# 			"Ping" "Find Device" "Send File" "Share Clipboard" "Share Text" "Browse Files" "Unpair" "Open Settings" |
-# 			_choose "$name")" || exit 0
-#
-# 		case "$sel" in
-# 		"Ping") _run kdeconnect-cli --device "$id" --ping ;;
-# 		"Find Device") _run kdeconnect-cli --device "$id" --ring ;;
-# 		"Send File")
-# 			f="$(_pick_file)"
-# 			[[ -n "${f:-}" ]] && _run kdeconnect-cli --device "$id" --share "file://$f"
-# 			;;
-# 		"Share Clipboard")
-# 			t="$(_clip_text)"
-# 			[[ -n "${t:-}" ]] && _run kdeconnect-cli --device "$id" --share-text "$t"
-# 			;;
-# 		"Share Text")
-# 			t="$(_prompt_text 'Text to send')"
-# 			[[ -n "${t:-}" ]] && _run kdeconnect-cli --device "$id" --share-text "$t"
-# 			;;
-# 		"Browse Files") _run xdg-open "kdeconnect://$id/" >dev/null 2>&1 || _run kdeconnect-app & ;;
-# 		"Unpair") _run kdeconnect-cli --device "$id" --unpair ;;
-# 		"Open Settings") _run kdeconnect-settings >/dev/null 2>&1 & ;;
-# 		*) : ;;
-# 		esac
-# 	else
-# 		sel="$(printf '%s\n' "Pair Device" "Open Settings" "Cancel" | _choose "$name")" || exit 0
-# 		case "$sel" in
-# 		"Pair Device") _run kdeconnect-cli --device "$id" --pair ;;
-# 		"Open Settings") _run kdeconnect-settings >/dev/null 2>&1 & ;;
-# 		*) : ;;
-# 		esac
-# 	fi
-# }
-
-#################
-#Main Menu
-#################
-
-# Accessed with '--menu' -flag
-_main_menu() {
-	local -a lines
-	local choice line id name paired reachable
-	mapfile -t lines < <(list_all_structured)
-
-	if ((${#lines[@]} == 0)); then
-		choice="$(printf '%s\n' "Refresh" "Open Settings" | _choose 'KDE Connect')" || exit 0
-
-		if [[ "$choice" == "Refresh" ]]; then
-			_run _cli --refresh || true
-			exec "$0" --menu ${_VERBOSE:+--verbose}
-		elif [[ "$choice" == "Open Settings" ]]; then
-			_run kdeconnect-settings >/dev/null 2>&1 &
-		fi
-		exit 0
-	fi
-
-	# stable ordering: Connected=3, Paired=2, Available=1, Refresh=0
-	choice="$(
-		{
-			local line
-			for line in "${lines[@]}"; do
-				case "$line" in
-				Connected:\ *) echo "3|$line" ;;
-				Paired:\ *) echo "2|$line" ;;
-				Available:\ *) echo "1|$line" ;;
-				esac
-			done
-			echo "0|Refresh|_|0|0"
-		} | sort -t'|' -k1,1nr -k2,2 |
-			cut -d'|' -f2 |
-			cut -d'|' -f1 |
-			_choose "Devices"
-	)" || exit 0
-
-	[[ -z "$choice" ]] && exit 0
-
-	if [[ "$choice" == "Refresh" ]]; then
-		_run _cli --refresh || true
-		exec "$0" --menu ${_VERBOSE:+--verbose}
-	fi
-
-	line="$(printf '%s\n' "${lines[@]}" | grep -F "^$choice|" | head -n1)"
-	id="$(cut -d'|' -f2 <<<"$line")"
-	paired="$(cut -d'|' -f3 <<<"$line")"
-	reachable="$(cut -d'|' -f4 <<<"$line")"
-
-	name="${choice#Connected: }"
-	name="${name#Paired: }"
-	name="${name#Available: }"
-
-	_device_actions_menu "$id" "$name" "$paired" "$reachable"
-}
-
-#########################
-### Entrypoint ###
-#########################
-case "${1:-}" in
---menu) _main_menu ;;
-*) status_line ;;
-esac
-
-## ===========> OLD SHIT BELOW <======================================00
-
-# try binaries: qt6 -> qt5 -> system
-# for cand in \
-# 	"/usr/lib/qt6/bin/qdbus6" \
-# 	"$(command -v qdbus6 2>/dev/null)" \
-# 	"/usr/lib/x86_64-linux-gnu/qt5/bin/qdbus" \
-# 	"/usr/lib/qt5/bin/qdbus" \
-# 	"$(command -v qdbus-qt5 2>/dev/null)" \
-# 	"$(command -v qdbus 2>/dev/null)"; do
-# 	[[ -n "${cand:-}" && -x "$cand" ]] || continue
-# 	if _qdbus_ok "$cand"; then
-# 		QDBUS_CMD=("$cand")
-# 		# _log "qdbus selected: $cand"
-# 		_log_detect QDBUS "${QDBUS_CMD[*]}"
-# 		break
-# 	fi
-# done
