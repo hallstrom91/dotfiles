@@ -289,7 +289,7 @@ _dbg_dump_device() {
 
 ## Extra helpers: Wait/poll and plugins
 
-# _wait_until : "cmd ..." timeout_secs interval_secs
+# _wait_until : wait for response
 _wait_until() {
 	local timeout="${2:-1.5}" interval="${3:-0.1}"
 	shift 2
@@ -314,6 +314,9 @@ _has_plugin() {
 	local id="$1" plugin="$2"
 	[[ "$(_qdbus_has_plugin "$id" "$plugin" 2>/dev/null)" == "true" ]]
 }
+
+# is paired helper
+is_paired() { [[ "$(_qdbus_dev_paired "$1" 2>/dev/null)" == "true" ]]; }
 
 # ====> KDE Actions (dbus/cli) <==== #
 
@@ -516,7 +519,8 @@ _action_browse() {
 		# mount if not already mounted
 		if [[ "$(_dbus_sftp_mounted "$id" 2>/dev/null)" != "true" ]]; then
 			_run _dbus_sftp_mount "$id" || true
-			_wait_until "[[ \"$(_dbus_sftp_mounted \""$id"\" 2>/dev/null)\" == \"true\" ]]" 1.5 0.15 || true
+			_wait_until
+			# _wait_until "[[ \"$(_dbus_sftp_mounted \""$id"\" 2>/dev/null)\" == \"true\" ]]" 1.5 0.15 || true
 		fi
 		# open browse
 		_run _dbus_sftp_mount "$id"
