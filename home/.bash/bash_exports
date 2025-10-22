@@ -52,3 +52,6 @@ export DOTNET_THREADPOOL_MINTHREADS
 if [ -d "$HOME/.dotnet/tools" ]; then
 	export PATH="$HOME/.dotnet/tools:$PATH"
 fi
+
+# qmake / qt5
+export QT_SELECT=qt5
