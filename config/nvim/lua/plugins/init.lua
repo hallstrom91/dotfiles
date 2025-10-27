@@ -6,7 +6,8 @@ return {
 	{ "rcarriga/nvim-notify", lazy = true, opts = { background_color = "#44444E" } },
 
 	require("plugins.autopairs"),
-	require("plugins.tabby"),
+	-- require("plugins.tabby"),
+	require("plugins.bufferline"),
 	require("plugins.cmp"),
 	require("plugins.comments"),
 	require("plugins.conform"),

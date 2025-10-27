@@ -11,6 +11,7 @@ return {
 		{ "<S-Tab>", ":tabp<CR>", desc = "Prev tab" },
 	},
 	lazy = false,
+	enabled = false,
 	opts = function()
 		-- local util = require("tabby.util")
 		-- local hl_tline = util.extract_nvim_hl("lualine_b_normal")

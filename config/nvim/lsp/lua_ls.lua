@@ -22,7 +22,7 @@ return {
 					"${3rd}/luv/library",
 				},
 			},
-			telemetry = { enable = false },
+			-- telemetry = { enable = false }, -- deprecated
 			completion = { enable = true, callSnippet = "Replace" },
 			hint = {
 				enable = true,

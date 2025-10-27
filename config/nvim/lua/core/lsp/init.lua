@@ -5,7 +5,7 @@ local on_attach = require("core.lsp.attach")
 -- local lsp_utils = require("utils.lsp_utils")
 
 local base = vim.lsp.protocol.make_client_capabilities()
-local capabilities = ok and cmp.default_capabilities(base) or base
+local capabilities = ok and cmp.default_capabilities() or base
 
 vim.diagnostic.config({
 	virtual_text = true,

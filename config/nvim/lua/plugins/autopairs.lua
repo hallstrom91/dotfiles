@@ -32,4 +32,5 @@ return {
 			disable_filetype = { "TelescopePrompt", "spectre_panel", "neo-tree" },
 		}
 	end,
+	{},
 }
