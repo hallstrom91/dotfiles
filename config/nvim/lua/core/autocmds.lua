@@ -5,7 +5,7 @@ local grp = function(name)
 end
 
 cmd("BufWritePre", {
-	group = grp("kjs.text.fmt"),
+	group = grp("usr_fmt"),
 	desc = "format buf with conform",
 	pattern = "*",
 	callback = function(args)
@@ -20,15 +20,17 @@ cmd("BufWritePre", {
 })
 
 cmd("TextYankPost", {
-	group = grp("sh.text.hlyank"),
+	group = grp("usr_hlyank"),
 	desc = "highlight on yank (copy)",
 	callback = function()
 		(vim.hl or vim.highlight).on_yank()
 	end,
 })
 
+-- test
+
 cmd("FileType", {
-	group = grp("kjs.filetype.closeft"),
+	group = grp("usr_close_ft"),
 	desc = "close specific bufs with 'q'",
 	pattern = {
 		"checkhealth",
@@ -57,7 +59,7 @@ cmd("FileType", {
 })
 
 cmd("FileType", {
-	group = grp("kjs.filetype.nocomment"),
+	group = grp("usr_nocomment_ft"),
 	desc = "no comment on new line",
 	pattern = "*",
 	callback = function()
@@ -65,9 +67,50 @@ cmd("FileType", {
 	end,
 })
 
+-----> LSP
+cmd("FileType", {
+	group = grp("usr_treesitter_hl"),
+	desc = "start treesitter for ft",
+	pattern = {
+		"lua",
+		"bash",
+		"sh",
+		"javascript",
+		"javascriptreact",
+		"typescript",
+		"typescriptreact",
+		"cs",
+		"json",
+		"jsonc",
+		"json5",
+		"markdown",
+	},
+	callback = function()
+		vim.treesitter.start()
+	end,
+})
+
+cmd("LspAttach", {
+	group = grp("usr_lspattach"),
+	desc = "attach lsp opts to buf",
+	callback = function(ev)
+		local bufnr = ev.buf
+		-- if vim.b[bufnr].usr_lsp_attach_done then
+		-- 	return
+		-- end
+
+		local client = vim.lsp.get_client_by_id(ev.data.client_id)
+		if not client then
+			return
+		end
+
+		require("core.lsp.attach").lsp_pickers_map(client, bufnr)
+	end,
+})
+
 --> display macro recording status
 cmd("RecordingEnter", {
-	group = grp("kjs.macros.enter"),
+	group = grp("usr_macro_enter"),
 	desc = "display notification when macro recording start",
 	callback = function()
 		local reg = vim.fn.reg_recording()
@@ -76,7 +119,7 @@ cmd("RecordingEnter", {
 })
 
 cmd("RecordingLeave", {
-	group = grp("kjs.macros.exit"),
+	group = grp("usr_macro_exit"),
 	desc = "display notification when macro recording ends",
 	callback = function()
 		vim.notify("Macro recording terminated", vim.log.levels.INFO, { title = "Macro Ended" })

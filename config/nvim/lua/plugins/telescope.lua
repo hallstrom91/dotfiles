@@ -1,6 +1,7 @@
 return {
 	{
 		"nvim-telescope/telescope.nvim",
+		version = false,
 		-- tag = "0.1.8",
 		keys = {
 			{ "<leader>fc", "<cmd>Telescope commands<cr>", desc = "Telescope: Commands" },
@@ -16,16 +17,13 @@ return {
 			{ "<leader>gc", "<cmd>Telescope git_commits<CR>", desc = "Telescope: Git commits" },
 			{ "<leader>gs", "<cmd>Telescope git_status<CR>", desc = "Telescope: Git status" },
 		},
-		-- dependencies = {
-		-- 	"nvim-lua/plenary.nvim",
-		-- },
 		opts = function()
-			--	require("telescope").load_extension("fzf")
-			--	require("telescope").load_extension("noice")
+			require("telescope").load_extension("fzf")
+			require("telescope").load_extension("noice")
 			return {
 				defaults = {
-					prompt_prefix = " ", -- nf-fa-search
-					selection_caret = " ", -- nf-fa-caret_right
+					prompt_prefix = "", -- nf-fa-search
+					selection_caret = "", -- nf-fa-caret_right
 					path_display = { "truncate" },
 					file_ignore_patterns = { "node_modules", ".git/" },
 					-- mappings = {

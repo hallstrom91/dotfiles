@@ -1,4 +1,5 @@
 -- Bootstrap lazy.nvim
+
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
 	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
@@ -15,26 +16,15 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-local req = require("utils.req_utils")
-local req_safe = req.safe_require
-req.mason_bin_path() -- set mason path for lsp/fmts etc
+-- test
+local req = require("utils.path")
+req.mason_bin_path()
 
-req_safe("core.options", { desc = "core.options" }) -- global opts
--- req_safe("core.filetypes", { desc = "core.filetypes" }) --
-
--- load base keymaps
-req_safe("core.keymaps", {
-	desc = "core.keymaps",
-	on_ok = function(m)
-		if m.setup then
-			m.setup()
-		end
-	end,
-})
-
-req_safe("core.lazy", { desc = "core.lazy" }) -- load all lazy-pkg-manager, load all plugins.
-req_safe("core.autocmds", { desc = "core.autocmds" }) -- load autocmds
-req_safe("core.lsp", { desc = "core.lsp" }) -- load lsp
+req("core.options", { desc = "core.options" })
+req("core.keymaps", { desc = "core.keymaps" })
+req("core.lazy", { desc = "core.lazy" })
+req("core.lsp", { desc = "core.lsp" })
+req("core.autocmds", { desc = "core.autocmds" })
 
 -- set colorscheme
 vim.cmd.colorscheme("vscode")

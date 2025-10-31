@@ -1,11 +1,8 @@
 -- To see the capabilities for a given server, try this in a LSP-enabled buffer:
 --     :lua =vim.lsp.get_clients()[1].server_capabilities
-local ok, cmp = pcall(require, "cmp_nvim_lsp")
-local on_attach = require("core.lsp.attach")
--- local lsp_utils = require("utils.lsp_utils")
 
-local base = vim.lsp.protocol.make_client_capabilities()
-local capabilities = ok and cmp.default_capabilities() or base
+local cmp = require("cmp_nvim_lsp")
+local capabilities = cmp.default_capabilities()
 
 vim.diagnostic.config({
 	virtual_text = true,
@@ -15,14 +12,22 @@ vim.diagnostic.config({
 	severity_sort = true,
 	float = {
 		border = "rounded",
-		source = "if_many",
+		source = true, -- or 'if_many'
 	},
 })
 
 vim.lsp.config("*", {
 	capabilities = capabilities,
-	on_attach = on_attach,
-	root_markers = { ".git" },
+	root_markers = { ".git" }, --> default root_markers
 })
 
-vim.lsp.enable({ "lua_ls", "bashls" })
+vim.lsp.enable({
+	"bashls",
+	-- "csharp_ls",
+	"cssls",
+	"jsonls",
+	"lua_ls",
+	-- "roslyn_ls",
+	"vtsls",
+	-- "yamlls",
+})

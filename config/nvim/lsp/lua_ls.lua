@@ -1,16 +1,20 @@
+-- local root_finder = require("utils.lsp_utils").root_finder
+local root = require("utils.root")
+
 -- https://github.com/neovim/nvim-lspconfig/blob/master/lua/lspconfig/configs/lua_ls.lua
 -- https://github.com/luals/lua-language-server
 ---@type vim.lsp.Config
 return {
 	cmd = { "lua-language-server" },
 	filetypes = { "lua" },
-	root_markers = {
+	root_dir = root({
 		".luarc.json",
 		".luarc.jsonc",
 		".luacheckrc",
 		".stylua.toml",
 		"stylua.toml",
-	},
+		".git",
+	}),
 	settings = {
 		Lua = {
 			runtime = { version = "LuaJIT" },
@@ -22,7 +26,6 @@ return {
 					"${3rd}/luv/library",
 				},
 			},
-			-- telemetry = { enable = false }, -- deprecated
 			completion = { enable = true, callSnippet = "Replace" },
 			hint = {
 				enable = true,
@@ -30,6 +33,9 @@ return {
 				paramType = "Disable",
 				semicolon = "Disable",
 				arrayIndex = "Disable",
+			},
+			format = {
+				enable = false,
 			},
 		},
 	},

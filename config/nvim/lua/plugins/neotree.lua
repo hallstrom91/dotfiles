@@ -20,13 +20,13 @@ return {
 			git_status_async = true,
 			log_level = "info", -- "trace", "debug", "info", "warn", "error", "fatal"
 			open_files_in_last_window = true, -- false = open files in top left window
-			open_files_do_not_replace_types = { "terminal", "Trouble", "qf", "edgy" }, -- when opening files, do not use windows containing these filetypes or buftypes
+			open_files_do_not_replace_types = { "terminal", "Trouble", "qf", "edgy", "help", "spectre" }, -- when opening files, do not use windows containing these filetypes or buftypes
 
 			use_popups_for_input = false, -- If false, inputs will use vim.ui.input() instead of custom floats.
 			use_default_mappings = true,
 			default_component_configs = {
 				name = {
-					trailing_slash = true,
+					trailing_slash = false,
 				},
 				symlink_target = {
 					enabled = false, -- default

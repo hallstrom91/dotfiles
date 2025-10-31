@@ -1,45 +1,49 @@
--- INFO: print value from cmdline =
--- :lua = vim.*.value
-local opt = vim.opt
-local o = vim.o -- :set (buf/win only)
+---> print value from cmdline
+---> :lua = vim.*.value
 
--- defaults (g)
-opt.termguicolors = true
-opt.number = true
-opt.relativenumber = false
-opt.expandtab = true
-opt.shiftwidth = 4
-opt.tabstop = 4
-opt.splitbelow = true
-opt.splitright = true
-opt.wrap = false
-opt.smoothscroll = true
-opt.showtabline = 2 -- always show tabline
-opt.clipboard = vim.env.SSH_TTY and "" or "unnamedplus"
-opt.spell = false
-opt.spelllang = { "en" }
-opt.timeoutlen = 1000 or 300
-opt.guicursor = {
+-- reminder: vim.o |VS| vim.opt
+-- vim.o equals set (in vimL)
+-- vim.opt is the same, but with syntactic sugar such as conversion from Lua array to VimL list.
+-- e.g. vim.o.cursorlineopt = "screenline, number" |OR| vim.opt.cursorlineopt = { "screenline", "number" }
+
+vim.opt.termguicolors = true
+vim.opt.number = true
+vim.opt.relativenumber = false
+
+vim.opt.expandtab = true
+vim.opt.shiftwidth = 4
+vim.opt.tabstop = 4
+
+vim.opt.splitbelow = true
+vim.opt.splitright = true
+vim.opt.splitkeep = "screen"
+
+vim.opt.wrap = false
+vim.opt.smoothscroll = true
+vim.opt.showtabline = 2 -- always show tabline
+
+vim.opt.clipboard = vim.env.SSH_TTY and "" or "unnamedplus"
+
+vim.opt.spell = false
+vim.opt.spelllang = { "en" }
+vim.opt.timeoutlen = 500 -- wait for keymap-kombo (in ms)
+vim.opt.cursorline = true
+vim.opt.cursorlineopt = "both"
+vim.opt.guicursor = {
 	"n-v-c:hor25",
 	"i-ci-ve:ver25",
 	"c:ver25",
 }
 
--- defaults (buf/win)
-o.exrc = true
-o.secure = true
-o.winborder = "rounded"
-o.cursorline = true
--- o.cursorcolumn = "cursorcolumn"
-o.cursorlineopt = "both"
--- o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
--- o.foldmethod = "expr"
--- o.foldenable = false -- switch with keys: zi
--- o.foldcolumn = 1
--- o.foldlevelstart = 99
+-- Experimental stuff
+-- vim.opt.winborder = "rounded" -- test
+-- vim.o.winborder = "rounded"
 
--- external providers (disable = 0)
+-- disable external providers
 vim.g.loaded_node_provider = 0
 vim.g.loaded_python3_provider = 0
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_ruby_provider = 0
+
+-- internal plugins
+vim.g.loaded_matchparens = 0

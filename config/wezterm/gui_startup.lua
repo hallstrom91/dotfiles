@@ -1,6 +1,5 @@
 local wezterm = require("wezterm")
 local mux = wezterm.mux
-
 local startup = {}
 
 function startup.bootloader()
