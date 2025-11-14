@@ -1,75 +1,114 @@
 local M = {}
 
-local uv = vim.uv
+local uv = vim.uv -- or vim.loop for older nvim-version
+local fs = vim.fs
 
-local notify = vim.schedule_wrap(function(msg, lvl, title)
-	vim.notify(msg, lvl or vim.log.levels.INFO, { title = title or "init setup" })
-end)
+-------------------------------------------
+---Internal helper to `lua/utils/path.lua`
+local function _path_sep()
+	return (package.config:sub(1, 1) == "\\") and ";" or ":"
+end
 
--- Prepend Mason bin to `PATH` | if present & not already included.
----@return boolean modified -- true if `PATH` was changed.
-function M.mason_bin_path()
-	local mason_bin = vim.fn.stdpath("data") .. "/mason/bin"
-	local st = uv.fs_stat(mason_bin)
+------------------------------------------------------
+---Prepend dir to $PATH, only if:
+---valid/existing `dir`and value not already in $PATH
+---@param dir string
+---@return boolean modified
+function M.prepend_to_path(dir)
+	local st = uv.fs_stat(dir)
 
 	if not st or st.type ~= "directory" then
 		return false
 	end
 
 	local path = vim.env.PATH or ""
-	local sep = (package.config:sub(1, 1) == "\\") and ";" or ":"
+	local sep = _path_sep()
 
 	local haystack = sep .. path .. sep
-	local needle = sep .. mason_bin .. sep
+	local needle = sep .. dir .. sep
 	if haystack:find(needle, 1, true) then
 		return false
 	end
 
-	vim.env.PATH = mason_bin .. (path ~= "" and (sep .. path) or "")
+	vim.env.PATH = dir .. (path ~= "" and (sep .. path) or "")
 	return true
 end
 
----@class safeRequireOpts
----@field desc? string
----@field title? string
----@field silent? boolean
----@field level? integer
----@field on_ok? fun(mod:any)
-
--- Safe require wrapper for init/bootstrap
----@param modname string
----@param opts? safeRequireOpts
----@return boolean ok, any mod
-function M.safe(modname, opts)
-	opts = opts or {}
-	local desc = opts.desc or modname
-	local title = opts.title or "init setup"
-	local level = opts.level or vim.log.levels.INFO
-
-	local ok, mod_or_error = pcall(require, modname)
-	if not ok then
-		if not opts.silent then
-			notify(("Could not load %s\n%s"):format(desc, mod_or_error), vim.log.levels.WARN, title)
-		end
-		return false, nil
-	end
-
-	if opts.on_ok then
-		local ok2, err = pcall(opts.on_ok, mod_or_error)
-		if not ok2 and not opts.silent then
-			notify(("Something wrong in on_ok for %s\n%s"):format(desc, err), vim.log.levels.ERROR, title)
-		end
-	elseif vim.g.init_verbose then
-		notify("Loaded" .. desc, level, title)
-	end
-
-	return true, mod_or_error
+------------------------------
+---Prepend Mason bin to `$PATH`, Usage:
+--- if 'mason plugin' is lazy loaded, `$PATH` will not be set automatic.
+--- to make LSP servers, linters, formatters etc work correctly.
+---@return boolean modified
+function M.mason_bin_path()
+	local bin = vim.fn.stdpath("data") .. "/mason/bin"
+	return M.prepend_to_path(bin)
 end
 
-setmetatable(M, {
-	__call = function(_, ...)
-		return M.safe(...)
-	end,
-})
+---------------------------
+---Absolute +  Normalized path
+---@param p string|nil
+---@return string|nil
+function M.norm(p)
+	-- if type(p) ~= "string" or p == "" then
+	-- 	return nil
+	-- end
+	if not p or p == "" then
+		return ""
+	end
+
+	p = vim.fn.fnamemodify(p, ":p")
+	p = fs.normalize(p)
+
+	if p:sub(-1) == "/" then
+		p = p:sub(1, -2)
+	end
+	return p
+end
+
+------------------------------------------
+---Absolute + normalized buf-path (or "")
+---@param bufnr? integer
+---@return string|nil
+function M.bufpath(bufnr)
+	bufnr = bufnr or vim.api.nvim_get_current_buf()
+	local name = vim.api.nvim_buf_get_name(bufnr)
+	-- if name == "" then
+	-- 	return nil
+	-- end
+	return M.norm(name)
+	-- local abs = fs.abspath(name)
+	-- return fs.normalize(abs)
+end
+
+-----------------------
+---Safe current working dir (CWD)
+---@return string
+function M.cwd()
+	return uv.cwd() or "/"
+end
+
+----------------------------------------------
+---Format path for UI (short path with tilde)
+---@param p string|nil
+---@param opts? { shorten_width?: integer}
+---@return string
+function M.fmt_path(p, opts)
+	opts = opts or {}
+	local max_w = opts.shorten_width or 40
+
+	if not p or p == "" then
+		return ""
+	end
+
+	-- p = fs.normalize(fs.fs.abspath(p))
+
+	p = vim.fn.fnamemodify(p, ":~")
+
+	if vim.fn.strdisplaywidth(p) > max_w then
+		p = vim.fn.pathshorten(p)
+	end
+
+	return p
+end
 
 return M

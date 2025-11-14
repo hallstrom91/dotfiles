@@ -1,48 +1,33 @@
 local M = {}
 
-local uv = vim.uv
+-- local uv = vim.uv
 local fs = vim.fs
-
-local function norm(path)
-	if not path or path == "" then
-		return nil
-	end
-	return uv.fs_realpath(path) or path
-end
-
-local function bufpath(bufnr)
-	bufnr = bufnr or vim.api.nvim_get_current_buf()
-	local name = vim.api.nvim_buf_get_name(bufnr)
-	if name == "" then
-		return nil
-	end
-	return norm(name)
-end
-
---- Safe current working directory: always return string
----@return string
-local function safe_cwd()
-	return uv.cwd() or "/"
-end
+local P = require("utils.path")
 
 -- Find root_dir based on markers (files/dirs or match-fn)
 -- No match -> fallback to CWD
 -- `source` can be bufnr (number) or filepath (string)
----@param source integer|string
+---@param source string|nil
 ---@param markers string|string[]|table|fun(name: string, path:string):boolean
 ---@return string
 function M.find_root(source, markers)
-	local path
-
-	if type(source) == "number" then
-		path = bufpath(source)
-	else
-		path = norm(source)
-	end
+	local path = P.norm(source)
 
 	if not path or path == "" then
-		return safe_cwd()
+		return P.cwd()
 	end
+	-- local path
+	-- local t = type(source)
+	-- if t == "number" then
+	-- 	---@type string|nil
+	-- 	path = P.bufpath(source)
+	-- else
+	-- 	---@type string|nil
+	-- 	path = P.norm(source)
+	-- end
+	-- if not path or path == "" then
+	-- 	return P.cwd()
+	-- end
 
 	--search upwards for first match
 	local ok, root = pcall(fs.root, path, markers)
@@ -51,17 +36,19 @@ function M.find_root(source, markers)
 	end
 
 	-- fallback
-	return safe_cwd()
+	return P.cwd()
 end
 
--- root_dir-function for new LSP API
--- usage in server-config:
+---Root_dir-func for new `native nvim lsp-API`
+---Usage in server-config:
 --	root_dir = root.get_lsp_root({'.git', 'package.json'})
 ---@param markers string|string[]|table|fun(name: string, path:string):boolean
 ---@return fun(bufnr:integer, on_dir:fun(dir?:string))
 function M.get_lsp_rootdir(markers)
 	return function(bufnr, on_dir)
-		local root = M.find_root(bufnr, markers)
+		local source = P.bufpath(bufnr) -- always return string|nil
+		local root = M.find_root(source, markers)
+
 		if root and root ~= "" then
 			on_dir(root)
 		else
