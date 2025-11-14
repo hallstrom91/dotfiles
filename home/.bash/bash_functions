@@ -132,11 +132,32 @@ aliaslist() {
 # }
 
 ## UI
-# t1dir() {
-# 	local depth="${1:-1}"
-# 	command -v tree >/dev/null 2>&1 || {
-# 		echo "fail: tree not found" >&2
-# 		return 127
-# 	}
-# 	tree -d -L "$depth"
+t1dir() {
+	local depth="${1:-1}"
+	command -v tree >/dev/null 2>&1 || {
+		echo "fail: tree not found" >&2
+		return 127
+	}
+	tree -d -L "$depth"
+}
+
+## Chown - Make User (sudo -> $USER) - Multi-Path
+# makeowner() {
+# 	if [[ $# -lt 1 ]]; then
+# 		echo "Usage: makeowner <path1> [path2] ..."
+# 		return 1
+# 	fi
+#
+# 	for p in "$@"; do
+# 		sudo chown -R "$USER:$USER" "$p"
+# 	done
 # }
+
+## Chown - Make User (sudo -> $USER) - One Path
+makeowner() {
+	if [[ -z "$1" ]]; then
+		echo "Usage: makeowner <path>"
+		return 1
+	fi
+	sudo chown -R "$USER:$USER" "$1"
+}
