@@ -1,10 +1,21 @@
 local M = {}
+---@alias IconString string
 
+---@class IconTable
+---@field [string] IconString | table<string,any>
+
+---@class IconsRoot
+---@field fs IconTable
+---@field git IconTable
+---@field cmp IconTable
+---@field dx IconTable
+---@field lsp IconTable
 ------------------------------------------------------
 ---> utils/icons.lua -> Icon table(s)
 ---------------------------------------
 
 ---ICONS: For completion-menu (nvim-cmp) rendering
+---@type IconTable
 M.cmp = {
 	Text = "", -- nf-cod-text_size || alt: nf-cod-symbol_key: 
 	Method = "", -- nf-cod-symbol_method
@@ -33,8 +44,8 @@ M.cmp = {
 	TypeParameter = "", --nf-cod-symbol_parameter
 }
 
----ICONS: For diagnostic (dx) level
----ok|hint|info|warn|error
+---ICONS: For diagnostic(dx) levels: ok|hint|info|warn|error
+---@type IconTable
 M.dx = {
 	nf_md = {
 		ok = "󰄬", --nf-md-check || alt: nf-fa-circle_check:   || nf-fa-square_check 
@@ -53,6 +64,7 @@ M.dx = {
 }
 
 ---ICONS: For filesystem
+---@type IconTable
 M.fs = {
 	folder = "󰉋", --nf-md-folder
 	folder_open = "󰝰", --nf-md-folder_open
@@ -67,7 +79,8 @@ M.fs = {
 	file_mark = "󱝴", --nf-md-file_marker
 }
 
----ICONS: for git
+---ICONS: For git
+---@type IconTable
 M.git = {
 	nf_fa_git = "",
 	nf_dev_git = "",
@@ -91,7 +104,8 @@ M.git = {
 	},
 }
 
----ICONS: general
+---ICONS: For general|random|lonely usage
+---@type IconTable
 M.general = {
 	search = "", --nf-fa-search
 	search_alt = "", --nf-fa-search_plus
@@ -117,7 +131,8 @@ M.general = {
 	dir_active = "", -- TODO: remove! moved to M.fs = { ... }
 }
 
----ICONS: For active LSP status and ft of active buf.
+---ICONS: For LSP status and ft of active buf.
+---@type IconTable
 M.lsp = {
 	bashls = "󱆃", --nf-md-bash || alt: nf-dev-bash: 
 	lua_ls = "󰢱", -- nf-md-language_lua
@@ -130,6 +145,7 @@ M.lsp = {
 }
 
 ---ICONS: For powerline, e.g. 'lualine'-plugin.
+---@type IconTable
 M.ple = {
 	round_left = "", --nf-ple-left_half_circle_thick
 	round_right = "", --nf-ple-right_half_circle_thick
@@ -143,243 +159,134 @@ M.ple = {
 
 ------------------------------------------------------
 ---> utils/icons.lua -> Type Annotations
----@class IconGetOpts
----@field pl? integer -- padding-left[pl]
----@field pr? integer --  padding-right[pr]
+---@class IconOpts
+---@field pl? integer -- padding-left
+---@field pr? integer --  padding-right
 ---@field p? integer  -- if set: used for both padding-left[pl]/right[pl]
----@field default? string -- fallback if icon is missing
+---@field fail? string -- fallback if icon is missing
 
----Internal padding helper
+---------------------------------------------------------------------
+---Internal helper: used to apply padding to icon(s)
+---set padding value with left-side: pl | right-side: pr | both: p
+
+local _defaults = {
+	pad_char = " ", -- standard padding token, whitespace.
+	fail_icon = "󱈸", -- default fallback - if req fails to return requested icon.
+}
+
 ---@param s string
----@param opts IconGetOpts
+---@param opts IconOpts
 ---@return string
 local function _apply_padding(s, opts)
-	local p = opts.p or 0
-	local pl = opts.pl or p or 0
-	local pr = opts.pr or p or 0
+	-- opts = opts or {}
+	if not opts then
+		return s
+	end
+
+	local pad = opts.p or 0
+	local pl = opts.pl or pad or 0
+	local pr = opts.pr or pad or 0
+	local ch = _defaults.pad_char
+
+	if pl <= 0 and pr <= 0 then
+		return s
+	end
 
 	if pl > 0 then
-		s = string.rep(" ", pl) .. s
+		s = string.rep(ch, pl) .. s
 	end
 
 	if pr > 0 then
-		s = s .. string.rep(" ", pr)
+		s = s .. string.rep(ch, pr)
 	end
 
 	return s
 end
--- end of test
--------------------------------------------------------------------
--- https://github.com/hrsh7th/nvim-cmp/wiki/Menu-Appearance#basic-customisations
--- M.cmp_icons = {
--- 	Text = "",
--- 	Method = "󰆧",
--- 	Function = "󰊕",
--- 	Constructor = "",
--- 	Field = "󰇽",
--- 	Variable = "󰂡",
--- 	Class = "󰠱",
--- 	Interface = "",
--- 	Module = "",
--- 	Property = "󰜢",
--- 	Unit = "",
--- 	Value = "󰎠",
--- 	Enum = "",
--- 	Keyword = "󰌋",
--- 	Snippet = "",
--- 	Color = "󰏘",
--- 	File = "󰈙",
--- 	Reference = "",
--- 	Folder = "󰉋",
--- 	EnumMember = "",
--- 	Constant = "󰏿",
--- 	Struct = "",
--- 	Event = "",
--- 	Operator = "󰆕",
--- 	TypeParameter = "󰅲",
--- }
 
--- M.git = {
--- 	added = "", -- nf-cod-add
--- 	added_alt = "", --nf-fa-plus
--- 	modified = "", -- nf-cod-edit
--- 	modified_alt = "",
--- 	modified_tilde = "󰜥",
--- 	removed = "", -- nf-cod-chrome_close
--- 	removed_alt = "",
--- 	git = "", -- nf-dev-git
--- 	branch = "", -- nf-oct-git_branch
--- }
+---------------------------------------------
+---Get ONE(1) icon from group-table.
+---`table` can be either:
+---  * one string that refers to M[tbl] (e.g. "git" -> M.git)
+---  * one direct `tbl` (e.g. M.git.nf_cod)
+---e.g. usage:
+---   M.get("git", "nf_cod", "added", { pr = 1})
+---
+---@param tbl string|IconTable
+---@param key string
+---@param opts? IconOpts
+---@return string
+function M.get_icon(tbl, key, opts)
+	opts = opts or {}
 
--- M.general = {
--- 	-- icons: nf-fa-*
--- 	search = "",
--- 	search_alt = "",
--- 	caret_right = "",
--- 	caret_right_alt = "",
--- 	caret_left = "",
--- 	caret_left_alt = "",
--- 	target = "󰓾",
--- 	clock = "",
--- 	neovim = "",
--- 	sep_round_left = "",
--- 	sep_round_right = "",
--- 	ellipsis = "",
--- 	cog = "",
--- 	dir_root = "",
--- 	dir_active = "",
--- }
+	local t = type(tbl) == "table" and tbl or M[tbl]
+	if type(t) ~= "table" then
+		return opts.fail or _defaults.fail_icon
+	end
 
--- M.diagnostics = {
--- 	debug = "",
--- 	error = "",
--- 	error_alt = "󰯷",
--- 	warn = "",
--- 	warn_alt = "󰰭",
--- 	info = "",
--- 	info_alt = "󰰃",
--- 	hint = "",
--- 	hint_alt = "󰰀",
--- }
+	local ic = t[key]
+	if type(ic) ~= "string" then
+		ic = opts.fail or _defaults.fail_icon
+	end
+	-- local ic = t[key] or opts.fail or _defaults.fail_icon
 
--- M.lsp_lng = {
--- 	bashls = "󱆃", --nf-md-bash
--- 	lua_ls = "󰢱", -- nf-md-language_lua
--- 	vtsls = { js = "", ts = "" }, -- nf-seti-java/typescript
--- 	ts_ls = { js = "", ts = "" }, -- nf-seti-java/typescript
--- 	cssls = "󰌜", -- nf-md-language_css3
--- 	jsonls = "", -- nf-seti-json
--- 	yamlls = "", -- nf-dev-yaml
--- 	csharp_ls = "󰌛", -- nf-md-language_csharp
--- }
+	return _apply_padding(ic, opts)
+end
 
-------------------------------------------------------
----> utils/icons.lua -> Type Annotations
-------@alias PadMode '"none"'|'"left"'|'"right"'|'"both"'|
-------@alias PadOpt boolean|PadMode|string|integer|{ left?: string, right?: string }
+-----Remap (rename) icons from internal key --> external key
+----Suited for plugin-API that requires other icon names, e.g. usage:
 ---
-------@class IconOpts
-------@field pad? PadOpt
-------@field pad_char? string
-------@field fail? string
-------@field silent? boolean
+---  local map = {
+---    added = "diff_added",
+---    modified = "diff_modified",
+---    removed = "diff_removed",
+---  }
+---  local symbols = M.remap_icons(M.git.nf_cod, map, { pr = 1})
 ---
----------------------------------------------------------
-------> utils/icons.lua -> Icon API - default opts
----local _defaults = {
----	pad = "both", -- "none" | "left" | "right" | "both" | true/false
----	pad_char = " ", -- standard padding token
----	fail_icon = "󱈸", -- default fallback - if req fails
----}
+---@param tbl string|IconTable
+---@param map table<string,string> -- external_key -> internal_key
+---@param opts? IconOpts
+---@return table<string,string>
+function M.remap_icons(tbl, map, opts)
+	local t = type(tbl) == "table" and tbl or M[tbl]
+	local out = {}
+
+	if type(t) ~= "table" then
+		return out
+	end
+
+	for ext, internal in pairs(map) do
+		out[ext] = M.get_icon(t, internal, opts)
+	end
+
+	return out
+end
+
+--- Return shallow-copy of icon-tbl with padding applied, e.g. usage:
 ---
----------------------------------------------------------
-------> utils/icons.lua -> Icon API - padding resolver
-------@param opt PadOpt|nil
-------@param char string|nil
-------@return string left
-------@return string right
----local function _res_pad(opt, char)
----	char = char or _defaults.pad_char
+--- local git_cod = M.get_icon_tbl(M.git.nf_cod, { pr =1})
+--- -- git_cod.added, git_cod.modified, ...
 ---
----	if opt == nil or opt == true or opt == "both" then
----		return char, char
----	end
----
----	if opt == false or opt == "none" then
----		return "", ""
----	end
----
----	if opt == "left" then
----		return char, ""
----	end
----
----	if opt == "right" then
----		return "", char
----	end
----
----	local t = type(opt)
----
----	if t == "number" then
----		local s = string.rep(char, opt)
----		return s, s
----	end
----
----	if t == "table" then
----		---@cast opt table
----		return opt.left or "", opt.right or ""
----	end
----
----	if t == "string" then
----		---@cast opt string
----		return opt, opt
----	end
----	return "", ""
----end
----
----------------------------------------------------------
-------> utils/icons.lua -> Icon API with padding, or not.
----
-------@param tbl string|table<string, any>
-------@param key string
-------@param opts? IconOpts
-------@return string
----function M.get_icon(tbl, key, opts)
----	opts = opts or {}
----
----	local t = type(tbl) == "table" and tbl or M[tbl]
----
----	if type(t) ~= "table" then
----		return (opts.fail or _defaults.fail_ic)
----	end
----
----	local ic = t[key] or (opts.fail or _defaults.fail_ic)
----	local l, r = _res_pad(opts.pad or _defaults.pad, opts.pad_char or _defaults.pad_char)
----	return l .. ic .. r
----end
----
----------------------------------------------------------
-------> utils/icons.lua -> Icon-table API with padding, or not.
----
------ Can be used to "rename" icons @ import to match plugin-names of icons
-------@param tbl string|table
-------@param map table<string,string> -- external_key -> internal_key
-------@param opts? IconOpts
-------@return table<string,string>
----function M.remap_icons(tbl, map, opts)
----	local t = type(tbl) == "table" and tbl or M[tbl]
----	local out = {}
----
----	for ext, internal in pairs(map) do
----		out[ext] = M.get_icon(t, internal, opts)
----	end
----
----	return out
----end
----
------ Return shallow-copy of IC-tbl
-------@param tbl string|table
-------@param opts? IconOpts
-------@return table
----function M.get_icon_tbl(tbl, opts)
----	local t = type(tbl) == "table" and tbl or M[tbl]
----	local out = {}
----
----	for k, v in pairs(t) do
----		if type(v) == "string" then
----			out[k] = M.get_icon(t, k, opts)
----		else
----			out[k] = v
----		end
----	end
----	return out
----end
----
------ TODO: change to ??
------> make module directly callable:e.g. >> `icons("git", "branch", {pad="left"})`
----setmetatable(M, {
----	__call = function(_, tbl, key, opts)
----		return M.get_icon(tbl, key, opts)
----	end,
----})
----
----return M
+---@param tbl string|IconTable
+---@param opts? IconOpts
+---@return table<string,string|any>
+function M.get_icon_tbl(tbl, opts)
+	opts = opts or {}
+	local t = type(tbl) == "table" and tbl or M[tbl]
+	local out = {}
+
+	if type(t) ~= "table" then
+		return out
+	end
+
+	for k, v in pairs(t) do
+		if type(v) == "string" then
+			out[k] = _apply_padding(v, opts)
+		else
+			out[k] = v
+		end
+	end
+
+	return out
+end
+
+return M
