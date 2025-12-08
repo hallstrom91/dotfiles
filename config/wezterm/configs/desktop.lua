@@ -3,9 +3,9 @@ local config = {}
 
 --| custom config files |---
 local keymaps = require("keymaps")
-local sysstatus = require("status")
 local gui_startup = require("gui_startup")
-local gui_tabs = require("gui_tabs")
+-- local sysstatus = require("status")
+-- local gui_tabs = require("gui_tabs")
 local gui_theme = require("gui_theme")
 
 ---------------------
@@ -14,11 +14,6 @@ local gui_theme = require("gui_theme")
 config.disable_default_key_bindings = true
 config.keys = keymaps.keys
 config.key_tables = keymaps.key_tables
-
----------------------
----- Core settings
----------------------
--- local font_size = 10.5
 
 ---------------------
 ---- Window
@@ -37,8 +32,8 @@ config.initial_cols = 120
 ---- Fonts
 ---------------------
 config.font = wezterm.font_with_fallback({
-	"IosevkaTerm NFM",
-	"JetBrainsMono NF",
+	"IosevkaTerm NF", -- or IosevkaTerm NFM
+	"JetBrainsMono NF", -- or JetBrainsMono NFM
 })
 
 config.font_size = 10.5
@@ -97,13 +92,25 @@ config.enable_kitty_graphics = true
 ----| automated script loading and navigation |-----
 wezterm.on("gui-startup", gui_startup.bootloader)
 
+-- config.colors = {
+-- 	foreground = "",
+-- 	background = "",
+-- 	cursor_bg = "",
+-- 	cursor_fg = "",
+-- 	cursor_border = "",
+-- 	selection_bg = "",
+-- 	selection_fg = "",
+-- scrollbar_thumb = "",
+-- split = "",
+-- }
+
 ----| dynamic theme (if SSH) |----
 wezterm.on("update-status", gui_theme.switcher)
 
 ----| format tab title function |----
-wezterm.on("format-tab-title", gui_tabs.title_and_icon)
+-- wezterm.on("format-tab-title", gui_tabs.title_and_icon)
 
 ----| show cpu and ram usage/temp |----
-wezterm.on("update-right-status", sysstatus.usage_and_temp)
+-- wezterm.on("update-right-status", sysstatus.usage_and_temp)
 
 return config

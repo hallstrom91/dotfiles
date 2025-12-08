@@ -1,12 +1,13 @@
 return {
+
 	{ "nvim-lua/plenary.nvim", lazy = true },
+	{ "MunifTanjim/nui.nvim" },
 	{ "nvim-tree/nvim-web-devicons" },
 	{ "b0o/schemastore.nvim", ft = { "json", "jsonc", "yaml" } },
-	{ "folke/which-key.nvim", event = "VeryLazy", opts = { show_help = true, show_keys = true } },
-	{ "rcarriga/nvim-notify", lazy = true, opts = { background_colour = "#44444E", timeout = 3000 } },
-
-	require("plugins.neotree"),
+	{ "onsails/lspkind.nvim" },
+	require("plugins.oil"),
 	require("plugins.treesitter"),
-	require("plugins.rendermd"),
 	require("plugins.telescope"),
+	require("plugins.nvim_cmp"),
+	require("plugins.mason"),
 }

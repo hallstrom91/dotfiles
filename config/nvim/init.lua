@@ -1,5 +1,4 @@
 -- Bootstrap lazy.nvim
-
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
 	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
@@ -16,20 +15,16 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- test
-local req = require("utils.path")
-req.mason_bin_path()
+local sreq = require("utils.req")
+require("utils.path").mason_bin_path()
 
-req("core.options", { desc = "core.options" })
-req("core.keymaps", { desc = "core.keymaps" })
-req("core.lazy", { desc = "core.lazy" })
-req("core.lsp", { desc = "core.lsp" })
-req("core.autocmds", { desc = "core.autocmds" })
+sreq("core.options", { desc = "core.options" })
+sreq("core.keymaps", { desc = "core.keymaps" })
+sreq("core.lazy", { desc = "core.lazy" })
+sreq("core.lsp", { desc = "core.lsp" })
+sreq("core.autocmds", { desc = "core.autocmds" })
+-- sreq("core.folds", { desc = "core.folds" })
 
--- set colorscheme
-vim.cmd.colorscheme("vscode")
-
--- move to standalone file
 vim.filetype.add({
 	filename = {
 		[".bash_functions"] = "bash",
@@ -40,3 +35,8 @@ vim.filetype.add({
 		["bash_exports"] = "bash",
 	},
 })
+
+-- set colorscheme
+-- vim.cmd.colorscheme("vscode")
+-- vim.cmd.colorscheme("nordic")
+-- vim.cmd.colorscheme("onedark")

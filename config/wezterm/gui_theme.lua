@@ -2,45 +2,47 @@ local wezterm = require("wezterm")
 
 local theme = {}
 
-local backgrounds = {
-	"cloudy-quasar.png",
-	"brain.png",
-	"cubes.png",
-	"cyberpunk.png",
-	"earth.png",
-}
+-- local backgrounds = {
+-- 	"cloudy-quasar.png",
+-- 	"brain.png",
+-- 	"cubes.png",
+-- 	"cyberpunk.png",
+-- 	"earth.png",
+-- }
 
 function theme.switcher(window, pane)
 	local overrides = window:get_config_overrides() or {}
 	local process_name = pane:get_foreground_process_name()
 	local dimmer = { brightness = 0.05 }
 	if process_name and process_name:match("ssh") then
-		overrides.color_scheme = "Fideloper"
+		-- overrides.color_scheme = "Fideloper"
+		overrides.color_scheme = "nord-light"
 	else
-		overrides.color_scheme = "farmhouse-dark"
+		-- overrides.color_scheme = "farmhouse-dark"
+		overrides.color_scheme = "Nord (base16)"
 	end
 
-	if process_name and process_name:match("ssh") then
-		overrides.color_scheme = "Fideloper"
-		overrides.background = {
-			{
-				source = {
-					File = wezterm.home_dir .. "/.config/wezterm/backdrops/cloudy-quasar.png",
-				},
-				hsb = dimmer,
-			},
-		}
-	else
-		overrides.color_scheme = "farmhouse-dark"
-		overrides.background = {
-			{
-				source = {
-					File = wezterm.home_dir .. "/.config/wezterm/backdrops/cubes.png",
-				},
-				hsb = dimmer,
-			},
-		}
-	end
+	-- if process_name and process_name:match("ssh") then
+	-- 	overrides.color_scheme = "Fideloper"
+	-- 	-- overrides.background = {
+	-- 	-- 	{
+	-- 	-- 		source = {
+	-- 	-- 			File = wezterm.home_dir .. "/.config/wezterm/backdrops/cloudy-quasar.png",
+	-- 	-- 		},
+	-- 	-- 		hsb = dimmer,
+	-- 	-- 	},
+	-- 	-- }
+	-- else
+	-- 	overrides.color_scheme = "farmhouse-dark"
+	-- 	-- overrides.background = {
+	-- 	-- 	{
+	-- 	-- 		source = {
+	-- 	-- 			File = wezterm.home_dir .. "/.config/wezterm/backdrops/cubes.png",
+	-- 	-- 		},
+	-- 	-- 		hsb = dimmer,
+	-- 	-- 	},
+	-- 	-- }
+	-- end
 
 	window:set_config_overrides(overrides)
 end

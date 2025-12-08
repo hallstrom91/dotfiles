@@ -13,6 +13,11 @@ return {
 				use_default_mappings = true,
 				mappings = nil, -- nil to use default mappings
 			},
+			highlight = {
+				on_put = true,
+				on_yank = false,
+				timer = 200,
+			},
 		},
 	},
 }

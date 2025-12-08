@@ -7,6 +7,7 @@ function M.get_hl(name)
 	local ok, hl = pcall(vim.api.nvim_get_hl, 0, { name = name, link = false })
 	return ok and hl or {}
 end
+
 ------------------------------
 --> highlight helpers
 
@@ -68,6 +69,17 @@ function M.get_hl_with_hex(name, opts)
 		_cache_hl[name] = hl_info
 	end
 	return hl_info
+end
+
+---get hl-fg color
+---@param name string
+---@return string|nil
+function M.get_hl_fg(name)
+	local hl = M.get_hl(name)
+	if not hl or not hl.fg then
+		return nil
+	end
+	return _num_to_hex(hl.fg)
 end
 
 -- add to autocmd 'ColorScheme' to clear old cache @ change

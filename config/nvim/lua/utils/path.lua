@@ -100,8 +100,6 @@ function M.fmt_path(p, opts)
 		return ""
 	end
 
-	-- p = fs.normalize(fs.fs.abspath(p))
-
 	p = vim.fn.fnamemodify(p, ":~")
 
 	if vim.fn.strdisplaywidth(p) > max_w then

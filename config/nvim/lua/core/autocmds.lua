@@ -1,36 +1,41 @@
-local cmd = vim.api.nvim_create_autocmd
+local autocmd = vim.api.nvim_create_autocmd
 
-local grp = function(name)
-	return vim.api.nvim_create_augroup(name, { clear = true })
-end
+-----------------------------------------
+--- Highlight
 
-cmd("BufWritePre", {
-	group = grp("usr_fmt"),
-	desc = "format buf with conform",
-	pattern = "*",
-	callback = function(args)
-		require("conform").format({
-			bufnr = args.buf,
-			lsp_format = "fallback",
-			timeout_ms = 500,
-			stop_after_first = true,
-			async = false,
-		})
-	end,
-})
-
-cmd("TextYankPost", {
-	group = grp("usr_hlyank"),
-	desc = "highlight on yank (copy)",
+autocmd("TextYankPost", {
+	group = vim.api.nvim_create_augroup("kjs.hl_yank", { clear = true }),
+	desc = "highlight on yank",
 	callback = function()
-		(vim.hl or vim.highlight).on_yank()
+		(vim.hl or vim.highlight).on_yank({ timeout = 300 })
 	end,
 })
 
--- test
+-- https://github.com/mhinz/vim-galore#saner-behavior-of-n-and-n
+autocmd({ "InsertLeave", "WinEnter" }, {
+	group = vim.api.nvim_create_augroup("kjs.hl_cursorline_show", { clear = true }),
+	desc = "show cursor/column-line highlight",
+	callback = function()
+		vim.o.cursorline = true
+		-- vim.o.cursorcolumn = true
+	end,
+})
 
-cmd("FileType", {
-	group = grp("usr_close_ft"),
+-- or `:h cursorline | :h cursorcolumn`
+autocmd({ "InsertEnter", "WinLeave" }, {
+	group = vim.api.nvim_create_augroup("kjs.hl_cursorline_hide", { clear = true }),
+	desc = "hide cursor/column-line highlight",
+	callback = function()
+		vim.o.cursorline = false
+		-- vim.o.cursorcolumn = false
+	end,
+})
+
+-----------------------------------------
+--- Filetype
+
+autocmd("FileType", {
+	group = vim.api.nvim_create_augroup("kjs.close_ft", { clear = true }),
 	desc = "close specific bufs with 'q'",
 	pattern = {
 		"checkhealth",
@@ -58,8 +63,8 @@ cmd("FileType", {
 	end,
 })
 
-cmd("FileType", {
-	group = grp("usr_nocomment_ft"),
+autocmd("FileType", {
+	group = vim.api.nvim_create_augroup("kjs.nonew_comment", { clear = true }),
 	desc = "no comment on new line",
 	pattern = "*",
 	callback = function()
@@ -67,50 +72,18 @@ cmd("FileType", {
 	end,
 })
 
------> LSP
-cmd("FileType", {
-	group = grp("usr_treesitter_hl"),
-	desc = "start treesitter for ft",
-	pattern = {
-		"lua",
-		"bash",
-		"sh",
-		"javascript",
-		"javascriptreact",
-		"typescript",
-		"typescriptreact",
-		"cs",
-		"json",
-		"jsonc",
-		"json5",
-		"markdown",
-	},
-	callback = function()
-		vim.treesitter.start()
-	end,
+autocmd("FileType", {
+	group = vim.api.nvim_create_augroup("kjs.help_vertsplit", { clear = true }),
+	pattern = "help",
+	command = "wincmd L ",
 })
 
-cmd("LspAttach", {
-	group = grp("usr_lspattach"),
-	desc = "attach lsp opts to buf",
-	callback = function(ev)
-		local bufnr = ev.buf
-		-- if vim.b[bufnr].usr_lsp_attach_done then
-		-- 	return
-		-- end
+-----------------------------------------
+--- Macro
 
-		local client = vim.lsp.get_client_by_id(ev.data.client_id)
-		if not client then
-			return
-		end
-
-		require("core.lsp.attach").lsp_pickers_map(client, bufnr)
-	end,
-})
-
---> display macro recording status
-cmd("RecordingEnter", {
-	group = grp("usr_macro_enter"),
+--> display macro recording status started/terminated
+autocmd("RecordingEnter", {
+	group = vim.api.nvim_create_augroup("kjs.macro_rec_start", { clear = true }),
 	desc = "display notification when macro recording start",
 	callback = function()
 		local reg = vim.fn.reg_recording()
@@ -118,8 +91,8 @@ cmd("RecordingEnter", {
 	end,
 })
 
-cmd("RecordingLeave", {
-	group = grp("usr_macro_exit"),
+autocmd("RecordingLeave", {
+	group = vim.api.nvim_create_augroup("kjs.macro_rec_end", { clear = true }),
 	desc = "display notification when macro recording ends",
 	callback = function()
 		vim.notify("Macro recording terminated", vim.log.levels.INFO, { title = "Macro Ended" })

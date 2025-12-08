@@ -47,12 +47,20 @@ M.cmp = {
 ---ICONS: For diagnostic(dx) levels: ok|hint|info|warn|error
 ---@type IconTable
 M.dx = {
+	shapes = {
+		circle = "󰧞", --nf-md-circle_medium
+		square = "󰨓", --nf-md-square_medium
+		circle_arrow = "󰁗", --nf-md-arrow_right_bold_circle_outline
+		box_arrow = "󰜶", --nf-md-arrow_right_bold_box_outline
+		bold_arrow = "󰜴", --nf-md-arrow_right_bold
+		norm_arrow = "󰁔", --nf-md-arrow_right
+	},
 	nf_md = {
-		ok = "󰄬", --nf-md-check || alt: nf-fa-circle_check:   || nf-fa-square_check 
-		hint = "󱒄", -- nf-md-laser_pointer || alt: nf-md-cursor_pointer: 󰆽  || alt2: nf-fa-hand_poiter 
-		info = "󰙎", -- nf-md-information_variant || alt: nf-md-information_outline
-		warn = "󰈅", -- nf-md-exclamation || alt: nf-md-bullet 󰳳 || alt2: nf-md-fuse 󰲅
-		error = "󰆣", --nf-md-crosshairs || alt
+		OK = "󰄬", --nf-md-check || alt: nf-fa-circle_check:   || nf-fa-square_check 
+		HINT = "󱒄", -- nf-md-laser_pointer || alt: nf-md-cursor_pointer: 󰆽  || alt2: nf-fa-hand_poiter 
+		INFO = "󰙎", -- nf-md-information_variant || alt: nf-md-information_outline
+		WARN = "󰈅", -- nf-md-exclamation || alt: nf-md-bullet 󰳳 || alt2: nf-md-fuse 󰲅
+		ERROR = "󰆣", --nf-md-crosshairs || alt
 	},
 	nf_cod = {
 		ok = "", --nf-cod-check || alt: nf-cod-pass 
@@ -62,7 +70,6 @@ M.dx = {
 		error = "", --nf-cod-error
 	},
 }
-
 ---ICONS: For filesystem
 ---@type IconTable
 M.fs = {
@@ -123,12 +130,9 @@ M.general = {
 	ellipsis = "", --nf-fa-ellipsis
 	ellipsis_alt = "", --nf-cod-ellipsis
 	cog = "", --nf-fa-cog
-
-	-- TODO: remove below when done...
-	sep_round_left = "", -- TODO: remove! moved to M.ple = { ... }
-	sep_round_right = "", -- TODO: remove! moved to M.ple = { ... }
-	dir_root = "", -- TODO: remove! moved to M.fs = { ... }
-	dir_active = "", -- TODO: remove! moved to M.fs = { ... }
+	location = "", --nf-fa-location_dot
+	location_alt = "", --nf-fa-location_pin
+	location_arrow = "", --nf-fa-location_arrow
 }
 
 ---ICONS: For LSP status and ft of active buf.
@@ -166,14 +170,14 @@ M.ple = {
 ---@field fail? string -- fallback if icon is missing
 
 ---------------------------------------------------------------------
----Internal helper: used to apply padding to icon(s)
----set padding value with left-side: pl | right-side: pr | both: p
 
 local _defaults = {
 	pad_char = " ", -- standard padding token, whitespace.
 	fail_icon = "󱈸", -- default fallback - if req fails to return requested icon.
 }
 
+---Internal helper: used to apply padding to icon(s)
+---set padding value with left-side: pl | right-side: pr | both: p
 ---@param s string
 ---@param opts IconOpts
 ---@return string
@@ -203,6 +207,35 @@ local function _apply_padding(s, opts)
 	return s
 end
 
+---Internal helper: resolve table argument
+---  table -> used direct
+---  "dx" -> M.dx
+--- "dx.nf_md" -> M.dx.nf_md
+---@param tbl string|IconTable
+---@return IconTable|nil
+local function _resolve_tbl(tbl)
+	if type(tbl) == "table" then
+		return tbl
+	end
+
+	if type(tbl) == "string" then
+		--dot-path?
+		if tbl:find("%.") then
+			local t = M
+			for part in string.gmatch(tbl, "[^%.]+") do
+				if type(t) ~= "table" then
+					return nil
+				end
+				t = t[part]
+			end
+			return t
+		end
+
+		return M[tbl]
+	end
+	return nil
+end
+
 ---------------------------------------------
 ---Get ONE(1) icon from group-table.
 ---`table` can be either:
@@ -218,7 +251,12 @@ end
 function M.get_icon(tbl, key, opts)
 	opts = opts or {}
 
-	local t = type(tbl) == "table" and tbl or M[tbl]
+	-- local t = type(tbl) == "table" and tbl or M[tbl]
+	-- if type(t) ~= "table" then
+	-- 	return opts.fail or _defaults.fail_icon
+	-- end
+
+	local t = _resolve_tbl(tbl)
 	if type(t) ~= "table" then
 		return opts.fail or _defaults.fail_icon
 	end
@@ -247,7 +285,8 @@ end
 ---@param opts? IconOpts
 ---@return table<string,string>
 function M.remap_icons(tbl, map, opts)
-	local t = type(tbl) == "table" and tbl or M[tbl]
+	-- local t = type(tbl) == "table" and tbl or M[tbl]
+	local t = _resolve_tbl(tbl)
 	local out = {}
 
 	if type(t) ~= "table" then
@@ -271,7 +310,8 @@ end
 ---@return table<string,string|any>
 function M.get_icon_tbl(tbl, opts)
 	opts = opts or {}
-	local t = type(tbl) == "table" and tbl or M[tbl]
+	-- local t = type(tbl) == "table" and tbl or M[tbl]
+	local t = _resolve_tbl(tbl)
 	local out = {}
 
 	if type(t) ~= "table" then

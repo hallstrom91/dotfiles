@@ -1,4 +1,3 @@
--- local root_finder = require("utils.lsp_utils").root_finder
 local root = require("utils.root")
 
 -- https://github.com/neovim/nvim-lspconfig/blob/master/lua/lspconfig/configs/lua_ls.lua

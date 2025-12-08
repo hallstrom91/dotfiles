@@ -1,7 +1,6 @@
 [Desktop Entry]
 Type=Application
-# Exec=/home/simon/.bin/load_xmodmap.sh
-Exec=load_xmodmap
+Exec=/home/kjs/.bin/load_xmodmap.sh
 Hidden=false
 NoDisplay=false
 X-GNOME-Autostart-enabled=true

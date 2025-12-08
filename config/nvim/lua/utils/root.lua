@@ -16,18 +16,6 @@ function M.find_root(source, markers)
 	if not path or path == "" then
 		return P.cwd()
 	end
-	-- local path
-	-- local t = type(source)
-	-- if t == "number" then
-	-- 	---@type string|nil
-	-- 	path = P.bufpath(source)
-	-- else
-	-- 	---@type string|nil
-	-- 	path = P.norm(source)
-	-- end
-	-- if not path or path == "" then
-	-- 	return P.cwd()
-	-- end
 
 	--search upwards for first match
 	local ok, root = pcall(fs.root, path, markers)

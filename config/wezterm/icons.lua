@@ -27,6 +27,7 @@ icons.process = {
 	["dotnet"] = wezterm.nerdfonts.md_language_csharp,
 	["ssh"] = wezterm.nerdfonts.md_connection,
 	["nautilus"] = wezterm.nerdfonts.fa_mouse_pointer,
+	["photorec"] = wezterm.nerdfonts.fa_photo, -- TODO: check process name
 }
 
 icons.system = {

@@ -3,6 +3,7 @@
 PLAYER_OPT="${PLAYER_OPT:-spotify}"
 MAXLEN="${MAXLEN:-40}"
 FONT_ICON="${FONT_ICON:-4}"
+FONT_PL="${FONT_PL:-5}"
 SEP=" "
 
 # ICON_PLAY="󰐊"
@@ -13,6 +14,8 @@ ICON_STOP="󰓛"
 ICON_PREV="󰒮"
 ICON_NEXT="󰒭"
 ICON_SPOT="󰓇"
+PL_L=""
+PL_R=""
 
 # helpers
 truncate() {
@@ -37,7 +40,6 @@ format_line() {
 		if [[ "$title" =~ ^\#?([0-9]+) ]]; then
 			ep="${BASH_REMATCH[1]}"
 			rest="$(sed -E 's/^#?[0-9]+([[:space:]]*[:.\---])?[[:space::]]*//' <<<"$title")"
-			# rest="$(sed -E 's/^#?[0-9]+([[:space:]]*[:.\---]))?[[:space::]]*//' <<<"$title")"
 		fi
 
 		if [[ -n "$ep" ]]; then
@@ -71,13 +73,32 @@ render() {
 	local text
 	text="$(format_line "$trackid" "$album" "$artist" "$title")"
 
-	# print module
-	printf '%%{T%s}%s%%{T-} %s%s' "$FONT_ICON" "$ICON_SPOT" "$text" "$SEP"
+	# dont write if $text is empty
+	[[ -z "$text" ]] && return 0
+
+	local bg="#2E3440"
+	local spot_clr="#1DB954" # spotify hex clr green
+
+	# print powerline-icon, LEFT-side | $bg clr used as pline-icon `fg`
+	printf '%%{T%s}%%{F%s}%s%%{F-}%%{T-}' "$FONT_PL" "$bg" "$PL_L"
+
+	#bg color
+	printf '%%{B%s}' "$bg"
+
+	# icon+text
+	# printf '%%{T%s}%s%%{T-} %s%s' "$FONT_ICON" "$ICON_SPOT" "$text" "$SEP"
+	printf '%%{T%s}%%{F%s}%s%%{F-}%%{T-} %s%s' "$FONT_ICON" "$spot_clr" "$ICON_SPOT" "$text" "$SEP"
+
+	# ctrl-btns (prev|play/pause|next)
 	printf '%%{T%s}' "$FONT_ICON"
 	printf '%%{A1:playerctl previous -p %s:}%s%%{A}%s' "$PLAYER_OPT" "$ICON_PREV" "$SEP"
 	printf '%%{A1:playerctl play-pause -p %s:}%s%%{A}%s' "$PLAYER_OPT" "$(pp_icon "$status")" "$SEP"
 	printf '%%{A1:playerctl next -p %s:}%s%%{A}' "$PLAYER_OPT" "$ICON_NEXT"
-	printf '%%{T-}\n'
+
+	# print powerline-icon, RIGHT-side | $bg clr used as pline-icon `fg`
+	printf '%%{B-}%%{T%s}%%{F%s}%s%%{F-}%%{T-}' "$FONT_PL" "$bg" "$PL_R"
+	# restore bg / font
+	printf '%%{B-}%%{T-}\n'
 }
 
 command -v playerctl >/dev/null 2>&1 || exit 0

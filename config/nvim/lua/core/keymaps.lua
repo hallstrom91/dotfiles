@@ -1,55 +1,72 @@
--- guard
--- if vim.g.__core_keymaps_applied then
--- 	return { applied = true }
--- end
+local utils_keymap = require("utils.keymap")
+local last_notify = 0
 
-vim.g.mapleader = " " -- <Space>
-vim.g.maplocalleader = "\\"
+--- Notify func for arrowkeys
+local function info_arrow()
+	local now = vim.loop.now()
+	if now - last_notify < 8000 then
+		return
+	end -- 8000ms anti-spam timer
 
-local function map_core_keymaps(list, base_opts)
-	local map = vim.keymap.set
-	local base = vim.tbl_extend("force", { noremap = true, silent = true }, base_opts or {})
-	for _, m in ipairs(list) do
-		local o = vim.tbl_extend("force", base, m.opts or {})
-		o.desc = m.desc
-		if m.remap ~= nil then
-			o.remap = m.remap
-		end
-		map(m.mode or "n", m.keys, m.cmd, o)
-	end
+	last_notify = now
+	local ic = {
+		h = " ", --h
+		j = " ", --j
+		k = " ", --k
+		l = " ", --l
+	}
+
+	vim.notify(
+		("Use %s<h> %s<j> %s<k> %s<l> instead of arrowkeys."):format(ic.h, ic.j, ic.k, ic.l),
+		vim.log.levels.INFO,
+		{ title = "Movement Info" }
+	)
 end
 
-local general = {
-	{ mode = "n", keys = ";", cmd = ":", desc = "Cmdline" },
-	{ mode = "i", keys = "jk", cmd = "<ESC>", desc = "Exit insert mode" },
-	{ mode = "n", keys = "<F13>", cmd = ":noh<CR>", desc = "Clear Search Markings" },
-	{ mode = { "i", "x", "n", "s" }, keys = "<C-s>", cmd = "<cmd>w<cr><esc>", desc = "Save File" },
-	-- Move rows
-	{ mode = "n", keys = "<A-Up>", cmd = ":m .-2<CR>==", desc = "Move row up" },
-	{ mode = "n", keys = "<A-Down>", cmd = ":m .+1<CR>==", desc = "Move row down" },
-	-- Move selection
-	{ mode = "v", keys = "<A-Up>", cmd = ":m '<-2<CR>gv=gv", desc = "Move selection up" },
-	{ mode = "v", keys = "<A-Down>", cmd = ":m '>+1<CR>gv=gv", desc = "Move selection down" },
-	-- Resize
-	{ mode = "n", keys = "<A-w>", cmd = "<cmd>resize +2<cr>", desc = "Increase Window Height" },
-	{ mode = "n", keys = "<A-s>", cmd = "<cmd>resize -2<cr>", desc = "Decrease Window Height" },
-	{ mode = "n", keys = "<A-a>", cmd = "<cmd>vertical resize -2<cr>", desc = "Decrease Window Width" },
-	{ mode = "n", keys = "<A-d>", cmd = "<cmd>vertical resize +2<cr>", desc = "Increase Window Width" },
-	-- Splits
-	{ mode = "n", keys = "<leader><Down>", cmd = "<C-W>s", desc = "Horizontal Split Below", remap = true },
-	{ mode = "n", keys = "<leader><Up>", cmd = ":split<CR>", desc = "Horizontal Split Above", remap = true },
-	{ mode = "n", keys = "<leader><Right>", cmd = "<C-W>v", desc = "Vertical Split Right", remap = true },
-	{ mode = "n", keys = "<leader><Left>", cmd = ":vsplit<CR>", desc = "Vertical Split Left", remap = true },
-	{ mode = "n", keys = "<leader>q", cmd = "<C-W>c", desc = "Close Window", remap = true },
+local base = {
+	---> Normal Mode: "n"
+	{ mode = "n", lhs = "<leader>q", rhs = "<cmd>bdelete<CR>", desc = "Delete buffer" },
+	{ mode = "n", lhs = "<C-s>", rhs = "<cmd>w<cr><esc>", desc = "Save file" },
+	---text movement
+	{ mode = "n", lhs = "<A-k>", rhs = "<cmd>execute 'move .+' . v:count1<cr>==", desc = "Move row down" },
+	{ mode = "n", lhs = "<A-j>", rhs = "<cmd>execute 'move .-' . (v:count1 + 1)<cr>==", decs = "Move row up" },
+	---buffers
+	{ mode = "n", lhs = "<leader>bn", rhs = "<cmd>bnext<cr>", desc = "Next buffer" },
+	{ mode = "n", lhs = "<leader>bp", rhs = "<cmd>bprevious<cr>", desc = "Prev buffer" },
+	{ mode = "n", lhs = "<leader>bd", rhs = "<cmd>bp|bd #<CR>", desc = "Delete buf: Keep win" },
+	{ mode = "n", lhs = "<leader>bo", rhs = "<cmd>enew<cr>", desc = "Open new/empty buf" },
+	---window-size
+	{ mode = "n", lhs = "<A-Up>", rhs = "<cmd>resize +2<cr>", desc = "Increase window height" },
+	{ mode = "n", lhs = "<A-Down>", rhs = "<cmd>resize -2<cr>", desc = "Decrease window height" },
+	{ mode = "n", lhs = "<A-Left>", rhs = "<cmd>vertical resize -2<cr>", desc = "Decrease window width" },
+	{ mode = "n", lhs = "<A-Right>", rhs = "<cmd>vertical resize +2<cr>", desc = "Increase window width" },
+
+	---tabs
+	{ mode = "n", lhs = "<leader><tab>n", rhs = "<cmd>tabnext<cr>", desc = "Next tab" },
+	{ mode = "n", lhs = "<leader><tab>p", rhs = "<cmd>tabprev<cr>", desc = "Prev tab" },
+	{ mode = "n", lhs = "<leader><tab>o", rhs = "<cmd>tabnew<cr>", desc = "Open new tab" },
+	-- { mode "n", lhs = "", rhs = "", desc = "" },
+	-- { mode "n", lhs = "", rhs = "", desc = "" },
+
+	---search
+	{ mode = "n", lhs = "n", rhs = "'Nn'[v:searchforward].'zv'", expr = true, desc = "Next search result" },
+	{ mode = "n", lhs = "N", rhs = "'nN'[v:searchforward].'zv'", expr = true, desc = "Prev search result" },
+	---> Visual Mode: "x"
+	{ mode = "x", lhs = "n", rhs = "'Nn'[v:searchforward]", expr = true, desc = "Next search result" },
+	{ mode = "x", lhs = "N", rhs = "'nN'[v:searchforward]", expr = true, desc = "Prev search result" },
+	--- Operator-pending mode: "o"
+	{ mode = "o", lhs = "n", rhs = "'Nn'[v:searchforward]", expr = true, desc = "Next search result" },
+	{ mode = "o", lhs = "N", rhs = "'nN'[v:searchforward]", expr = true, desc = "Prev search result" },
+
+	---> Insert Mode: "i"
+	{ mode = "i", lhs = "jk", rhs = "<ESC>", desc = "Exit insert mode" },
+
+	---> Multi Mode:
+	---Dont use arrowkeys for movement
+	{ mode = { "i", "x", "n", "s" }, lhs = "<Up>", rhs = info_arrow, desc = "Disabled arrowkeys movement" },
+	{ mode = { "i", "x", "n", "s" }, lhs = "<Down>", rhs = info_arrow, desc = "Disabled arrowkeys movement" },
+	{ mode = { "i", "x", "n", "s" }, lhs = "<Left>", rhs = info_arrow, desc = "Disabled arrowkeys movement" },
+	{ mode = { "i", "x", "n", "s" }, lhs = "<Right>", rhs = info_arrow, desc = "Disabled arrowkeys movement" },
 }
 
-map_core_keymaps(general)
-
--- vim.g.__core_keymaps_applied = true
-
-return {
-	-- applied = true,
-	add = function(list, base_opts)
-		map_core_keymaps(list, base_opts)
-	end,
-}
+utils_keymap.map(base)
