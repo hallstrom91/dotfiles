@@ -1,65 +1,76 @@
-local colors = {
-	-- nord0-3 = polar night
-	nord0 = "#2E3440", -- bg
-	nord1 = "#3B4252", -- bg alt
-	nord2 = "#434C5E",
-	nord3 = "#4C566A",
-	-- nord4-6 = snow storm
-	nord4 = "#D8DEE9", -- fg (dim)
-	nord5 = "#E5E9F0", -- fg (alt)
-	nord6 = "#ECEFF4", -- fg (primary)
-	-- nord7-10 = frost
-	nord7 = "#8FBCBB", -- primary accent
-	nord8 = "#88C0D0", -- primary accent
-	nord9 = "#81A1C1",
-	nord10 = "#5E81AC",
-	-- nord11-13 = aurora
-	nord11 = "#BF616A", -- error
-	nord12 = "#D08770", -- warn
-	nord13 = "#EBCD8B", -- hint
-	nord14 = "#A3BE8C", -- info (primary)
-	nord15 = "#B48EAD", -- info (alt)
+local c = {
+	bg = require("utils.highlight").get_hl_with_hex("Normal").bg_hex,
+	bg2 = "#2B303B",
+	bg3 = "#383F4E",
+	bg4 = "#464E5F",
+	fg_dark = "#191B1F",
+	fg_light = "#CACCCE",
+	green = "#A3BE8C",
+	blue = "#5E81AC",
+	pink = "#B48EAD",
+	yellow = "#EBCD8B",
+	red = "#BF616A",
+	error = "#E26161",
+	warn = "##E29B61",
+	info = "#61D5E2", -- or "#61D5E2"
+	hint = "#6197E2", -- or "#61B3E2" || or "#6170E2"
+	hint2 = "#61B3E2",
 }
 
-local nord_fork_theme = {
+local custom_theme = {
 	normal = {
-		a = { fg = colors.nord1, bg = colors.nord10, gui = "bold" },
-		b = { fg = colors.nord5, bg = colors.nord1 },
-		c = { fg = colors.nord5, bg = colors.nord3 },
-		-- x-y-z = inherits
+		a = { fg = c.fg_dark, bg = c.green, gui = "bold" },
+		b = { fg = c.fg_light, bg = c.bg_sec_b },
+		c = { fg = c.fg_light, bg = c.bg },
 	},
-
-	insert = {
-		a = { fg = colors.nord1, bg = colors.nord6, gui = "bold" },
-	},
-
-	visual = {
-		a = { fg = colors.nord1, bg = colors.nord7, gui = "bold" },
-	},
-
-	replace = {
-		a = { fg = colors.nord1, bg = colors.nord8, gui = "bold" },
-	},
-
-	command = {
-		a = { fg = colors.nord6, bg = colors.nord9, gui = "bold" },
-	},
+	insert = { a = { fg = c.fg_light, bg = c.blue, gui = "bold" } },
+	visual = { a = { fg = c.fg_dark, bg = c.pink, gui = "bold" } },
+	replace = { a = { fg = c.fg_light, bg = c.red, gui = "bold" } },
+	command = { a = { fg = c.fg_dark, bg = c.yellow, gui = "bold" } },
 }
+
+-- local ll_ext = require("modern-north.groups.plugins.lualine")
+
+local function search_result()
+	if vim.v.hlsearch == 0 then
+		return ""
+	end
+	local last_search = vim.fn.getreg("/")
+	if not last_search or last_search == "" then
+		return ""
+	end
+	local s_count = vim.fn.searchcount({ maxcount = 999 })
+	return last_search .. " [" .. s_count.current .. "/" .. s_count.total .. "]"
+end
 
 return {
 	"nvim-lualine/lualine.nvim",
 	event = "BufWinEnter",
 	opts = function()
-		local editor_utils = require("utils.editor_utils")
-		local clock = editor_utils.clock
-		local lsp_clients = editor_utils.lsp_clients
-		local lsp_active_ws = editor_utils.lsp_active_workspace
+		local lsp_status = require("config.status_lsp")
+		-- local status_ts = require("config.status_ts").ts_status
+		local lsp_clients = lsp_status.lsp_clients
+		local lsp_active_ws = lsp_status.lsp_active_workspace
+		local icons = require("utils.icons")
+
+		local ll_ic = {
+			sep_right = icons.ple.round_right,
+			sep_left = icons.ple.round_left,
+			search = icons.get_icon("general", "search", { pr = 1 }),
+			mode_ic = icons.general.neovim,
+			clock = icons.get_icon("general", "clock", { pr = 1 }),
+			git_branch = icons.get_icon("git.nf_md", "git", { pr = 1 }),
+			git_add = icons.get_icon("git.nf_cod", "diff_added", { pr = 1 }),
+			git_modified = icons.get_icon("git.nf_cod", "diff_modified", { pr = 1 }),
+			git_removed = icons.get_icon("git.nf_cod", "diff_removed", { pr = 1 }),
+		}
+
 		return {
 			options = {
-				theme = nord_fork_theme,
-				-- theme = "nord",
+				theme = custom_theme,
+				-- theme = ll_ext.ll_theme(),
 				component_separators = "",
-				section_separators = { left = "", right = "" },
+				section_separators = "",
 				always_divide_middle = true,
 				always_show_tabline = true,
 				disabled_filetypes = {
@@ -67,94 +78,169 @@ return {
 					winbar = { "neo-tree", "DiffviewFiles", "git", "dashboard" },
 				},
 			},
+
 			sections = {
 				lualine_a = {
 					{
 						"mode",
-						icon = { "", align = "left" },
-						separator = { left = "", right = "" },
-						padding = 2,
+						padding = 1,
+						icon = { ll_ic.mode_ic, align = "left" },
+						separator = { left = ll_ic.sep_left, right = ll_ic.sep_right },
 					},
 				},
+
 				lualine_b = {
 					{
-						"branch",
-						icon = "",
-						color = { bg = colors.nord0, fg = colors.nord4, gui = "italic" },
-						separator = { left = "", right = "" },
-						padding = 1,
+						"filetype",
+						icon_only = false,
+						icon = { align = "left" },
+						color = { bg = c.bg2 },
+						separator = { right = ll_ic.sep_right },
+					},
+
+					{
+						"filename",
+						file_status = false,
+						path = 0,
+						separator = { right = ll_ic.sep_right },
+						color = { bg = c.bg2 },
 					},
 					{
 						"diff",
-						symbols = {
-							added = "",
-							modified = "",
-							removed = "",
-						},
-						color = { bg = colors.nord1, fg = colors.nord6 },
-						separator = { left = "", right = "" },
-						padding = 2,
+						padding = 1,
+						symbols = { added = ll_ic.git_add, modified = ll_ic.git_modified, removed = ll_ic.git_removed },
+						source = function()
+							local git = vim.b.gitsigns_status_dict
+							if git then
+								return {
+									added = git.added,
+									modified = git.changed,
+									removed = git.removed,
+								}
+							end
+						end,
+						separator = { right = ll_ic.sep_right },
+
+						color = { bg = c.bg3 },
+					},
+					{
+
+						"branch",
+						icon = ll_ic.git_branch,
+						color = { bg = c.bg3, fg = c.blue, gui = "italic" },
+						separator = { right = ll_ic.sep_right },
 					},
 				},
-				lualine_c = {}, -- empty
-				lualine_x = {}, -- empty
+				lualine_c = {}, -- leave empty for 'transparent' center section
+				lualine_x = {}, -- leave empty for 'transparent' center section
 				lualine_y = {
 					{
-						"searchcount",
-						color = { bg = colors.nord1, fg = colors.nord6 },
-						separator = { left = "" },
-						padding = 2,
+						search_result,
+						padding = 1,
+						color = { bg = c.bg3 },
+						icon = { ll_ic.search, align = "left" },
+						separator = { left = ll_ic.sep_left },
+					},
+					{
+						"progress",
+						color = { bg = c.bg2, fg = c.blue },
+						padding = 1,
+						separator = { left = ll_ic.sep_left },
+					},
+					{
+						"location",
+						padding = 1,
+						icon = { "" },
+						color = { bg = c.bg2 },
 					},
 					{
 						"diagnostics",
-						sections = { "error", "warn", "info", "hint" },
-						color = { bg = colors.nord0, fg = colors.nord4 },
-						separator = { left = "" },
-						padding = 2,
-						always_visible = true,
+						sources = { "nvim_lsp", "nvim_diagnostic" },
+						sections = { "error" },
+						diagnostics_color = { error = { bg = c.red, fg = c.fg_light } },
+						separator = { left = ll_ic.sep_left },
+					},
+					{
+						"diagnostics",
+						sources = { "nvim_lsp", "nvim_diagnostic" },
+						sections = { "warn" },
+						diagnostics_color = { warn = { bg = c.yellow, fg = c.fg_dark } },
+					},
+					{
+						"diagnostics",
+						sources = { "nvim_lsp", "nvim_diagnostic" },
+						sections = { "info", "hint" },
+						diagnostics_color = {
+							info = { bg = c.info, fg = c.fg_dark },
+							hint = { bg = c.hint, fg = c.fg_dark },
+						},
 					},
 				},
 				lualine_z = {
 					{
-						"location",
-						icon = { "", align = "left" },
-						separator = { left = "", right = "" },
-						right_padding = 2,
+						"hostname",
+						separator = { left = ll_ic.sep_left, right = ll_ic.sep_right },
 					},
 				},
 			},
 
+			------------------------------
+			--- WINBAR: top of active buf
 			winbar = {
 				lualine_a = {
 					{
-						lsp_clients,
+						"mode",
+						padding = 1,
+						icon = { ll_ic.mode_ic, align = "left" },
+						separator = { left = ll_ic.sep_left, right = ll_ic.sep_right },
 					},
 				},
 				lualine_b = {
 					{
-						lsp_active_ws,
-						color = { bg = colors.nord0, fg = colors.nord4, gui = "italic" },
-						separator = { right = "" },
-						padding = 2,
+						lsp_clients,
+						padding = 1,
+						separator = { right = ll_ic.sep_right },
+						color = { bg = c.bg2, fg = c.blue, gui = "bold" },
 					},
 					{
-						"filename",
-						file_status = true,
-						path = 0,
-						color = { bg = colors.nord1, fg = colors.nord6 },
-						separator = { right = "" },
-						padding = 2,
+						lsp_active_ws,
+						padding = 1,
+						color = { bg = c.bg3, gui = "italic" },
+						separator = { right = ll_ic.sep_right },
+					},
+					{
+						"datetime",
+						padding = 1,
+						style = "%H:%M",
+						icon = { ll_ic.clock, aling = "left" },
+						color = { bg = c.bg4, gui = "bold" },
+						separator = { left = ll_ic.sep_left, right = ll_ic.sep_right },
 					},
 				},
 				lualine_c = {},
 				lualine_x = {},
 				lualine_y = {},
-				lualine_z = {
-					{
-						clock,
-						icon = " ",
-					},
-				},
+				lualine_z = {},
+			},
+
+			-- dont show anything as sections (lualine bottom) in 'inactive' buffer
+			inactive_sections = {
+				lualine_a = {},
+				lualine_b = {},
+				lualine_c = {},
+				lualine_x = {},
+				lualine_y = {},
+				lualine_z = { "filename" },
+			},
+
+			-- dont show anything as winbar in 'inactive' buffer,
+			inactive_winbar = {
+				lualine_a = {},
+				lualine_b = {},
+				lualine_c = {},
+				lualine_x = {},
+				lualine_y = {},
+				lualine_z = {},
 			},
 		}
 	end,
