@@ -14,3 +14,4 @@ tty -s && export GPG_TTY
 
 command -v nvim >/dev/null 2>&1 && export EDITOR=nvim        # or vi|nano
 command -v qtchooser >/dev/null 2>&1 && export QT_SELECT=qt5 # or qt6
+command -v git-credential-manager >/dev/null 2>&1 && export GCM_CREDENTIAL_STORE=gpg
