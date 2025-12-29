@@ -23,20 +23,22 @@ sreq("core.keymaps", { desc = "core.keymaps" })
 sreq("core.lazy", { desc = "core.lazy" })
 sreq("core.lsp", { desc = "core.lsp" })
 sreq("core.autocmds", { desc = "core.autocmds" })
--- sreq("core.folds", { desc = "core.folds" })
+
+-- vim.filetype.add({
+-- 	filename = {
+-- 		[".bash_functions"] = "bash",
+-- 		[".bash_aliases"] = "bash",
+-- 		[".bash_exports"] = "bash",
+-- 		["bash_functions"] = "bash",
+-- 		["bash_aliases"] = "bash",
+-- 		["bash_exports"] = "bash",
+-- 	},
+-- })
 
 vim.filetype.add({
-	filename = {
-		[".bash_functions"] = "bash",
-		[".bash_aliases"] = "bash",
-		[".bash_exports"] = "bash",
-		["bash_functions"] = "bash",
-		["bash_aliases"] = "bash",
-		["bash_exports"] = "bash",
-	},
+	pattern = { [".*/%.bash/.*"] = "bash" },
 })
-
--- set colorscheme
--- vim.cmd.colorscheme("vscode")
--- vim.cmd.colorscheme("nordic")
--- vim.cmd.colorscheme("onedark")
+-- https://github.com/tree-sitter-grammars/tree-sitter-hyprlang
+vim.filetype.add({
+	pattern = { [".*/hypr/.*%.conf"] = "hyprlang" },
+})

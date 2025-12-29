@@ -36,7 +36,8 @@ return {
 				"tsx",
 				"typescript",
 				"yaml",
-			}):wait(300000) -- 5min -- no-op if already install
+				"hyprlang",
+			}) -- 5min -- no-op if already install
 		end,
 	},
 

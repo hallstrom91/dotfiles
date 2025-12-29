@@ -1,0 +1,21 @@
+# ---- PATH ---- #
+# https://linuxcommand.org/lc3_man_pages/testh.html
+
+__path_prepend() {
+	[ -n "$1" ] || return 0
+	[ -d "$1" ] || return 0
+
+	case ":${PATH-}:" in
+	*":$1:"*) return 0 ;;
+	esac
+	if [ -n "${PATH-}" ]; then
+		PATH="$1:$PATH"
+	else
+		PATH="$1"
+	fi
+}
+
+__path_prepend "$HOME/.local/bin"
+__path_prepend "$HOME/.bin"
+__path_prepend "$HOME/.dotnet/tools"
+__path_prepend "/opt/nvim-linux-x86_64/bin"

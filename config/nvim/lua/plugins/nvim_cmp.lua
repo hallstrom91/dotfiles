@@ -16,7 +16,7 @@ return {
 			vim.api.nvim_create_autocmd("FileType", {
 				group = vim.api.nvim_create_augroup("kjs.cmp_md", { clear = true }),
 				desc = "Start treesitter for `cmp_docs`, as markdown.",
-				pattern = "cmp_docs", -- add cmp_menu
+				pattern = { "cmp_docs", "cmp_menu" }, -- add cmp_menu
 				callback = function(args)
 					vim.treesitter.start(args.buf, "markdown")
 				end,
@@ -34,6 +34,9 @@ return {
 			-- return {
 
 			cmp.setup({
+				preselect = cmp.PreselectMode.item,
+				keyword_length = 2,
+
 				snippet = {
 					expand = function(args)
 						require("luasnip").lsp_expand(args.body) -- luasnip
@@ -54,18 +57,32 @@ return {
 				},
 
 				mapping = cmp.mapping.preset.insert({
-					["<CR>"] = cmp.mapping.confirm({ select = true }),
-					["C-Space"] = cmp.mapping.complete(),
+					["<CR>"] = cmp.mapping.confirm({ select = true, behavior = cmp.ConfirmBehavior.Replace }),
+					["C-Space"] = cmp.mapping.complete({ select = true, behavior = cmp.ConfirmBehavior.Insert }),
 					["C-d"] = cmp.mapping.scroll_docs(-4),
 					["C-f"] = cmp.mapping.scroll_docs(4),
 				}),
 
 				sources = cmp.config.sources({
-					{ name = "nvim_lsp", max_item_count = 12 },
-					{ name = "luasnip", max_item_count = 5 },
+					{ name = "nvim_lsp", max_item_count = 12, keyword_length = 2 },
 				}, {
-					{ name = "buffer", max_item_count = 5 },
-					{ name = "path", max_item_count = 5 },
+					{ name = "luasnip", max_item_count = 5, keyword_length = 2 },
+					{
+						name = "buffer",
+						max_item_count = 5,
+						keyword_length = 3,
+						option = {
+							-- get 'buffer' completion from all open bufs
+							get_bufnrs = function()
+								local bufs = {}
+								for _, win in ipairs(vim.api.nvim_list_wins()) do
+									bufs[vim.api.nvim_win_get_buf(win)] = true
+								end
+								return vim.tbl_keys(bufs)
+							end,
+						},
+					},
+					{ name = "path", max_item_count = 5, keyword_length = 4 },
 				}),
 
 				formatting = {

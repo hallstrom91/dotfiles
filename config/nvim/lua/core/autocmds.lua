@@ -64,6 +64,14 @@ autocmd("FileType", {
 })
 
 autocmd("FileType", {
+	group = vim.api.nvim_create_augroup("kjs.conceal_lvl", { clear = true }),
+	pattern = { "json", "jsonc", "json5" },
+	callback = function()
+		vim.wo.conceallevel = 0
+	end,
+})
+
+autocmd("FileType", {
 	group = vim.api.nvim_create_augroup("kjs.nonew_comment", { clear = true }),
 	desc = "no comment on new line",
 	pattern = "*",

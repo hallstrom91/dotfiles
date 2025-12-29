@@ -43,37 +43,37 @@ return {
 		end,
 	},
 
-	{
-		dir = "/media/veracrypt2/ws/lua/modern-north.nvim",
-		dev = true,
-		opts = {
-			transparent = false,
-			styles = {
-				comments = "italic",
-				keywords = "italic",
-				functions = "NONE",
-				strings = "NONE",
-			},
-			plugins = {
-				gitsigns = true,
-				telescope = true,
-				neotree = true,
-				rainbow_delimiters = true,
-				cmp = true,
-				ibl = true,
-				ts_context = true,
-				whichkey = true,
-			},
-		},
-		init = function()
-			vim.cmd.colorscheme("modern-north")
-		end,
-		priority = 1000,
-	},
+	-- {
+	-- 	dir = "/media/veracrypt2/ws/lua/modern-north.nvim",
+	-- 	dev = true,
+	-- 	opts = {
+	-- 		transparent = false,
+	-- 		styles = {
+	-- 			comments = "italic",
+	-- 			keywords = "italic",
+	-- 			functions = "NONE",
+	-- 			strings = "NONE",
+	-- 		},
+	-- 		plugins = {
+	-- 			gitsigns = true,
+	-- 			telescope = true,
+	-- 			neotree = true,
+	-- 			rainbow_delimiters = true,
+	-- 			cmp = true,
+	-- 			ibl = true,
+	-- 			ts_context = true,
+	-- 			whichkey = true,
+	-- 		},
+	-- 	},
+	-- 	init = function()
+	-- 		vim.cmd.colorscheme("modern-north")
+	-- 	end,
+	-- 	priority = 1000,
+	-- },
 
 	{
 		"catppuccin/nvim",
-		enabled = false,
+		enabled = true, 
 		name = "catppuccin",
 		priority = 1000,
 		opts = {

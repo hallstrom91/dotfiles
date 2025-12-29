@@ -1,6 +1,4 @@
 local dx = require("core.lsp.diagnostic")
-local attach = require("core.lsp.attach")
--- local ic_cmp = require("utils").get_icon_tbl("cmp")end
 
 return {
 
@@ -14,7 +12,7 @@ return {
 				return
 			end
 
-			attach.lsp_buf_maps(client, ev.buf) -- setup lsp bufmaps func
+			require("core.lsp.attach").lsp_buf_maps(client, ev.buf)
 		end,
 	}),
 
@@ -26,7 +24,8 @@ return {
 			-- If buffer dont has any LSP-clients, clear bufmaps.
 			local remaining = vim.lsp.get_clients({ bufnr = ev.buf })
 			if #remaining == 0 then
-				attach.clear_lsp_buf_maps(ev.buf)
+				require("core.lsp.attach").clear_lsp_buf_maps(ev.buf)
+				-- attach.clear_lsp_buf_maps(ev.buf)
 			end
 
 			-- Stop/Kill (w force) if no bufs is connected.
@@ -45,9 +44,9 @@ return {
 
 	--- Custom Diagnostic UI
 	vim.diagnostic.config({
-		virtual_text = dx.dx_vtext,
-		signs = dx.dx_signs,
-		float = dx.dx_float,
+		virtual_text = dx.dx_vtext, -- virtual text, next to dx-line
+		signs = dx.dx_signs, -- icons (prefix) next to linenr column
+		float = dx.dx_float, -- hover dx
 	}),
 
 	vim.lsp.config("*", {

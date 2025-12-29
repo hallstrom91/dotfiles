@@ -57,9 +57,15 @@ M.dx_vtext = {
 	current_line = false,
 	hl_mode = "blend",
 	-- severity = {
-	-- 	min = vim.diagnostic.severity.ERROR,
+	-- 	min = vim.diagnostic.severity.WARN,
+	-- max = vim.diagnostic.severity.ERROR,
 	-- },
-	prefix = M.dx_vline_prefix,
+	-- format = function(diag)
+	-- 	local dx_code = diag.code:gsub("\n", " ") or "" -- local dx_code = diag.code
+	-- 	return dx_code
+	-- end,
+	suffix = M.dx_vline_suffix,
+	-- prefix = M.dx_vline_prefix,
 }
 ------------------------------------------------
 --- vim.diagnostic.Opts.signs
@@ -73,9 +79,9 @@ M.dx_text = {
 }
 ---@type vim.diagnostic.Opts.Signs
 M.dx_signs = {
-	text = M.dx_text,
-	numhl = M.dx_hl,
-	linehl = M.dx_hl,
+	text = M.dx_text, -- icon
+	numhl = M.dx_hl, -- num hl related to dx-lvl
+	linehl = M.dx_hl, -- same as numhl, but linehl.
 }
 
 ------------------------------------------------

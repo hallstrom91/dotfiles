@@ -2,7 +2,7 @@
 return {
 	"gbprod/yanky.nvim",
 	keys = {
-		{ "<leader>ty", ":Telescope yank_history<CR>", desc = "Telescope Yanky" },
+		-- { "<leader>ty", ":Telescope yank_history<CR>", desc = "Telescope Yanky" },
 	},
 	opts = {
 		picker = {

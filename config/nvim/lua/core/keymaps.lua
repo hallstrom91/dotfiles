@@ -28,8 +28,8 @@ local base = {
 	{ mode = "n", lhs = "<leader>q", rhs = "<cmd>bdelete<CR>", desc = "Delete buffer" },
 	{ mode = "n", lhs = "<C-s>", rhs = "<cmd>w<cr><esc>", desc = "Save file" },
 	---text movement
-	{ mode = "n", lhs = "<A-k>", rhs = "<cmd>execute 'move .+' . v:count1<cr>==", desc = "Move row down" },
-	{ mode = "n", lhs = "<A-j>", rhs = "<cmd>execute 'move .-' . (v:count1 + 1)<cr>==", decs = "Move row up" },
+	{ mode = "n", lhs = "<A-j>", rhs = "<cmd>execute 'move .+' . v:count1<cr>==", desc = "Move row down" },
+	{ mode = "n", lhs = "<A-k>", rhs = "<cmd>execute 'move .-' . (v:count1 + 1)<cr>==", decs = "Move row up" },
 	---buffers
 	{ mode = "n", lhs = "<leader>bn", rhs = "<cmd>bnext<cr>", desc = "Next buffer" },
 	{ mode = "n", lhs = "<leader>bp", rhs = "<cmd>bprevious<cr>", desc = "Prev buffer" },

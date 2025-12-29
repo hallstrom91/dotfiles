@@ -1,7 +1,164 @@
 local M = {}
+-- local utils_keymap = require("utils.keymap")
+local method = vim.lsp.protocol.Methods
+--@class KjsLspMap : KjsKeymap
 
-local utils_keymap = require("utils.keymap")
-local lsp_mappings = require("core.lsp.lsp_mappings").lsp_mappings
+---telescope
+function M.lsp_maps_telescope()
+	local ok = pcall(require, "telescope.builtin")
+	if not ok then
+		return
+	end
+
+	return {
+		-- Hover
+		{
+			lhs = "K",
+			desc = "Hover",
+			rhs = function()
+				vim.lsp.buf.hover({
+					border = "rounded",
+					max_height = 10,
+					max_width = 120,
+					close_events = { "CursorMoved", "BufLeave", "WinLeave", "LspDetach" },
+				})
+			end,
+			requires = method.textDocument_hover,
+		},
+
+		-- Code action
+		{
+			lhs = "<leader>Gra",
+			desc = "Telescope: Code Action",
+			rhs = vim.lsp.buf.code_action,
+			mode = { "n", "v" },
+			requires = method.textDocument_codeAction,
+		},
+
+		-- Rename
+		{
+			lhs = "<leader>Grn",
+			desc = "Telescope: Rename (symbol)",
+			rhs = vim.lsp.buf.rename,
+			requires = method.textDocument_rename,
+		},
+
+		{
+			lhs = "<leader>Grr",
+			desc = "Telescope: Goto references",
+			rhs = require("telescope.builtin").lsp_references,
+			requires = method.textDocument_references,
+		},
+		-- Type definition
+		{
+			lhs = "<leader>Grt",
+			desc = "Telescope: Goto type definition",
+			rhs = require("telescope.builtin").lsp_type_definitions,
+			requires = method.textDocument_typeDefinition,
+		},
+
+		-- Implementation
+		{
+			lhs = "<leader>Gri",
+			desc = "Telescope: Goto implementation",
+			rhs = require("telescope.builtin").lsp_implementations,
+			requires = method.textDocument_implementation,
+		},
+
+		-- Document symbols
+		{
+			lhs = "<leader>GO",
+			desc = "Telescope: Document Symbols",
+			rhs = require("telescope.builtin").lsp_document_symbols,
+			requires = method.textDocument_documentSymbol,
+		},
+
+		-- {
+		-- 	lhs = "",
+		-- 	desc = "",
+		-- 	rhs =
+		-- 	requires = method.
+		-- }
+	}
+end
+
+---fzf-lua
+function M.lsp_maps_fzflua()
+	local ok, fzf = pcall(require, "fzf-lua")
+	if not ok then
+		return
+	end
+
+	return {
+		-- Hover
+		{
+			lhs = "K",
+			desc = "Hover",
+			rhs = function()
+				vim.lsp.buf.hover({
+					border = "rounded",
+					max_height = 10,
+					max_width = 120,
+					close_events = { "CursorMoved", "BufLeave", "WinLeave", "LspDetach" },
+				})
+			end,
+			requires = method.textDocument_hover,
+		},
+
+		-- Code action
+		{
+			lhs = "<leader>Gra",
+			desc = "fzf-lua: Code Action",
+			rhs = fzf.code_action,
+			mode = { "n", "v" },
+			requires = method.textDocument_codeAction,
+		},
+
+		-- Rename
+		{
+			lhs = "<leader>Grn",
+			desc = "fzf-lua: Rename (symbol)",
+			rhs = vim.lsp.buf.rename,
+			requires = method.textDocument_rename,
+		},
+		-- References
+		{
+			lhs = "<leader>Grr",
+			desc = "fzf-lua: Goto references",
+			rhs = fzf.lsp_references,
+			requires = method.textDocument_references,
+		},
+		{
+			lhs = "<leader>Gd",
+			desc = "fzf-lua: Goto definition",
+			rhs = fzf.lsp_definitions,
+			requires = method.textDocument_references,
+		},
+		-- Type definition
+		{
+			lhs = "<leader>Grt",
+			desc = "fzf-lua: Goto type definition",
+			rhs = fzf.lsp_typedefs,
+			requires = method.textDocument_typeDefinition,
+		},
+
+		-- Implementation
+		{
+			lhs = "<leader>Gri",
+			desc = "fzf-lua: Goto implementation",
+			rhs = fzf.lsp_implementations,
+			requires = method.textDocument_implementation,
+		},
+
+		-- Document symbols
+		{
+			lhs = "<leader>GO",
+			desc = "fzf-lua: Document Symbols",
+			rhs = fzf.lsp_document_symbols,
+			requires = method.textDocument_documentSymbol,
+		},
+	}
+end
 
 ------------------------------------------------
 ---Track buffer cache for keymaps, for lspdetach event & removal.
@@ -76,6 +233,11 @@ end
 ---@param bufnr? integer
 function M.lsp_buf_maps(client, bufnr)
 	bufnr = bufnr or vim.api.nvim_get_current_buf()
+	-- local lsp_mappings = require("core.lsp.lsp_mappings").lsp_mappings
+	local lsp_mappings = M.lsp_maps_fzflua()
+	if not lsp_mappings then
+		return
+	end
 
 	local final_maps = {}
 
@@ -100,7 +262,9 @@ function M.lsp_buf_maps(client, bufnr)
 		end
 	end
 
-	utils_keymap.map(final_maps)
+	require("utils.keymap").map(final_maps)
+
+	-- utils_keymap.map(final_maps)
 
 	if #unsupported > 0 then
 		local lines = { ("LSP (%s) - Missing method(s):"):format(client.name) }

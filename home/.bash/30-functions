@@ -1,0 +1,43 @@
+# ---- bat helper ---- #
+bat() {
+	if command -v bat >/dev/null 2>&1; then
+		command bat "$@"
+	elif command -v batcat >/dev/null 2>&1; then
+		command batcat "$@"
+	else
+		command cat "$@"
+	fi
+}
+
+# ---- extract helper ---- #
+
+extract() {
+	[ $# -eq 1 ] || {
+		echo "usage: extract <archive>" >&2
+		return 2
+	}
+	[ -f "$1" ] || {
+		echo "extract: not a file: $1" >&2
+		return 1
+	}
+
+	case "$1" in
+	*.tar | *.tar.gz | *.tgz | *.tar.xz | *.tar.bz2) tar -xf "$1" ;;
+	*.zip) unzip -q -- "$1" ;;
+	*)
+		echo "extract: unsupported format: $1" >&2
+		return 3
+		;;
+	esac
+}
+
+# ---- list custom aliases ---- #
+listaliases() {
+	local f
+	f="$HOME/.bash/20-aliases"
+	[[ -r "$f" ]] || {
+		echo "failed: no $f"
+		return 1
+	}
+	bat "$f" -l 'bash'
+}

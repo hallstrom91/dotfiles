@@ -1,0 +1,16 @@
+# ---- NVM ---- #
+# https://linuxcommand.org/lc3_man_pages/testh.html
+
+[ -n "${LOAD_NVM-}" ] || return 0 # lazyload nvm
+# [ -d "$HOME/.nvim" ] || return 0 # always load nvm
+
+export NVM_DIR="$HOME/.nvm"
+# shellcheck disable="SC1091"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" #load nvm
+# shellcheck disable="SC1091"
+[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion" #load completion
+
+if command -v npm >/dev/null 2>&1; then
+	NODE_PATH="$(npm root -g 2>/dev/null)"
+	export NODE_PATH
+fi

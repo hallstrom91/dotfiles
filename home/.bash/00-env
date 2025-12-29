@@ -1,0 +1,16 @@
+# ---- ENV ---- #
+: "${TERM:=xterm-256color}"
+
+export NVM_DIR="$HOME/.nvm"
+
+# remove?
+# if [ -n "${KITTY_WINDOW_ID:-}" ] && [ -d "$HOME/.local/kitty.app/lib/kitty/terminfo" ]; then
+# export TERMINFO="$HOME/.local/kitty.app/lib/kitty/terminfo"
+# fi
+
+# gpg, pass, gcm; pinentry
+GPG_TTY="$(tty)"
+tty -s && export GPG_TTY
+
+command -v nvim >/dev/null 2>&1 && export EDITOR=nvim        # or vi|nano
+command -v qtchooser >/dev/null 2>&1 && export QT_SELECT=qt5 # or qt6

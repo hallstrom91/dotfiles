@@ -32,6 +32,7 @@ vim.o.ignorecase = true -- ignore search case
 vim.o.smartcase = true -- dont ignore search case, IF: Capital letter
 vim.o.incsearch = true -- show match for partly typed search cmds
 
+-- transparency on popup
 vim.o.winblend = 3
 vim.o.pumblend = 3
 
@@ -111,8 +112,6 @@ vim.o.swapfile = false -- or ?
 --> 19) reading and writing files
 vim.o.autoread = true -- check if file has changed outside nvim, reload in case. Not if deleted.
 vim.o.autowrite = true -- autosave when leaving modified buf
--- vim.opt.winborder = "rounded" -- test
--- vim.o.winborder = "rounded"
 
 --- 24) Various
 vim.o.exrc = true
