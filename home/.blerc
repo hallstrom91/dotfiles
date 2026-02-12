@@ -1,0 +1,45 @@
+### ble.sh: https://github.com/akinomyoga/ble.sh ###
+
+## Disable highlighting: syntax|filenames|variable ##
+bleopt highlight_syntax=
+bleopt highlight_filename=
+bleopt highlight_variable=
+
+## Disable auto-complete (Note: auto-complete is enabled by default in bash-4.0+) ##
+# bleopt complete_auto_delay=300
+bleopt complete_auto_complete=
+bleopt complete_auto_history=
+bleopt complete_ambiguous=
+bleopt complete_menu_filter=
+bleopt complete_menu_complete=
+bleopt complete_menu_color=
+
+
+## Disable EOF marker like "[ble: EOF]"
+#bleopt prompt_eol_mark=''
+## Tip: you may instead specify another string:
+#bleopt prompt_eol_mark='⏎'
+
+## Disable error exit marker like "[ble: exit %d]"
+bleopt exec_errexit_mark=
+# Tip: you may instead specify another string:
+bleopt exec_errexit_mark=$'\e[91m[error %d]\e[m'
+
+## Disable elapsed-time marker like "[ble: elapsed 1.203s (CPU 0.4%)]"
+bleopt exec_elapsed_mark=
+## Tip: you may instead specify another string
+#bleopt exec_elapsed_mark=$'\e[94m[%ss (%s %%)]\e[m'
+## Tip: you may instead change the threshold of showing the mark
+#bleopt exec_elapsed_enabled='sys+usr>=10*60*1000' # e.g. ten minutes for total CPU usage
+
+## Disable exit marker like "[ble: exit]"
+bleopt exec_exit_mark=
+
+## Disable some other markers like "[ble: ...]"
+bleopt edit_marker=
+bleopt edit_marker_error=
+
+## ble.sh+starship: https://starship.rs/advanced-config/#transientprompt-and-transientrightprompt-in-bash
+#bleopt prompt_ps1_final='$(starship module character)'
+#bleopt prompt_rps1_final='$(starship module time)'
+

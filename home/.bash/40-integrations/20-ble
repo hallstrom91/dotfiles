@@ -1,0 +1,6 @@
+[[ $- == *i* ]] || return 0
+_ble="$HOME/Downloads/ble.sh/out/ble.sh"
+[[ -r "$_ble" ]] || return 0
+# shellcheck source=/dev/null
+source -- "$_ble" --attach=none # done last in '.bashrc'
+# source -- "$_ble" --attach=none --rcfile "$HOME/.config/custompath/.blerc"

@@ -1,0 +1,366 @@
+/* === SWAYNC CSS CONFIG === */
+
+/* NOTE TO SELF:
+CHECK: https://man.archlinux.org/man/swaync.5.en
+FOR KEYBOARD SHORTCUTS OPTIONS, CSS for arrow-key selection of non active ?
+*/
+
+/* COLORS|THEME*/
+:root {
+  --bg: rgba(34, 40, 49, 0.8);
+  --bg-widget: rgba(34, 40, 49, 1);
+  --fg: rgb(240, 237, 237);
+  --fg-dim: rgba(189, 189, 183, 0.8);
+  --fg-icon: rgb(52, 134, 163);
+
+  --dark: rgb(26, 24, 24);
+  --dark-alt: rgba(24, 24, 24, 0.9);
+
+  --accent: rgb(74, 143, 208);
+  --border: rgb(138, 127, 192);
+  --hover: rgba(138, 127, 192, 0.75);
+  --crit: rgb(255, 107, 110);
+  --warn: rgb(255, 204, 102);
+  --hint: rgb(88, 173, 204);
+}
+
+* {
+  font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font", monospace;
+  font-size: 14px;
+  color: var(--fg);
+}
+
+notificationwindow,
+blankwindow {
+  background: transparent;
+}
+
+.close-button {
+  background: transparent;
+  color: var(--fg);
+  min-width: 22px;
+  min-height: 22px;
+  border-radius: 0;
+  margin: 8px;
+}
+
+.close-button:hover {
+  background: var(--hover);
+  color: var(--fg);
+  border-radius: 5px;
+}
+
+.time {
+  color: var(--hint);
+  background: var(--dark-alt);
+  border-radius: 999px;
+  padding: 3px;
+  font-weight: 700;
+}
+
+/* =============== */
+/* URGENCY STATUS */
+
+.low,
+.normal,
+.critical {
+  padding: 0;
+  margin: 0;
+  background: linear-gradient(to bottom, var(--dark), var(--dark-alt));
+}
+
+.low {
+  border: 3px solid var(--hint);
+  border-left: 5px solid var(--hint);
+  border-right: 5px solid var(--hint);
+}
+
+.normal {
+  border: 3px solid var(--warn);
+  border-left: 5px solid var(--warn);
+  border-right: 5px solid var(--warn);
+}
+
+.critical {
+  border: 3px solid var(--crit);
+  border-left: 5px solid var(--crit);
+  border-right: 5px solid var(--crit);
+}
+
+/* title-text in notificaitons */
+
+.low .summary {
+  color: var(--hint);
+  font-weight: 700;
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+.normal .summary {
+  color: var(--warn);
+  font-weight: 700;
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+.critical .summary {
+  color: var(--crit);
+  font-weight: 700;
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+/* body-text in notificaitons */
+.low .body,
+.normal .body,
+.critical .body {
+  color: var(--fg);
+  font-size: 14px;
+  font-weight: 500;
+  padding-left: 10px;
+}
+
+/* ========== */
+/* KEYFRAMES */
+
+@keyframes pulse {
+  0% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+
+/* =============== */
+/* CONTROL CENTER */
+
+.control-center {
+  background: var(--bg);
+  color: var(--fg);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+}
+
+.control-center .notification-row,
+.control-center .low,
+.control-center .normal,
+.control-center .critical {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+.control-center .notification.low {
+  border-left: 5px solid var(--hint);
+}
+
+.control-center .notification.normal {
+  border-left: 5px solid var(--hint);
+}
+
+.control-center .notification.critical {
+  border-left: 5px solid var(--crit);
+}
+
+.control-center .notification-row {
+  background: transparent;
+  box-shadow: none;
+}
+
+.control-center .control-center-list-placeholder {
+  opacity: 0.6;
+  margin: 0 30px;
+}
+
+.control-center .notification {
+  margin: 0;
+  border: none; /* removes status/priority-color border in 'cc' notifications */
+}
+
+.control-center .notification-group:focus,
+.control-center .notification-group:selected,
+.control-center .notification-group:hover {
+  background: transparent;
+}
+
+/* ======= */
+/* WIDGETS (CONTROL-CENTER) */
+
+.widget-label,
+.widget-title {
+  margin-top: 5px;
+  font-weight: 700;
+  background: transparent;
+  color: var(--fg);
+  font-size: 22px;
+}
+
+/* CC DND WIDGET */
+.widget-dnd {
+  background: linear-gradient(to right, var(--bg-widget), var(--accent));
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 15px 30px;
+}
+
+.widget-dnd label {
+  color: var(--fg);
+  font-weight: 700;
+}
+
+.widget-dnd > switch {
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  padding: 6px;
+  min-width: 60px;
+  border: 1px solid transparent;
+}
+.widget-dnd > switch:hover {
+  border: 1px solid var(--bg);
+}
+
+.widget-dnd > switch:checked {
+  border: 1px solid var(--bg);
+}
+
+.widget-dnd > slider {
+  background-color: var(--fg);
+  border-radius: 999px;
+  min-width: 30px;
+}
+/* CC MPRIS WIDGET */
+
+.widget-mpris {
+  /* The parent to all players */
+  padding: 0;
+  margin: 15px 30px;
+}
+
+.widget-mpris .widget-mpris-player {
+  margin: 0;
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  box-shadow: var(--mpris-album-art-shadow);
+}
+
+.widget-mpris .widget-mpris-player .mpris-background {
+  filter: blur(10px);
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay {
+  padding: 16px;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-title {
+  font-weight: bold;
+  font-size: 1.25rem;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay .widget-mpris-subtitle {
+  font-size: 1.1rem;
+}
+
+.widget-mpris .widget-mpris-player .mpris-overlay > box > button:hover {
+  background-color: var(--hover);
+}
+/* ================ */
+/* CC BUTTONS-GRID */
+
+.widget-buttons-grid flowboxchild,
+.widget-buttons-grid flowboxchild:hover {
+  background: none;
+  margin: 15px 30px;
+}
+
+.widget-buttons-grid flowboxchild > button {
+  background: transparent;
+  color: var(--dark);
+  border: 2px solid var(--fg-dim);
+  border-radius: 5px;
+  padding: 10px 0;
+  min-height: 28px;
+  min-width: 28px;
+}
+
+/* .widget-buttons-grid flowboxchild > button.toggle:hover { */
+.widget-buttons-grid flowboxchild > button:hover {
+  background: transparent;
+  border: 2px solid var(--border);
+}
+
+/* style given to the active toggle button */
+.widget-buttons-grid flowboxchild > button.toggle:checked {
+  background: linear-gradient(to right, var(--bg-widget), var(--accent));
+  border: 2px solid var(--accent);
+}
+
+/* ===================== */
+/* CC NOTIFICATIONS WIDGET  */
+.widget-notifications {
+  margin-top: 8px;
+  padding: 0;
+  background: transparent;
+}
+
+.widget-notifications .notification-row:first-child:active {
+  border-radius: 10px;
+  background: transparent;
+}
+
+.control-center .widget-notifications list row:selected,
+.control-center .widget-notifications list row:focus {
+  background: transparent;
+}
+
+/* =================== */
+/* NOTIFICATION  */
+
+/* :selected */
+/* :focus, */
+/* :hover  */
+
+.notification-group {
+  margin: 0 30px;
+  padding: 0;
+}
+
+/* .notification-group-buttons {} */
+/* .notification-group .notification-group-headers {} */
+
+.notification-row .notification-background .notification {
+  border-radius: 10px;
+  padding: 4px 6px 4px 2px;
+}
+
+.notification-background .notification-default-action:hover,
+.notification-group .notification-default-action:hover {
+  /* hover on notifications (NOT) - both in "cc" and "float" */
+  background: transparent;
+  outline: none;
+  box-shadow: none;
+}
+
+.notification-content {
+  outline: none;
+  margin: 0;
+  padding: 4px 6px 4px 2px;
+  border-radius: 10px;
+}
+
+.notification-action {
+  background-color: var(--bg-widget);
+  border-radius: 999px;
+  padding: 6px 10px;
+}
+
+.notification-row:hover,
+.notification-row:selected,
+.notification-row:focus {
+  opacity: 1;
+  border-radius: 0;
+}

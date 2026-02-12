@@ -1,0 +1,180 @@
+/* @define-color bg rgba(34, 40, 49, 0.5); */
+/* @define-color fg #dcd7c9; */
+/* @define-color selected */
+/* @define-color hover */
+/* @define-color urgent; */
+
+:root {
+  --bg: rgba(34, 40, 49, 0.8);
+  --bg-widget: rgba(34, 40, 49, 0.6);
+  --fg: #f1f1f1;
+  --fg-dim: #dcd7c9;
+
+  --hover: rgba(74, 143, 208, 0.18);
+  --accent: #4a8fd0;
+  --accent-dim: rgba(74, 143, 208, 0.35);
+
+  --radius: 10px;
+  --margin: 10px;
+  --padding: 10px;
+}
+
+* {
+  /* border: none; */
+  color: var(--fg);
+  font-family: "JetbrainsMono Nerd Font";
+  font-size: 14px;
+  transition: 250ms ease;
+}
+
+.blankwindow {
+  background: transparent;
+}
+
+.control-center {
+  /* The Control Center which contains the old notifications + widgets */
+  background: var(--bg);
+  color: var(--fg);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  box-shadow: none;
+  margin: var(--margin);
+  padding: var(--padding);
+}
+
+.widget-label {
+  font-weight: bold;
+  border-radius: var(--radius);
+  background-color: var(--bg-widget);
+}
+
+.widget-label > label {
+  font-size: 1.1rem;
+  color: var(--fg);
+}
+
+.widget-title {
+  margin-top: var(--margin);
+}
+
+.widget-title label {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+button {
+  background-color: transparent;
+  border-radius: var(--radius);
+  padding: 6px 10px;
+}
+
+button:hover {
+  background-color: var(--hover);
+}
+
+button:active {
+  background-color: var(--accent-dim);
+}
+
+.widget-dnd {
+  /* border-color: rgba(34, 40, 49, 0.6); */
+  background-color: var(--bg-widget);
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-top: var(--margin);
+}
+
+.widget-dnd label {
+  color: var(--fg);
+  font-size: 14px;
+}
+
+.widget-dnd > switch {
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  padding: 4px;
+  min-width: 44px;
+}
+.widget-dnd > switch:hover {
+  background-color: var(--accent);
+}
+
+.widget-dnd > switch:checked {
+  background-color: var(--accent);
+}
+
+.widget-dnd > slider {
+  background-color: var(--fg);
+  border-radius: 999px;
+  min-width: 18px;
+  min-height: 18px;
+}
+
+.widget-dnd > switch:checked slider {
+  background-color: rgba(34, 40, 49, 0.9);
+}
+
+.widget-notifications {
+  margin-top: 8px;
+  padding: 0px;
+}
+
+.control-center .notification-row,
+.notification-background {
+  background-color: var(--bg-widget);
+  border: 1px solid var(--fg-dim);
+  border-radius: var(--radius);
+  margin: 10px 0 0 0;
+  padding: 6px;
+}
+
+.control-center,
+.notification-row,
+.notification-background:hover {
+  border-color: var(--accent-dim);
+}
+
+.notification-row,
+.notification-background,
+.notification.critical {
+  border-left: 3px solid var(--crit);
+}
+
+.notification-row,
+.notification-background,
+.close-button {
+  background: transparent;
+  border-radius: 6px;
+  padding: 4px;
+  color: var(--fg-dim);
+}
+
+.control-center .notification-row .notification-background .close-button:hover {
+  background-color: var(--hover);
+  color: var(--fg);
+}
+
+.notification-action {
+  background-color: var(--bg-widget);
+  border-radius: 999px;
+  padding: 6px 10px;
+}
+
+.notification-action:hover {
+  background-color: var(--hover);
+}
+
+.notification-action:active {
+  background-color: var(--accent-dim);
+}
+
+progressbar {
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+}
+
+progressbar progress {
+  background-color: var(--accent);
+  border-radius: 999px;
+}

@@ -1,0 +1,71 @@
+###############
+##### OLD #####
+###############
+
+## [EXAMPLE]
+# format = '[─](fg:current_line)[](fg:yellow)[ ](fg:primary bg:yellow)[](fg:yellow bg:box)[ $user](fg:foreground bg:box)[](fg:box) '
+
+# format = '''
+# [┌──](fg:purple bold)$os $username $directory $git_branch$git_status
+# [│](fg:purple bold)$time
+# [└───](fg:purple bold)$character
+# '''
+
+# [os]
+# # format = '[](fg:purple) [](fg:background)[ $symbol ](fg:red bg:background)[](fg:background)'
+# format = '[](fg:background)[ $symbol ](fg:red bg:background)[](fg:background)'
+# disabled = false
+#
+# [username]
+# show_always = true
+# format = '[](fg:purple) [](fg:background)[  ](fg:foreground bg:background)[$user ](fg:orange bg:background bold)[](fg:background)'
+#
+# [git_branch]
+# symbol = '󰊢 '
+# format = '[](fg:purple) [](fg:background)[ $symbol ](fg:purple bold bg:background)[$branch](fg:foreground bg:background italic)'
+#
+#
+# [git_status]
+# format      = '[$all_status $ahead_behind ](fg:green bg:background)[](fg:background)'
+# # format      = '[$staged $deleted $ahead_behind ](fg:green bg:background)[](fg:background)'
+# conflicted  = '  󱈸'
+# up_to_date  = ' 󰸞 '
+# deleted = '[  ](fg:red bg:background)'
+# untracked   = ' [ \($count\)](fg:foreground bg:background)'
+# modified    = '[  \($count\)](fg:yellow bg:background)'
+# staged      = '  ${count}'
+# renamed = '   '
+# ahead       = '⇡${count}'
+# diverged    = '  ⇡${ahead_count} ⇣${behind_count}'
+# behind      = ' ⇣${count}'
+#
+# [directory]
+# format = '[](fg:purple) [](fg:background)[ $path](fg:orange bg:background)[$read_only ](fg:foreground bg:background)[](fg:background)'
+# home_symbol = "󰜥 "
+# truncation_symbol = ' ../'
+# truncation_length = 2
+# read_only = '󱧵 '
+#
+# [directory.substitutions]
+# "Documents" = "󰈙 "
+# "Downloads" = "  "
+# "Music" = "  "
+# "Pictures" = "  "
+#
+# [os.symbols]
+# Arch = ' '
+# Debian = ' '
+# Fedora = ' '
+# Linux = ' '
+# Manjaro = ' '
+# Pop = ' '
+# Raspbian = ' '
+# Ubuntu = ' '
+# Unknown = ' '
+# Windows = ' '
+#
+# [time]
+# disabled = false
+# format = '[ ](fg:purple) $time(fg:foreground bold)'
+# time_format = '%R'
+

@@ -1,0 +1,9 @@
+style=/home/kjs/.config/wofi/styles/style.css
+colors=/home/kjs/.config/wofi/colors
+
+width=600
+height=320
+location=center
+allow_markup=true
+allow_images=true
+gtk_dark=true

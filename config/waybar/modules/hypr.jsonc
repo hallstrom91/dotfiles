@@ -1,0 +1,30 @@
+{
+	// HYPR WORKSPACES
+	"hyprland/workspaces": {
+		"format": "{icon} {id}", // {windows} //
+		"format-icons": {
+			"default": "",
+			"active": ""
+			// "empty": "",
+			// "persistent": "",
+			// "special": "",
+			// "urgent": ""
+		},
+		"tooltip": true,
+		"tooltip-format": "Workspace ${id}",
+		"disable-scroll": true,
+		"all-outputs": true, // default | true = show all ws-groups
+		"show-special": true,
+		"workspace-taskbar": {
+			"enable": false,
+			"update-active-window": true,
+			"format": "{icon} {title}"
+		}
+	},
+	// HYPR SUBMAP (ONLY IF ACTIVE)
+	"hyprland/submap": {
+		"format": " submap: {}",
+		"max-length": 20,
+		"tooltip": false
+	}
+}

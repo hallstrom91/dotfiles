@@ -1,0 +1,39 @@
+{
+	// CLOCK
+	"clock": {
+		"timezone": "Europe/Stockholm",
+		"format": "{:%H:%M %Y-%m-%d}", // 13:37 2025-01-21
+		// "format": "{:%H:%M %d/%m-%Y}", // 13:37 16/12-2025
+		"tooltip-format": "{calendar}",
+		"calendar": {
+			"mode": "month"
+		}
+	},
+	// NOTIFICATION + CENTER
+	"custom/notification": {
+		"format": "{icon}",
+		"format-icons": {
+			"notification": "󱅫",
+			"none": "󰂜",
+			"dnd-notification": "󰂠",
+			"dnd-none": "󰪓",
+			"inhibited-notification": "󰂛",
+			"inhibited-none": "󰪑",
+			"dnd-inhibited-notification": "󰂛",
+			"dnd-inhibited-none": "󰪑"
+		},
+		"tooltip": true,
+		"tooltip-format": "{status}",
+		"return-type": "json",
+		"exec-if": "which swaync-client",
+		"exec": "swaync-client -swb",
+		"on-click": "swaync-client -t -sw",
+		"on-click-right": "swaync-client -d -sw",
+		"escape": true
+	},
+	"hyprland/submap": {
+		"format": " submap: {}",
+		"max-length": 20,
+		"tooltip": false
+	}
+}

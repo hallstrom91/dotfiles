@@ -1,0 +1,263 @@
+/* =============== */
+/* THEME | TOKENS */
+/* =============== */
+
+@define-color bg rgba(34, 40, 49, 0.8);
+@define-color bg-widget rgba(34, 40, 49, 1);
+
+@define-color fg rgb(240, 237, 237);
+@define-color fg-dim rgba(189, 189, 183, 0.8);
+@define-color fg-icon rgb(52, 134, 163);
+
+@define-color dark rgb(26, 24, 24);
+@define-color dark-alt rgba(24, 24, 24, 0.9);
+
+@define-color accent rgb(74, 143, 208);
+@define-color border rgb(138, 127, 192);
+@define-color hover rgba(138, 127, 192, 0.75);
+@define-color crit rgb(255, 107, 110);
+@define-color warn rgb(255, 204, 102);
+@define-color hint rgb(88, 173, 204);
+
+/* ======================= */
+/* WAYBAR WINDOW / GLBOAL */
+/* ======================= */
+
+window#waybar {
+  background: none;
+}
+
+window#waybar.hidden {
+  opacity: 0.3;
+}
+
+tooltip {
+  border: 2px solid @border;
+  background: @bg-widget;
+  color: @fg;
+}
+
+/* =========================== */
+/* PRIMARY/STATUS-BAR GLOBALS */
+/* =========================== */
+
+/* PRIMARYBAR GENERAL */
+.primarybar {
+  font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font", monospace;
+  font-size: 14px;
+  color: @fg;
+}
+
+/* STATUSBAR GENERAL */
+.statusbar {
+  font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font", monospace;
+  font-size: 14px;
+  color: @fg;
+}
+
+/* ===================== */
+/* MODULES GENERAL */
+/* ===================== */
+#custom-launcher,
+#workspaces,
+#cpu,
+#temperature,
+#power-profiles-daemon,
+#custom-powermenu,
+#submap,
+#custom-notification,
+#clock,
+#pulseaudio,
+#network,
+#bluetooth,
+#disk,
+#memory,
+#systemd-failed-units {
+  color: @fg;
+  margin: 5px 0;
+  background: @bg;
+  padding: 2px 10px;
+}
+
+/* ======================= */
+/* TEMP STATES (GLOBAL) */
+/* ======================= */
+
+#temperature.warning {
+  color: @warn;
+}
+
+#temperature.critical {
+  color: @crit;
+}
+/* =============================== */
+/* SHARED SHAPES / ROUNDED GROUPS */
+/* =============================== */
+
+/* LEFT SIDE ROUNDED */
+#custom-launcher,
+#cpu,
+#network,
+#disk.nvme0,
+#memory,
+#systemd-failed-units {
+  margin-left: 10px;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* RIGHT SIDE ROUNDED */
+#workspaces,
+#power-profiles-daemon,
+#custom-powermenu,
+#temperature.nvme2 {
+  margin-right: 10px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+/* ================= */
+/* BLUETOOTH STATES */
+/* =============== */
+#bluetooth {
+  color: @fg;
+}
+
+#bluetooth.off,
+#bluetooth.disabled {
+  color: @warn;
+}
+
+#bluetooth.on {
+  color: @hint;
+}
+
+/* ===================== */
+/* PRIMARYBAR: (M:DP-2) */
+/* ===================== */
+
+#custom-launcher {
+  background: @border;
+  color: @dark;
+}
+
+#workspaces {
+  background: @bg-widget;
+}
+
+#workspaces button {
+  background: transparent;
+}
+
+#workspaces button.active {
+  color: @accent;
+}
+
+#workspaces button.urgent {
+  color: @crit;
+}
+
+#workspaces button.special {
+  color: @border;
+  background: transparent;
+}
+
+#cpu,
+#temperature.cpu {
+  background: @bg-widget;
+}
+
+#power-profiles-daemon {
+  color: @fg-icon;
+  background: @bg-widget;
+}
+
+#submap {
+  background: @warn;
+  color: @dark;
+  margin-left: 5px;
+  margin-right: 5px;
+  border-radius: 10px;
+}
+
+#clock,
+  /* #custom-notification, */
+  #pulseaudio {
+  background: @bg-widget;
+  color: @accent;
+  margin-left: 5px;
+  margin-right: 5px;
+  border-radius: 10px;
+}
+
+#custom-notification {
+  background: transparent;
+  color: @fg;
+  margin-right: 5px;
+}
+
+#bluetooth {
+  background: @bg-widget;
+}
+
+#custom-powermenu {
+  background-color: @bg-widget;
+  background: @bg-widget;
+}
+
+#network {
+  background: @bg-widget;
+  color: @warn;
+}
+
+#network.ethernet,
+#network.wifi {
+  color: @hint;
+}
+
+#network.disabled,
+#network.disconnected {
+  color: @crit;
+}
+
+/* ===================  */
+/* STATUSBAR (M:DP-1) */
+/* =================== */
+
+#temperature.nvme0,
+#temperature.nvme1,
+#temperature.nvme2 {
+  background: @bg-widget;
+  color: @accent;
+}
+
+#disk.nvme0,
+#disk.nvme1,
+#disk.nvme2 {
+  background: @bg-widget;
+  color: @fg-dim;
+}
+
+#memory {
+  background: @bg;
+  border-radius: 10px;
+}
+
+#systemd-failed-units {
+  background: @border;
+  margin-left: 10px;
+}
+
+#systemd-failed-units.ok {
+  color: @dark;
+  font-weight: 700;
+}
+
+#systemd-failed-units.degraded {
+  color: @crit;
+  font-weight: 900;
+}

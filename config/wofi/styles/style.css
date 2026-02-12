@@ -1,0 +1,108 @@
+/* WOFI COLORS
+'colors'-file imported in 'config'-file
+
+--wofi-color0 bg
+--wofi-color1 fg
+--wofi-color2 fg-dim
+--wofi-color3 fg-icon
+--wofi-color4 dark
+--wofi-color5 hover/hl
+--wofi-color6 accent
+--wofi-color7 border
+--wofi-color8 crit
+--wofi-color9 warn
+
+usage {
+	color: --wofi-color1
+}
+*/
+
+* {
+  font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace;
+  font-size: 14px;
+  box-shadow: none;
+  outline: none;
+}
+
+#window {
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+}
+
+#outer-box {
+  background-color: --wofi-color0;
+  border: 2px solid --wofi-color6;
+  border-radius: 10px;
+}
+
+#inner-box,
+#outer-box {
+  margin: 4px;
+}
+
+#input {
+  margin: 8px;
+  padding: 4px 6px;
+  border: 1px solid --wofi-color6;
+  background-color: --wofi-color0;
+  color: --wofi-color1;
+  font-weight: 600;
+}
+
+#input:focus {
+  border: 1.5px solid --wofi-color6;
+  font-style: italic;
+}
+
+/* RESULTS SECTION */
+#scroll {
+  margin: 0;
+  border: none;
+  background-color: transparent;
+}
+
+/* #inner-box { */
+/*   padding: 2px; */
+/*   border: none; */
+/*   background-color: transparent; */
+/* } */
+
+/* ENTRY-ROWS */
+#entry {
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+
+#entry:selected {
+  background-color: --wofi-color6;
+  border: none;
+}
+
+#entry:selected #text {
+  color: --wofi-color1;
+  background-color: transparent;
+  font-weight: 600;
+  padding-left: 2px;
+}
+
+#entry expander {
+  color: --wofi-color6;
+}
+
+#entry:selected expander {
+  color: --wofi-color1;
+}
+
+#expander-box {
+  background-color: --wofi-color6;
+}
+
+#text {
+  color: --wofi-color2;
+}
+
+#img {
+  margin-right: 10px;
+  background-color: transparent;
+}

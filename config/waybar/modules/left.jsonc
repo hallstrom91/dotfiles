@@ -1,0 +1,96 @@
+{
+	// LAUNCHER
+	"custom/launcher": {
+		"format": "󰣇",
+		"tooltip": true,
+		"tooltip-format": "Launcher",
+		"exec-on-event": "on-click",
+		"on-click": "~/.config/hypr/scripts/wofi.sh --run"
+	},
+	// HYPR WORKSPACES
+	"hyprland/workspaces": {
+		"format": "{icon} {id}", // {windows} //
+		"format-icons": {
+			"default": "",
+			"active": ""
+			// "empty": "",
+			// "persistent": "",
+			// "special": "",
+			// "urgent": ""
+		},
+		"tooltip": true,
+		"tooltip-format": "Workspace ${id}",
+		"disable-scroll": true,
+		"all-outputs": true, // default | true = show all ws-groups
+		"show-special": true,
+		"workspace-taskbar": {
+			"enable": false,
+			"update-active-window": true,
+			"format": "{icon} {title}"
+		}
+	},
+	// CPU (USAGE)
+	"cpu": {
+		"format": " {usage}%",
+		// "format": "󰻠 {usage}%",
+		"tooltip": true,
+		"tooltip-format": "CPU Usage: {usage}%\nCores: {cores}"
+	},
+	// CPU (LOAD TIMES)
+	// "load": {
+	// 	"interval": 10,
+	// 	"format": "load: {load1}",
+	// 	"max-length": 10
+	// },
+	// TEMPERATURE (CPU)
+	"temperature#cpu": {
+		"format": "{temperatureC}°C",
+		"hwmon-path": "/sys/class/hwmon/hwmon4/temp1_input",
+		"format-critical": "{temperatureC}°C",
+		"tooltip": true,
+		"tooltip-format": "CPU Temp: {temperatureC}°C"
+	},
+	// "temperature#ssd1": {
+	// 	"format": "{temperatureC}°C",
+	// 	"hwmon-path": "/sys/class/hwmon/hwmon1/temp1_input",
+	// 	"format-critical": "{temperatureC}°C"
+	// 	// "tooltip": true,
+	// 	// "tooltip-format": "CPU Temp: {temperatureC}°C"
+	// },
+	// "temperature#ssd2": {
+	// 	"format": "{temperatureC}°C",
+	// 	"hwmon-path": "/sys/class/hwmon/hwmon2/temp1_input",
+	// 	"format-critical": "{temperatureC}°C"
+	// 	// "tooltip": true,
+	// 	// "tooltip-format": "CPU Temp: {temperatureC}°C"
+	// },
+	// "temperature#ssd3": {
+	// 	"format": "{temperatureC}°C",
+	// 	"hwmon-path": "/sys/class/hwmon/hwmon3/temp1_input",
+	// 	"format-critical": "{temperatureC}°C"
+	// 	// "tooltip": true,
+	// 	// "tooltip-format": "CPU Temp: {temperatureC}°C"
+	// },
+	// P-PROFILES (CPU)
+	"power-profiles-daemon": {
+		"format": "{icon}",
+		"tooltip-format": "Power profile: {profile}\nDriver: {driver}",
+		"tooltip": true,
+		"format-icons": {
+			"default": "",
+			"performance": "",
+			"balanced": "",
+			"power-saver": ""
+		}
+	},
+	// RAM
+	"memory": {
+		"format": " {}%",
+		"tooltip": true,
+		"tooltip-format": "RAM Usage: {used} / {total} ({percentage}%)"
+	},
+	// DISK (ROOT)
+	"disk": {
+		"format": " {percentage_free}%"
+	}
+}

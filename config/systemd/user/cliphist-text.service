@@ -1,0 +1,19 @@
+[Unit]
+Description=Clipboard TEXT history manager
+Documentation=https://github.com/sentriz/cliphist
+After=graphical-session.target
+Wants=graphical-session.target
+
+[Service]
+Type=exec
+ExecCondition=/lib/systemd/systemd-xdg-autostart-condition "wlroots:Hyprland" ""
+Environment=CLIPHIST_MAX_ITEMS=15
+Environment=CLIPHIST_MAX_DEDEUPE_SEARCH=15
+ExecStart=/usr/bin/wl-paste --type text --watch /usr/bin/cliphist store
+ExecStopPost=/usr/bin/cliphist wipe
+Restart=on-failure
+RestartSec=2
+Slice=app-graphical.slice
+
+[Install]
+WantedBy=graphical-session.target

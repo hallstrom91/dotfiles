@@ -1,0 +1,16 @@
+[Unit]
+Description=Udiskie automounter
+Documentation=https://github.com/coldfix/udiskie
+After=graphical-session.target
+Wants=graphical-session.target
+
+[Service]
+Type=simple
+ExecCondition=/lib/systemd/systemd-xdg-autostart-condition "wlroots:Hyprland" ""
+ExecStart=/usr/bin/udiskie
+Restart=on-failure
+RestartSec=2
+Slice=app-graphical.slice
+
+[Install]
+WantedBy=graphical-session.target

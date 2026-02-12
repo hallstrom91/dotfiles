@@ -1,0 +1,56 @@
+[
+	{
+		// PRIMARYBAR
+		"name": "primarybar",
+		"reload_style_on_change": true,
+		"include": [
+			"~/.config/waybar/primarybar.jsonc"
+		],
+		"layer": "top",
+		"output": "DP-2",
+		"position": "top",
+		"modules-left": [
+			"custom/launcher",
+			"hyprland/workspaces",
+			"cpu",
+			"temperature#cpu",
+			"power-profiles-daemon",
+			"hyprland/submap"
+		],
+		"modules-center": [
+			"custom/notification",
+			"clock",
+			"pulseaudio"
+		],
+		"modules-right": [
+			"network",
+			"bluetooth",
+			// "pulseaudio",
+			"custom/powermenu"
+		]
+	},
+	// STATUSBAR DP-1
+	{
+		"name": "statusbar",
+		"reload_style_on_change": true,
+		"include": [
+			"~/.config/waybar/statusbar.jsonc"
+		],
+		"layer": "top",
+		"output": "DP-1",
+		"modules-left": [
+			"systemd-failed-units",
+			"hyprland/workspaces#dp1",
+			"memory"
+		],
+		"modules-center": [
+			"disk#nvme0",
+			"temperature#nvme0",
+			"disk#nvme1",
+			"temperature#nvme1",
+			"disk#nvme1",
+			"temperature#nvme2"
+		],
+		"modules-right": []
+	}
+]

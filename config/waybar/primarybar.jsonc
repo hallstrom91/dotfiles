@@ -1,0 +1,169 @@
+{
+	// LAUNCHER
+	"custom/launcher": {
+		"format": "",
+		"tooltip": true,
+		"tooltip-format": "Launcher",
+		"exec-on-event": "on-click",
+		"on-click": "~/.config/hypr/scripts/wofi.sh --run"
+	},
+	// HYPR WORKSPACES
+	"hyprland/workspaces": {
+		"format": "{icon} {id}", // {windows}
+		"format-icons": {
+			"default": "",
+			"active": ""
+			// "empty": "",
+			// "persistent": "",
+			// "special": "",
+			// "urgent": ""
+		},
+		"tooltip": true,
+		"tooltip-format": "Workspace ${id}",
+		"disable-scroll": true,
+		"all-outputs": false, // default | true = show all ws-groups
+		"show-special": true,
+		"workspace-taskbar": {
+			"enable": false,
+			"update-active-window": true,
+			"format": "{icon} {title}"
+		}
+	},
+	// HYPR SUBMAP (ONLY IF ACTIVE)
+	"hyprland/submap": {
+		"format": " submap: {}",
+		"max-length": 20,
+		"tooltip": false
+	},
+	"cpu": {
+		"format": " {usage}%",
+		"tooltip": true,
+		"tooltip-format": "CPU Usage: {usage}%\nCores: {cores}"
+	},
+	"temperature#cpu": {
+		"hwmon-path-abs": "/sys/devices/pci0000:00/0000:00:06.0/0000:02:00.0/nvme/nvme0/hwmon",
+		"input-filename": "temp1_input",
+		"format": "{temperatureC}°C",
+		"format-critical": "{temperatureC}°C"
+	},
+	// CPU PPD
+	"power-profiles-daemon": {
+		"format": "{icon}",
+		"tooltip-format": "Power profile: {profile}\nDriver: {driver}",
+		"tooltip": true,
+		"format-icons": {
+			"default": "",
+			"performance": "",
+			"balanced": "",
+			"power-saver": ""
+		}
+	},
+	// CLOCK
+	"clock": {
+		"timezone": "Europe/Stockholm",
+		"format": "{:%H:%M %d-%m-%Y}", // 13:37 16/12-2025
+		// "format": "{:%H:%M %Y-%m-%d}", // 13:37 2025-01-21
+		"tooltip-format": "{calendar}",
+		"calendar": {
+			"mode": "month"
+		}
+	},
+	// SWAYNC CC+NOTIFY
+	"custom/notification": {
+		"format": "{icon}",
+		"format-icons": {
+			"notification": "",
+			"none": "",
+			"dnd-notification": "",
+			"dnd-none": "",
+			"inhibited-notification": "",
+			"inhibited-none": "",
+			"dnd-inhibited-notification": "",
+			"dnd-inhibited-none": ""
+		},
+		"return-type": "json",
+		"exec-if": "which swaync-client",
+		"exec": "swaync-client -swb",
+		"on-click": "swaync-client -t -sw",
+		"on-click-right": "swaync-client -d -sw",
+		"escape": true
+	},
+	// NETWORK
+	"network": {
+		"interface": "enp5s0",
+		"format": "",
+		// "on-click": "rfkill toggle wifi" // for wifi connection
+		// "on-click": "bash -c 'nmcli networking off || nmcli networking on'", // alternative
+		"on-click": "bash -c 'nmcli device disconnect enp5s0 || nmcli device connect enp5s0'",
+		"on-click-right": "nm-connection-editor",
+		// "max-length": 30,
+		// "format-icons": [], // wifi signal icons; order ==> low to high
+		"format-ethernet": "",
+		"format-disconnected": "",
+		"format-wifi": "",
+		"family": "ipv4", // or "ipv4_6"
+		"tooltip": true,
+		"tooltip-format": "{ifname}",
+		"tooltip-format-ethernet": "{ifname}: {ipaddr}\n {bandwidthDownBytes}\n {bandwidthUpBytes}\n󰓅 {bandwidthTotalBytes}",
+		"tooltip-format-wifi": "{essid}: ({signalStrength}%\n{ipaddr} {gwaddr}\n {bandwidthDownBytes}\n {bandwidthUpBytes}\n󰓅 {bandwidthTotalBytes})",
+		"tooltip-format-disconnected": " Disconnected"
+	},
+	"bluetooth": {
+		"format": "",
+		"on-click-right": "blueman-manager",
+		"on-click": "rfkill toggle bluetooth",
+		"format-connected": " {num_connections}",
+		"tooltip-format": "alias: {controller_alias}\nctrl addr:{controller_address}\nstatus: {status}",
+		"tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
+		"tooltip-format-disabled": "{status}",
+		"tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+		// "on-click": "bluetoothctl show | grep Powered && off || on"
+		// "on-click": "bash -c 'bluetoothctl show | grep -q \"Powered: yes\" && bluetoothctl power off || bluetoothctl power on'"
+	},
+	"pulseaudio": {
+		"format": "{icon} {volume}%",
+		"format-muted": "",
+		"format-bluetooth": " {volume}%",
+		"format-icons": {
+			"headphone": "", // nf-fa-headset
+			"default": [
+				"" // nf-fa-music
+				// "" // nf-fa-volume_xmark
+				// "󰎇", // nf-md-music_note
+				// "󰷞" // nf-md-music_note_plus
+				// "󰎊 " // nf-md-music_note_off
+				// "", // nf-fa-volume_off
+				// " " // nf-fa-volume_up
+			]
+		},
+		"scroll-step": 5,
+		"on-click": "pavucontrol",
+		"on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle", // mute toggle!
+		"ignored-sinks": [
+			"Easy Effects Sink"
+		]
+	},
+	// POWER MENU / SETTINGS
+	"custom/powermenu": {
+		"exec": "~/.config/hypr/scripts/powermenu.sh --print",
+		"format": "{}",
+		"interval": "once",
+		"tooltip": true,
+		"return-type": "json",
+		"on-click": "~/.config/hypr/scripts/powermenu.sh --wofi"
+	},
+	"mpris": {
+		"format": "DEFAULT: {player_icon} {dynamic}",
+		"format-paused": "DEFAULT: {status_icon} <i>{dynamic}</i>",
+		"player-icons": {
+			"default": "",
+			"mpv": ""
+		},
+		"status-icons": {
+			"paused": ""
+		},
+		"ignored-players": [
+			"firefox"
+		]
+	}
+}
