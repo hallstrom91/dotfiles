@@ -13,6 +13,7 @@
 vim.g.mapleader = " " --> Spacebar | "<leader>"
 vim.g.maplocalleader = "\\" --> backslash | "<localleader>"
 vim.g.have_nerd_font = true --> Nerd fonts --> https://www.nerdfonts.com/
+vim.g.editorconfig = true
 
 --> disable external providers
 vim.g.loaded_node_provider = 0

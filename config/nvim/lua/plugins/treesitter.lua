@@ -37,7 +37,8 @@ return {
 				"typescript",
 				"yaml",
 				"hyprlang",
-			}) -- 5min -- no-op if already install
+				"qmljs",
+			})
 		end,
 	},
 

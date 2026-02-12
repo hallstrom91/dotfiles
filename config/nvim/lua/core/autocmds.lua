@@ -65,7 +65,7 @@ autocmd("FileType", {
 
 autocmd("FileType", {
 	group = vim.api.nvim_create_augroup("kjs.conceal_lvl", { clear = true }),
-	pattern = { "json", "jsonc", "json5" },
+	pattern = { "json", "jsonc", "json5", "markdown" },
 	callback = function()
 		vim.wo.conceallevel = 0
 	end,
@@ -84,6 +84,16 @@ autocmd("FileType", {
 	group = vim.api.nvim_create_augroup("kjs.help_vertsplit", { clear = true }),
 	pattern = "help",
 	command = "wincmd L ",
+})
+
+-- remove '\t' @ paste in yaml
+autocmd("BufWritePre", {
+	pattern = { "*.yml", "*.yaml" },
+	callback = function()
+		local sw = vim.bo.shiftwidth > 0 and vim.bo.shiftwidth or 2
+		local spaces = string.rep(" ", sw)
+		vim.cmd([[%s/\t/]] .. spaces .. [[/ge]])
+	end,
 })
 
 -----------------------------------------

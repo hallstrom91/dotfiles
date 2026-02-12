@@ -7,6 +7,14 @@ return {
 			desc = "format buf with conform (on save/write)",
 			pattern = "*",
 			callback = function(args)
+				local bufnr = args.buf
+				if vim.bo[bufnr].filetype == "hyprlang" then
+					local view = vim.fn.winsaveview()
+					vim.cmd("silent keepjumps keepmarks normal! gg=G")
+					vim.fn.winrestview(view)
+					return
+				end
+
 				require("conform").format({
 					bufnr = args.buf,
 					lsp_format = "fallback",
@@ -27,7 +35,7 @@ return {
 			html = { "prettierd" },
 			css = { "prettierd" },
 			markdown = { "prettierd" },
-			yaml = { "prettierd" },
+			yaml = { "yamlfmt", "prettierd" },
 			sh = { "shfmt" },
 			-- csharp = { 'csharpier' },
 		},

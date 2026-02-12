@@ -1,0 +1,291 @@
+/* theme.sh  */
+/* [NAME]       [HEX]    [RGBA_HEX]       [RGBA_DEC]               */
+/* blue1        #4a8fd0  rgba(4a8fd0ff)   rgba(74, 143, 208, 255)  */
+/* blue2        #205295  rgba(205295ff)   rgba(32, 82, 149, 255)   */
+/* blue3        #1b5687  rgba(1b5687ff)   rgba(27, 86, 135, 255)   */
+/* blue4        #144272  rgba(144272ff)   rgba(20, 66, 114, 255)   */
+/* blue5        #0f2e4a  rgba(0f2e4aff)   rgba(15, 46, 74, 255)    */
+
+/* purple1      #8a7fc0  rgba(8a7fc0ff)   rgba(138, 127, 192, 255) */
+/* purple2      #5b4b8a  rgba(5b4b8aff)   rgba(91, 75, 138, 255)   */
+/* purple3      #4c3575  rgba(4c3575ff)   rgba(76, 53, 117, 255)   */
+/* purple4      #371b58  rgba(371b58ff)   rgba(55, 27, 88, 255)    */
+/* purple5      #311746  rgba(311746ff)   rgba(49, 23, 70, 255)    */
+
+/* state-ok     #7fd889  rgba(7fd889ff)   rgba(127, 216, 137, 255) */
+/* state-warn   #f2b24d  rgba(f2b24dff)   rgba(242, 178, 77, 255)  */
+/* state-error  #f44c4c  rgba(f44c4cff)   rgba(244, 76, 76, 255)   */
+/* state-info   #4a8fd0  rgba(4a8fd0ff)   rgba(74, 143, 208, 255)  */
+/* state-off    #a8b3c2  rgba(a8b3c2ff)   rgba(168, 179, 194, 255) */
+/* bg           #1b2430  rgba(1b2430ff)   rgba(27, 36, 48, 255)    */
+/* fg           #f1f1f1  rgba(f1f1f1ff)   rgba(241, 241, 241, 255) */
+/* fg-dark      #0a1f33  rgba(0a1f33ff)   rgba(10, 31, 51, 255)    */
+/* fg-icon      #dcd7c9  rgba(dcd7c9ff)   rgba(220, 215, 201, 255) */
+/* fg-state     #526d82  rgba(526d82ff)   rgba(82, 109, 130, 255)  */
+
+/* font-family: "JetBrains Mono", "Symbols Nerd Font", monospace; */
+/* background: rgba(27, 36, 48, 255, 0.9); */
+/* color: #f1f1f1; */
+
+/* ============================= */
+/* General bar rules */
+
+* {
+  border: none;
+  min-height: 10px;
+}
+
+window#waybar {
+  background: none;
+}
+
+window#waybar.hidden {
+  opacity: 0.2;
+}
+
+tooltip {
+  border: 2px solid #8a7fc0;
+  background: rgba(27, 36, 48, 255);
+  color: #f1f1f1;
+}
+
+.primarybar,
+.statusbar {
+  /* font-family: "JetBrainsMono Nerd Font"; */
+  font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font", monospace;
+  font-size: 14px;
+}
+
+/* ============================= */
+/* General module specific rules */
+
+#custom-launcher,
+#custom-nightlight,
+#custom-brightness,
+#custom-notification,
+#workspaces,
+#submap,
+#clock,
+#pulseaudio,
+#cpu,
+#memory,
+#disk,
+#taskbar,
+#network,
+#bluetooth,
+#power-profiles-daemon,
+#custom-powermenu,
+#language {
+  /* font-family: "JetBrains Mono", "Symbols Nerd Font", monospace; */
+  color: #f1f1f1;
+  margin-top: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  /* transition: none; */
+}
+
+/* left (rounded) */
+#custom-launcher,
+#disk,
+#cpu,
+#network,
+#taskbar,
+#custom-nightlight {
+  margin-left: 10px;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* right (rounded) */
+#custom-power,
+#memory,
+#pulseaudio,
+#power-profiles-daemon,
+#workspaces,
+#custom-brightness {
+  margin-right: 10px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+/* ========================== */
+/* LEFT-SIDE (No.1)  */
+/* launcher + hypr-workspaces */
+
+#workspaces {
+  background: rgba(27, 36, 48, 255);
+}
+
+#workspaces button {
+  background: transparent;
+}
+
+/* #workspaces button.empty { */
+/*   color: rgba(255, 204, 102, 0.75); */
+/* } */
+
+#workspaces button.active {
+  color: #4a8fd0;
+}
+
+#workspaces button.urgent {
+  color: rgba(255, 107, 107, 0.75);
+}
+
+#workspaces button.special {
+  color: rgba(91, 75, 138, 1);
+  background: transparent;
+}
+
+#custom-launcher {
+  background: #363062;
+  color: #dcd7c9;
+  /* font-size: 18px; */
+}
+
+/* ================================= */
+/* LEFT-SIDE (No.2) :  */
+/* DISK|RAM|CPU<USAGE-TEMP-PPROFILE> */
+
+/* blue1        #4a8fd0  rgba(4a8fd0ff)   rgba(74, 143, 208, 255)  */
+/* blue2        #205295  rgba(205295ff)   rgba(32, 82, 149, 255)   */
+/* blue3        #1b5687  rgba(1b5687ff)   rgba(27, 86, 135, 255)   */
+/* blue4        #144272  rgba(144272ff)   rgba(20, 66, 114, 255)   */
+/* blue5        #0f2e4a  rgba(0f2e4aff)   rgba(15, 46, 74, 255)    */
+
+#memory,
+#disk {
+  background: #205295;
+}
+
+#temperature {
+  color: #f1f1f1;
+  margin-top: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#cpu,
+#temperature,
+#power-profiles-daemon {
+  background: #1b5687;
+}
+
+#power-profiles-daemon {
+  color: #0a1f33;
+}
+
+#temperature.warning {
+  color: #f2b24d;
+}
+
+#temperature.critical {
+  color: #f44c4c;
+}
+
+/* ================================= */
+/* CENTER (No.3) :  */
+/* TIME/DATE|SWAYNC-NOTIFICATIONCENTER */
+
+#clock,
+#custom-notification {
+  /* #custom-powermenu { */
+  background: rgba(27, 36, 48, 255);
+  color: #4a8fd0;
+  margin-left: 5px;
+  margin-right: 5px;
+  border-radius: 10px;
+}
+
+#clock {
+  font-weight: 800;
+  color: #f1f1f1;
+}
+
+#submap {
+  background: rgba(242, 178, 77, 255);
+  color: #0a1f33;
+  margin-left: 5px;
+  margin-right: 5px;
+  border-radius: 10px;
+}
+
+/* ================================= */
+/* RIGHT-SIDE (No.4) :  */
+/* NETWORK|BLUETOOTH|SOUND */
+
+/* purple1      #8a7fc0  rgba(8a7fc0ff)   rgba(138, 127, 192, 255) */
+/* purple2      #5b4b8a  rgba(5b4b8aff)   rgba(91, 75, 138, 255)   */
+/* purple3      #4c3575  rgba(4c3575ff)   rgba(76, 53, 117, 255)   */
+/* purple4      #371b58  rgba(371b58ff)   rgba(55, 27, 88, 255)    */
+/* purple5      #311746  rgba(311746ff)   rgba(49, 23, 70, 255)    */
+
+#network,
+#bluetooth,
+#pulseaudio {
+  background: #5b4b8a;
+  color: #f1f1f1;
+}
+
+#network.disabled,
+#bluetooth.disabled {
+  color: #a8b3c2;
+}
+
+#pulseaudio.muted,
+#pulseaudio.source-muted,
+#network.disconnected {
+  color: #f44c4c;
+}
+
+#pulseaudio.bluetooth,
+#bluetooth.connected,
+#network.ethernet,
+#network.wifi {
+  color: #4a8fd0;
+}
+
+/* ================================= */
+/* RIGHT-SIDE (No.5) :  */
+/* BRIGHTNESS|NIGHTLIGHT */
+
+#custom-brightness,
+#custom-nightlight {
+  background: #4c3575;
+  color: #f1f1f1;
+}
+
+#custom-nightlight.day {
+  color: #f2b24d;
+}
+
+#custom-nightlight.evening {
+  color: #ff9f43;
+}
+
+#custom-nightlight.night {
+  color: #5e81ac;
+}
+
+#custom-brightness.error,
+#custom-nightlight.error {
+  color: #f44c4c;
+}
+
+/* POWERMENU  */
+#custom-powermenu {
+  color: #f1f1f1;
+  background: linear-gradient(
+    90deg,
+    rgba(27, 36, 48, 1) 50%,
+    rgba(76, 53, 117, 1) 100%
+  );
+  border-radius: 10px;
+  margin-right: 10px;
+}

@@ -1,0 +1,197 @@
+{
+	// // CLOCK
+	// "clock": {
+	// 	"timezone": "Europe/Stockholm",
+	// 	"format": "{:%H:%M %Y-%m-%d}", // 13:37 2025-01-21
+	// 	// "format": "{:%H:%M %d/%m-%Y}", // 13:37 16/12-2025
+	// 	"tooltip-format": "{calendar}",
+	// 	"calendar": {
+	// 		"mode": "month"
+	// 	}
+	// },
+	// AUDIO
+	// "pulseaudio": {
+	// 	"format": "{icon} {volume}%",
+	// 	"format-muted": "󰎊",
+	// 	"format-bluetooth": "󰗾 {volume}%",
+	// 	"format-icons": {
+	// 		"headphone": "", // nf-fa-headset
+	// 		"default": [
+	// 			"󰎇", // nf-md-music_note
+	// 			"󰷞" // nf-md-music_note_plus
+	// 			// "󰎊 " // nf-md-music_note_off
+	// 			// "", // nf-fa-volume_off
+	// 			// " " // nf-fa-volume_up
+	// 		]
+	// 	},
+	// 	"scroll-step": 5,
+	// 	"on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle", // mute toggle!
+	// 	"on-click-right": "pavucontrol",
+	// 	"ignored-sinks": [
+	// 		"Easy Effects Sink"
+	// 	]
+	// },
+	// "wlr/taskbar": {
+	// 	"format": "{icon}",
+	// 	"all-outputs": true,
+	// 	"active-first": true,
+	// 	"tooltip-format": "{name}: {title}",
+	// 	"on-click": "activate",
+	// 	"on-click-right": "maximize",
+	// 	"on-click-middle": "close",
+	// 	"ignore-list": [
+	// 		"rofi",
+	// 		"wofi"
+	// 	]
+	// },
+	// // NETWORK
+	// "network": {
+	// 	"format": "{ifname}",
+	// 	"format-ethernet": "󰱔 ", // nf-md-check_network_outline
+	// 	"format-disconnected": "󰱟 ", //nf-md-close_network_outline
+	// 	"format-wifi": "󰀂 ({signalStrength}%)",
+	// 	"tooltip": true,
+	// 	"tooltip-format": "{ifname}\nIP: {ipaddr}\nGW: {gwaddr}\nSSID: {essid}\nSignal: {signalStrength}%",
+	// 	"on-click-right": "nm-applet",
+	// 	"on-click": "nm-connection-editor"
+	// },
+	// "bluetooth": {
+	// 	"format": "",
+	// 	"format-disabled": "",
+	// 	"format-connected": " {num_connections}",
+	// 	"tooltip-format": "{controller_alias}\t{controller_address}",
+	// 	"tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
+	// 	"tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+	// 	"on-click": "blueman-manager",
+	// 	"on-click-right": "bluetoothctl power toggle"
+	// },
+	// // SCRN-BRIGHTNESS
+	// "custom/brightness": {
+	// 	"exec": "~/.config/hypr/scripts/brightness.sh",
+	// 	"format": "{alt} {text}",
+	// 	"interval": 10,
+	// 	"tooltip": true,
+	// 	"tooltip-format": "{}",
+	// 	// "signal": 8,
+	// 	"return-type": "json",
+	// 	"on-click": "~/.config/hypr/scripts/brightness.sh --wofi"
+	// },
+	// GPU (TEMP+LOAD)
+	// "custom/nvidia": {
+	// 	"exec": "nvidia-smi --query-gpu=utilization.gpu,temperature.gpu --format=csv,nounits,noheader | sed 's/\\([0-9]\\+\\), \\([0-9]\\+\\)/\\1% 🌡️\\2°C/g'",
+	// 	"format": "{}",
+	// 	"interval": 2
+	// }
+	// NOTIFICATIONS
+	// "custom/notification": {
+	// 	"format": "{icon}",
+	// 	"format-icons": {
+	// 		"notification": "󱅫",
+	// 		"none": "󰂜",
+	// 		"dnd-notification": "󰂠",
+	// 		"dnd-none": "󰪓",
+	// 		"inhibited-notification": "󰂛",
+	// 		"inhibited-none": "󰪑",
+	// 		"dnd-inhibited-notification": "󰂛",
+	// 		"dnd-inhibited-none": "󰪑"
+	// 	},
+	// 	"tooltip": true,
+	// 	"tooltip-format": "{status}",
+	// 	"return-type": "json",
+	// 	"exec-if": "which swaync-client",
+	// 	"exec": "swaync-client -swb",
+	// 	"on-click": "swaync-client -t -sw",
+	// 	"on-click-right": "swaync-client -d -sw",
+	// 	"escape": true
+	// }
+	// LAUNCHER
+	// "custom/launcher": {
+	// 	"format": "󰣇",
+	// 	"tooltip": true,
+	// 	"tooltip-format": "Launcher: Wofi --run\nRun executables in found in PATH\n",
+	// 	"exec-on-event": "on-click",
+	// 	"on-click": "~/.config/hypr/scripts/wofi.sh --drun"
+	// },
+	// // HYPR WORKSPACES
+	// "hyprland/workspaces": {
+	// 	"format": "{icon} {id}", // {windows} //
+	// 	"format-icons": {
+	// 		"default": "",
+	// 		"active": ""
+	// 		// "empty": "",
+	// 		// "persistent": "",
+	// 		// "special": "",
+	// 		// "urgent": ""
+	// 	},
+	// 	"tooltip": true,
+	// 	"tooltip-format": "Workspace ${id}",
+	// 	"disable-scroll": true,
+	// 	"all-outputs": true, // default | true = show all ws-groups
+	// 	"show-special": true,
+	// 	"workspace-taskbar": {
+	// 		"enable": false,
+	// 		"update-active-window": true,
+	// 		"format": "{icon} {title}"
+	// 	}
+	// },
+	//
+	// custom modules
+	// "custom/power": {
+	// 	"format": "⏻ ",
+	// 	"tooltip": true,
+	// 	"tooltip-format": "Power menu",
+	// 	"on-click": "~/.config/waybar/scripts/powermenu_new.sh"
+	// },
+	// "custom/nightlight": {
+	// 	"exec": "~/.config/hypr/scripts/hyprsunset.sh",
+	// 	"interval": "once",
+	// 	"exec-on-event": "on-click",
+	// 	"return-type": "json",
+	// 	"signal": 8,
+	// 	"format": "{}",
+	// 	"on-click": "~/.config/hypr/scripts/hyprsunset.sh --toggle"
+	// },
+	// CPU USAGE
+	// "cpu": {
+	// 	"format": "󰻠 {usage}%",
+	// 	"tooltip": true,
+	// 	"tooltip-format": "CPU Usage: {usage}%\nCores: {cores}"
+	// },
+	// CPU (LOAD TIMES)
+	// "load": {
+	// 	"interval": 10,
+	// 	"format": "load: {load1}",
+	// 	"max-length": 10
+	// },
+	// RAM
+	// "memory": {
+	// 	"format": " {}%",
+	// 	"tooltip": true,
+	// 	"tooltip-format": "RAM Usage: {used} / {total} ({percentage}%)"
+	// },
+	// // DISK (ROOT)
+	// "disk": {
+	// 	"format": " {percentage_free}%"
+	// },
+	// // TEMPERATURE (CPU)
+	// "temperature": {
+	// 	"format": "{temperatureC}°C",
+	// 	"format-critical": "{temperatureC}°C",
+	// 	"tooltip": true,
+	// 	"tooltip-format": "CPU Temp: {temperatureC}°C"
+	// },
+	// TASKBAR (RUNNING APPS)
+	// CPU P-PROFILES
+	// "power-profiles-daemon": {
+	// 	"format": "{icon}",
+	// 	"tooltip-format": "Power profile: {profile}\nDriver: {driver}",
+	// 	"tooltip": true,
+	// 	"format-icons": {
+	// 		"default": "",
+	// 		"performance": "",
+	// 		"balanced": "",
+	// 		"power-saver": ""
+	// 	}
+	// },
+	// BLUETOOTH
+}

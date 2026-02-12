@@ -1,15 +1,37 @@
-# Get editor completions based on the config schema
 "$schema" = 'https://starship.rs/config-schema.json'
 
-add_newline = true # test ? remvove ?
+# powerline icons/color:
+# l-side: [](fg:background)
+# r-side: [](fg:background)
+
+scan_timeout = 100 # default: 30 (ms)
+command_timeout = 1000 # default: 500 (ms)
+# follow_symlinks = true # default: true
+add_newline = true
 palette = 'custom'
-# command_timeout = 1500
+
+# [┌────]
+# [│]
+# [└─>]
 
 format = '''
-[┌──](fg:purple bold)$os $username $directory $git_branch$git_status
-[│](fg:purple bold)$time
-[└───](fg:purple bold)$character
-'''
+[┌────](fg:background)[](fg:background)$os$username$hostname[](fg:background) $git_branch[](fg:background)$time[](fg:background)
+[│](fg:background)
+[└─](fg:background)$directory$cmd_duration$character'''
+
+# [└─](fg:background)$directory$cmd_duration$character'''
+
+# replacement for 'custom.dirtygit'
+# [](fg:background)[  ](fg:purple bg:background)$git_metrics$git_status[](fg:background)\
+right_format = """
+${custom.dirtygit}\
+$nodejs\
+$dotnet\
+$lua\
+$python\
+$rust"""
+
+continuation_prompt = '[ ](dimmed white)'
 
 [palettes.custom]
 foreground   = '#C9C8C8'
@@ -17,62 +39,32 @@ background   = '#15181C'
 blue         = '#297594'
 green        = '#4A6F3B'
 orange       = '#CF8467'
-# orange       = '#FFB86C' #not orange ?
-purple       = '#AD73A9' #magneta
+purple       = '#AD73A9'
 red          = '#AD5E5E'
 yellow       = '#C9C984'
 
+[cmd_duration]
+format = ' [](fg:yellow)[$duration](fg:yellow)[](fg:yellow)'
+# format = '[ ](fg:yellow)[$duration]($style)[](fg:yellow)'
+# format = '[$duration]($style)'
+# style = 'fg:background bg:yellow'
+min_time = 200
+show_milliseconds = false
+
 [character]
-success_symbol = '[ ](fg:purple) '
-error_symbol = '[](bold red) '
-# 󰘍  󱞪   
-
-
-## [EXAMPLE]
-# format = '[─](fg:current_line)[](fg:yellow)[ ](fg:primary bg:yellow)[](fg:yellow bg:box)[ $user](fg:foreground bg:box)[](fg:box) '
+# success_symbol = ' [](fg:purple)'
+success_symbol = ' [](fg:purple)'
+error_symbol = ' [](fg:red) '
+# success_symbol = ' [ ](fg:green) '
+# 󰘍 󱞪  
 
 [os]
-# format = '[](fg:purple) [](fg:background)[ $symbol ](fg:red bg:background)[](fg:background)'
-format = '[](fg:background)[ $symbol ](fg:red bg:background)[](fg:background)'
+format = '[ $symbol ](fg:purple bg:background)'
 disabled = false
-
-[username]
-show_always = true
-format = '[](fg:purple) [](fg:background)[  ](fg:foreground bg:background)[$user ](fg:orange bg:background bold)[](fg:background)'
-
-[git_branch]
-symbol = '󰊢 '
-format = '[](fg:purple) [](fg:background)[ $symbol ](fg:purple bold bg:background)[$branch](fg:foreground bg:background italic)'
-
-
-[git_status]
-format      = '[$all_status $ahead_behind ](fg:green bg:background)[](fg:background)'
-conflicted  = '  󱈸'
-up_to_date  = ' 󰸞 '
-deleted = '[  ](fg:red bg:background)'
-untracked   = ' [ \($count\)](fg:foreground bg:background)'
-modified    = '[  \($count\)](fg:yellow bg:background)'
-staged      = '  ${count}'
-renamed = '   '
-ahead       = '⇡${count}'
-diverged    = '  ⇡${ahead_count} ⇣${behind_count}'
-behind      = ' ⇣${count}'
-
-[directory]
-format = '[](fg:purple) [](fg:background)[ $path](fg:orange bg:background)[$read_only ](fg:foreground bg:background)[](fg:background)'
-home_symbol = "󰜥 "
-truncation_symbol = ' ../'
-truncation_length = 2
-read_only = '󱧵 '
-
-[directory.substitutions]
-"Documents" = "󰈙 "
-"Downloads" = "  "
-"Music" = "  "
-"Pictures" = "  "
 
 [os.symbols]
 Arch = ' '
+CachyOS = '󰣇 '
 Debian = ' '
 Fedora = ' '
 Linux = ' '
@@ -83,9 +75,103 @@ Ubuntu = ' '
 Unknown = ' '
 Windows = ' '
 
-[time]
+### USER ###
+[hostname]
+format = '[$hostname]($style)'
+ssh_only = true
+style = 'fg:foreground bg:background'
 disabled = false
-format = '[ ](fg:purple) $time(fg:foreground bold)'
-time_format = '%R'
-utc_time_offset = '+2'
 
+[username]
+format = '[$user ]($style)'
+style_root = 'bold red'
+style_user = 'fg:foreground bg:background'
+show_always = true
+aliases = { "kjs" = "kj.sh"}
+
+[time]
+format = '[ $time ]($style)'
+style = 'fg:foreground bg:background'
+time_format = '%R'
+disabled = false
+
+[directory]
+format = '[](fg:background)[ $path ]($style)[](fg:background)'
+# format = '[ $path ]($style)'
+style = 'fg:foreground bg:background'
+truncation_length = 2
+truncate_to_repo = true
+truncation_symbol = '~/' # or '../'
+
+[directory.substitutions]
+"Documents" = "󰈙 "
+'Downloads' = '󰇚 '
+'Music' = '󰝚 '
+'Pictures' = '󰋩 '
+
+### LANGUAGES ###
+
+[nodejs]
+format = '[ ](fg:background)$symbol[$version]($style)[ ](fg:background)'
+style = 'fg:foreground bold bg:background'
+version_format = 'v${raw}' # raw|major|minor|patch
+symbol = '[󰎙 ](fg:green bg:background)'
+
+[dotnet]
+format = '[](fg:background)$symbol[$version($style)][](fg:background)'
+style = 'fg:foreground bold'
+version_format = 'v${raw}' # raw|major|minor|patch
+symbol = ' [ .NET ](fg:blue bg:background)'
+
+[lua]
+format = '[](fg:background)$symbol[$version($style)][](fg:background)'
+style = 'fg:foreground bold'
+version_format = 'v${raw}' # raw|major|minor|patch
+symbol = ' [ 󰢱 ](fg:blue bg:background)'
+
+[python]
+format = '[](fg:background)[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)[](fg:background)'
+symbol = '[ 󰌠 ](fg:yellow bg:background)'
+style = 'fg:yellow bold bg:background'
+
+[rust]
+format = '[](fg:background)[$symbol($version )]($style)[](fg:background)'
+version_format = 'v${raw}'
+symbol = '[ 󱘗 ](fg:orange bold bg:background)'
+
+### GIT MODULES ###
+
+# [git_metrics]
+# # format = '[](fg:background)[ +$added ]($added_style)[-$deleted ]($deleted_style)[ ](fg:background)'
+# format = '[ +$added ]($added_style)[-$deleted ]($deleted_style)'
+# added_style = 'fg:green bg:background'
+# deleted_style = 'fg:red bg:background'
+# disabled = false
+
+# [git_status]
+# # format = '[](fg:background)[ $all_status$ahead_behind ]($style)[](fg:background)'
+# # format = '[ $all_status$ahead_behind ]($style)'
+# format = '[$up_to_date$ahead_behind ]($style)'
+# ahead = '[⇡${count}](fg:blue bg:background)'
+# diverged = '⇕⇡${ahead_count}⇣${behind_count}(fg:yellow bg:background)'
+# behind = '[⇣${count}](fg:red bg:background)'
+# up_to_date = '[](fg:green bg:background)'
+# style = 'bg:background'
+
+[git_branch]
+# format = '[](fg:background)[$symbol](fg:purple bg:background)[$branch]($style)'
+format = '[](fg:background)[$symbol](fg:purple bg:background)[$branch]($style)[ ](fg:background)'
+symbol =  '  '
+style = 'fg:foreground bg:background'
+always_show_remote = false
+
+### CUSTOM MODULES ###
+[custom.dirtygit]
+format = '[](fg:background)$symbol[$output]($style)[](fg:background)'
+command = "starship_gitmetrics.sh"
+when = "starship_gitmetrics.sh --when"
+shell = "bash"
+symbol = '[  ](fg:purple bg:background)'
+style = 'fg:foreground bg:background'
+disabled = false
+ignore_timeout = false # true ?

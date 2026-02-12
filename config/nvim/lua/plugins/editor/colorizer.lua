@@ -13,6 +13,7 @@ return {
 				"i3config",
 				"cmp_docs",
 				"markdown",
+				"hyprlang",
 			},
 			-- buftypes = {"*"}
 			user_default_options = {

@@ -1,0 +1,62 @@
+[
+	// Primarybar (DP-2)
+	{
+		"name": "primarybar",
+		"reload_style_on_change": true,
+		"style": [
+			"~/.config/waybar/style.css"
+		],
+		"include": [
+			"~/.config/waybar/modules/left.jsonc",
+			"~/.config/waybar/modules/center.jsonc",
+			"~/.config/waybar/modules/right.jsonc"
+		],
+		"layer": "top",
+		"output": "DP-2",
+		"position": "top",
+		// Module placement
+		"modules-left": [
+			"custom/launcher",
+			"hyprland/workspaces",
+			"hyprland/submap",
+			"memory",
+			"cpu",
+			"temperature#cpu",
+			"power-profiles-daemon"
+		],
+		"modules-center": [
+			"clock",
+			"custom/notification"
+		],
+		"modules-right": [
+			"network",
+			"bluetooth",
+			"pulseaudio",
+			"custom/nightlight",
+			"custom/brightness",
+			"custom/powermenu"
+		]
+	},
+	// statusbar (DP-1)
+	{
+		"name": "statusbar",
+		"reload_style_on_change": true,
+		"style": [
+			"~/.config/waybar/style.css"
+		],
+		"include": [
+			"~/.config/waybar/modules/left.jsonc",
+			"~/.config/waybar/modules/center.jsonc",
+			"~/.config/waybar/modules/right.jsonc"
+		],
+		"layer": "top",
+		"output": "DP-1",
+		"modules-center": [
+			"disk",
+			"temperature#ssd1",
+			"temperature#ssd2",
+			"temperature#ssd3"
+			// "custom/nvidia",
+		]
+	}
+]

@@ -1,24 +1,22 @@
-# baseline config for bash interactive shells
-
+### .bashrc | interactive shell ###
+# debug: `bash --noprofile --norc -ix` -> `source ~/.bashrc` |or to file| `source ~/.bashrc >bashrc.dbgout.log 2>&1`
 # err check; bash -n ~/.bashrc ~/.bash/bash_*
 
 case $- in *i*) ;; *) return ;; esac
 
-#---- optional: sys-wide defaults (if present) ####
+# ---- sys default ---- #
 if [ -r /etc/bashrc ]; then
-	# fedora/REHL
 	# shellcheck disable=SC1091
 	. /etc/bashrc
 elif [ -r /etc/bash.bashrc ]; then
-	# debian/ubuntu
 	# shellcheck disable=SC1091
 	. /etc/bash.bashrc
 fi
 
 shopt -s histappend
 shopt -s checkwinsize
-shopt -s cdspell
-shopt -s dirspell
+# shopt -s cdspell
+# shopt -s dirspell
 
 #---- history ----
 
@@ -48,8 +46,6 @@ if command -v dircolors >/dev/null 2>&1; then
 	eval "$(dircolors -b 2>/dev/null || dircolors -b)"
 fi
 
-command -v starship >/dev/null 2>&1 && eval "$(starship init bash)"
-
 # ---- bash completion ---- #
 if ! shopt -oq posix; then
 	if [ -r /usr/share/bash-completion/bash_completion ]; then
@@ -69,6 +65,9 @@ done
 
 # extend config; integrations
 for f in "$HOME/.bash/40-integrations/"*; do
+	# for f in "$HOME/.bash/40-integrations"/{00-fzf,10-nvm,20-ble,30-starship}; do
 	# shellcheck source=/dev/null
 	[ -r "$f" ] && . "$f"
 done
+
+[[ ! ${BLE_VERSION-} ]] || ble-attach

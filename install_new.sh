@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # https://linuxcommand.org/lc3_man_pages/testh.html
+# https://man7.org/linux/man-pages/man1/ln.1.html
 set -euo pipefail
 IFS=$'\n\t'
 
@@ -10,7 +11,7 @@ DF_VERBOSE=0
 DF_ONLY=""
 declare -A DF_SEEN_DIR=()
 
-# guard
+# Guard
 [[ -n "${BASH_VERSION-}" ]] || {
 	# ensure bash
 	# echo "Please run with bash"
@@ -121,7 +122,7 @@ link_one() {
 			printf '%s\n' "conflict (dry-run): real path exists: $dst (would refuse overwrite)"
 			return 0
 		fi
-		exit_fail "conflict: real path exists: $dst (refusing overwrite)"
+		exit_fail "conflict, real path exists: $dst (refusing overwrite)"
 	fi
 
 	vlog "ln: $dst -> $src"
@@ -157,6 +158,38 @@ install_tree() {
 	done
 
 	shopt -u dotglob nullglob globstar
+}
+
+install_children() {
+
+	local src_root="$1" dst_root="$2"
+	[[ -d "$src_root" ]] || return 0
+
+	# shopt -s dotglob nullglob globstar
+	shopt -s dotglob nullglob
+
+	local p name src dst
+	for p in "$src_root"/*; do
+		[[ -e "$p" || -L "$p" ]] || continue
+		name="$(basename -- "$p")"
+
+		# --only flag ?
+		only_match "$(basename "$src_root")/$name" || continue
+
+		src="$p"
+		dst="$dst_root/$name"
+
+		# # create dirs as 'real' dirs, no sl.
+		# if [[ -d "$src" && ! -L "$src" ]]; then
+		# 	ensure_dir "$dst"
+		# 	continue
+		# fi
+
+		link_one "$src" "$dst"
+	done
+
+	shopt -u dotglob nullglob
+
 }
 
 parse_args() {
@@ -196,7 +229,8 @@ main() {
 	ensure_dir "$local_bin"
 
 	install_tree "$df_rootdir/home" "$HOME"
-	install_tree "$df_rootdir/config" "$xdg_config"
+	# install_tree "$df_rootdir/config" "$xdg_config"
+	install_children "$df_rootdir/config" "$xdg_config"
 	install_tree "$df_rootdir/data" "$xdg_data"
 	install_tree "$df_rootdir/bin" "$local_bin"
 

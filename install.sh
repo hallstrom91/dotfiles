@@ -1,473 +1,238 @@
 #!/usr/bin/env bash
-set -Euo pipefail
 
-###################################
-### global cfg-flags + defaults ###
-DRY_RUN=0               # OFF
-VERBOSE=0               # OFF
-NO_BAK=0                # ON (default)
-ICONS=1                 # ON (requires nerdfonts)
-COLOR=1                 # ON
-ONLY="all"              # all|home|config|data|bin
-DOTFILES="${DOTFILES-}" # set env or autodetect
-HOST_KIND=""            # "", "desktop" or "laptop"
+# https://linuxcommand.org/lc3_man_pages/testh.html
+set -euo pipefail
+IFS=$'\n\t'
 
+# ENV (DF = DOTFILES)
+DF_DRYRUN=0
+DF_VERBOSE=0
+DF_ONLY=""
+declare -A DF_SEEN_DIR=()
+
+# guard
 [[ -n "${BASH_VERSION-}" ]] || {
 	# ensure bash
-	echo "Please run with bash"
+	# echo "Please run with bash"
+	printf '%s\n' "Run with bash" >&2
 	exit 2
 }
 
-#################################
-### path discover / constants ###
-if [[ -z ${DOTFILES-} ]]; then
-	# set repo-root if empty
-	DOTFILES="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"
-fi
+# logs
+log() { printf '%s\n' "$*"; }
+vlog() { ((DF_VERBOSE)) && printf '%s\n' "$*"; }
 
-if [[ ! -d "$DOTFILES" ]]; then
-	# no $DOTFILES value
-	echo "Can't find '$DOTFILES'. Use flag: --root /path/to/dotfiles"
+# fail
+exit_fail() {
+	printf 'error: %s\n' "$*" >&2
 	exit 1
-fi
+}
 
-###################################
-### require mods/module-helpers ###
-declare -gA __REQUIRED=()
-require() {
-	local mod="$1" path root helpers
-	root="${DOTFILES:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)}"
-	helpers="$root/bin/helpers"
+# runner
+run() {
+	if ((DF_DRYRUN)); then
+		printf '[dry_run] '
+		printf '%q ' "$@"
+		printf '\n'
+		return 0
+	fi
 
-	# allow "require logs" OR "require logs.sh"
-	for ext in "" ".sh"; do
-		path="$helpers/${mod}${ext}"
-		if [[ -f "$path" && -r "$path" ]]; then
-			[[ -n ${__REQUIRED[$path]-} ]] && return 0
-			__REQUIRED[$path]=1
-			# shellcheck source=/dev/null
-			source "$path"
+	if ((DF_VERBOSE)); then
+		printf '[run] '
+		printf '%q ' "$@"
+		printf '\n'
+	fi
+
+	"$@"
+}
+
+# ensure directories
+ensure_dir() {
+	local d="$1"
+	d="${d%/}"
+
+	# real dir? use
+	[[ -d "$d" && ! -L "$d" ]] && return 0
+
+	# dry-run: dont repeat mkdir/rm spam
+	if ((DF_DRYRUN)); then
+		[[ -n "${DF_SEEN_DIR["$d"]+x}" ]] && return 0
+		DF_SEEN_DIR["$d"]=1
+	fi
+
+	# symlink dir? remove
+	if [[ -L "$d" ]]; then
+		run rm -f -- "$d"
+	fi
+
+	run mkdir -p -- "$d"
+}
+
+# path checker
+abspath() {
+	local p="$1"
+	if [[ "$p" == /* ]]; then
+		printf '%s\n' "$p"
+		return 0
+	fi
+	printf '%s/%s\n' "$(pwd -P)" "$p"
+}
+
+# flag match: '--only <relative-path>'
+only_match() {
+	[[ -z "$DF_ONLY" ]] && return 0
+	[[ "$1" == "$DF_ONLY" ]] || [[ "$1" == "$DF_ONLY/"* ]]
+}
+
+# symlink target check
+sl_target() {
+	local dst="$1" src="$2"
+	[[ -L "$dst" ]] || return 1
+	command -v readlink >/dev/null 2>&1 || return 1 # readlink required
+
+	local t
+	t="$(readlink -- "$dst")" || return 1
+
+	if [[ "$t" != /* ]]; then
+		t="$(cd -- "$(dirname -- "$dst")" && printf '%s/%s\n' "$(pwd -P)" "$t")"
+	fi
+
+	[[ "$(abspath "$t")" == "$(abspath "$src")" ]]
+}
+
+# link
+link_one() {
+	local src="$1" dst="$2"
+	ensure_dir "$(dirname -- "$dst")"
+
+	# target check
+	if sl_target "$dst" "$src"; then
+		# vlog "ok: $dst"
+		return 0
+	fi
+
+	# if dst is symlink (working or broken), replace.
+	if [[ -L "$dst" ]]; then
+		vlog "replace symlink: $dst"
+		run rm -f -- "$dst"
+	# if dst is real file/dir, fail.
+	elif [[ -e "$dst" ]]; then
+		if ((DF_DRYRUN)); then
+			printf '%s\n' "conflict (dry-run): real path exists: $dst (would refuse overwrite)"
 			return 0
 		fi
-	done
-
-	echo "require: module not found: $mod" >&2
-	exit 127
-}
-
-require logs       # logger::info, logger::warn, logger::fail, logger::success, logger::verbose
-require cmdrunner  # cmd::run, cmd::capture,
-require fs         # fs::mkparent, fs::safe_rm, fs::is_symlink_to
-require backup     # backup::one, backup::optional
-require repo_guard # repo::assert_inside, repo::assert_outside
-require link       # link::ensure
-require copy       # copy::file, copy::tree
-
-#############################
-### export required flags ###
-# propagate flags to modules
-# module usage:
-# : "${VAR:=default}"
-export DRY_RUN VERBOSE NO_BAK ICONS COLOR
-
-############################
-### usage + args-parsing ###
-usage() {
-	local self="${0##*/}"
-	cat <<-TOP
-		$self - installer for dotfiles repository
-
-		Usage:
-		$self [flags]
-
-		Flags:
-	TOP
-	printf " %-18s %s\n" "-r, --root PATH" "Set DOTFILES (repo-root)."
-	printf " %-18s %s\n" "-n, --dry-run" "Run without write"
-	printf " %-18s %s\n" "-v, --verbose" "Extra logs (debug)"
-	printf " %-18s %s\n" "    --no-bak" "Skip backup of existing target (default: off)"
-	printf " %-18s %s\n" "    --icons 0|1" "Icons in logs (default: 1)"
-	printf " %-18s %s\n" "    --color 0|1" "Color in logs (default: 1)"
-	printf " %-18s %s\n" "    --only SET" "home|config|data|bin|all (default: all)"
-	printf " %-18s %s\n" "    --host KIND" "desktop|laptop (override autodetect)"
-	printf " %-18s %s\n" "-h, --help" "Show help."
-}
-
-# args parsing
-while (($#)); do
-	case "${1:-}" in
-	-r | --root)
-		DOTFILES="$2"
-		shift 2
-		;;
-	-n | --dry-run)
-		DRY_RUN=1
-		shift
-		;;
-	-v | --verbose)
-		VERBOSE=1
-		shift
-		;;
-	--no-bak)
-		NO_BAK=1
-		shift
-		;;
-	--icons)
-		ICONS="$2"
-		shift 2
-		;;
-	--color)
-		COLOR="$2"
-		shift 2
-		;;
-	--only)
-		ONLY="$2"
-		shift 2
-		;;
-	--host)
-		HOST_KIND="$2"
-		shift 2
-		;;
-	-h | --help)
-		usage
-		exit 0
-		;;
-	--)
-		shift
-		break
-		;;
-	-*)
-		echo "Unknown option: $1" >&2
-		usage
-		exit 2
-		;;
-	*) break ;;
-	esac
-done
-
-############################
-### source / target tree ###
-
-SRC_HOME="$DOTFILES/home"
-SRC_CONFIG="$DOTFILES/config"
-SRC_DATA="$DOTFILES/data"
-SRC_BIN="$DOTFILES/bin"
-
-TARGET_HOME="$HOME"
-TARGET_BIN="$TARGET_HOME/.bin"
-TARGET_CONFIG="$TARGET_HOME/.config"
-TARGET_DATA="$TARGET_HOME/.local/share"
-
-#######################
-### Local Functions ###
-link_tree() {
-	local src_root=$1 dst_root=$2 what=$3
-	shift 3
-	local -a skip_globs=("$@") # optional globpattern to skip
-
-	# repo/dst guards
-	local dot_root src_abs dst_abs
-	dot_root="$(readlink -f -- "${DOTFILES}")" || return 3
-	src_abs="$(readlink -f -- "${src_root}")" || return 3
-	dst_abs="$(readlink -f -- "${dst_root}")" || return 3
-
-	# source MUST be inside repo
-	if [[ "$src_abs" != "$dot_root"* ]]; then
-		logger::fail "source not in DOTFILES: $src_abs"
-		return 3
+		exit_fail "conflict: real path exists: $dst (refusing overwrite)"
 	fi
 
-	# dst NEVER inside repo
-	if [[ "$dst_abs" == "$dot_root" ]]; then
-		logger::fail "destination inside DOTFILES: $dst_abs"
-		return 3
-	fi
+	vlog "ln: $dst -> $src"
+	run ln -s -- "$src" "$dst" # replaces 'broken' symlink?
+}
 
-	[[ -d $src_root ]] || {
-		logger::fail "Skip $what: no dir $src_root"
-		return 0
-	}
+# install
+install_tree() {
+	local src_root="$1" dst_root="$2"
+	[[ -d "$src_root" ]] || return 0
 
-	logger::info "Link $what: $src_root $(logger::arrow) $dst_root"
+	shopt -s dotglob nullglob globstar
 
-	shopt -s globstar nullglob dotglob
-	local src rel dst rc pat
-	local -A _skip_once=()
+	local p rel src dst
+	for p in "$src_root"/**; do
+		[[ -e "$p" || -L "$p" ]] || continue
 
-	for src in "$src_root"/**; do
-		[[ -e $src || -L $src ]] || continue  # broken symlinks include?
-		[[ $src == "$src_root" ]] && continue # skip dir-root copy
+		rel="${p#"$src_root"/}"
 
-		rel="${src#"$src_root"/}"
+		# --only flag ?
+		only_match "$(basename "$src_root")/$rel" || continue
 
-		for pat in "${skip_globs[@]}"; do
-			[[ -z $pat ]] && continue
-			# shellcheck disable=SC2254
-			case "$rel" in
-			$pat)
-				if [[ "$pat" == */** ]]; then
-					local base="${pat%/**}"
-					if [[ -z ${_skip_once[$base]-} ]]; then
-						logger::info "link::tree skip: ${base}/"
-						_skip_once[$base]=1
-					fi
-					# skip/silent all subdirs/files in logs
-					if ((VERBOSE == 1)); then
-						logger::verbose "link::tree skip: $rel"
-					fi
-					continue 2
-				else
-					logger::info "link::tree skip: $rel"
-					continue 2
-				fi
-				;;
-			esac
-		done
+		src="$p"
+		dst="$dst_root/$rel"
 
-		# if dir, create dst_root (no sl to dir)
-		if [[ -d $src && ! -L $src ]]; then
-			dst="$dst_root/$rel"
-			fs::mkparent "$dst"
+		# create dirs as 'real' dirs, no sl.
+		if [[ -d "$src" && ! -L "$src" ]]; then
+			ensure_dir "$dst"
 			continue
 		fi
 
-		# files and symlinks -> create sl in dst
-		dst="$dst_root/$rel"
-		link::ensure "$src" "$dst"
-		rc=$?
-		if ((rc > 3)); then
-			logger::fail "Link failed ($rc): $src $(logger::arrow) $dst"
-			shopt -u globstar dotglob nullglob
-			return $rc
-		fi
+		link_one "$src" "$dst"
 	done
 
-	shopt -u globstar dotglob nullglob
+	shopt -u dotglob nullglob globstar
 }
 
-# link children (ex: config/nvim/<dirs>)
-link_children() {
-	local src_root=$1 dst_root=$2 what=$3
-	shift 3
-	local -a skip_globs=("$@") # optional globpattern to skip (depth-1)
+install_children() {
 
-	# repo/dst guards
-	local dot_root src_abs dst_abs
-	dot_root="$(readlink -f -- "${DOTFILES}")" || return 3
-	src_abs="$(readlink -f -- "${src_root}")" || return 3
-	dst_abs="$(readlink -f -- "${dst_root}")" || return 3
+	local src_root="$1" dst_root="$2"
+	[[ -d "$src_root" ]] || return 0
 
-	# source MUST be inside repo
-	if [[ "$src_abs" != "$dot_root"* ]]; then
-		logger::fail "Failed - source not in DOTFILES: $src_abs"
-		return 3
-	fi
-
-	# dst NEVER inside repo
-	if [[ "$dst_abs" == "$dot_root" ]]; then
-		logger::fail "Failed - destination inside DOTFILES: $dst_abs"
-		return 3
-	fi
-
-	[[ -d $src_root ]] || {
-		logger::fail "Failed - skip $what: no dir $src_root"
-		return 0
-	}
-
-	logger::info "Link (children) $what: $src_root $(logger::arrow) $dst_root"
-	fs::mkparent "$dst_root" || return $?
-
+	# shopt -s dotglob nullglob globstar
 	shopt -s dotglob nullglob
 
-	local src name dst pat rc
-	for src in "$src_root"/*; do
-		[[ -e $src || -L $src ]] || continue  # broken symlinks include?
-		[[ $src == "$src_root" ]] && continue # skip dir-root copy
+	local p name src dst
+	for p in "$src_root"/*; do
+		[[ -e "$p" || -L "$p" ]] || continue
+		name="$(basename -- "$p")"
 
-		name="${src##*/}"
+		# --only flag ?
+		only_match "$(basename "$src_root")/$name" || continue
 
-		# depth-1 skip pattern
-		for pat in "${skip_globs[@]}"; do
-			[[ -z $pat ]] && continue
-			# shellcheck disable=SC2254
-			case "$name" in
-			$pat)
-				logger::info "Skip: $name"
-				continue 2
-				;; # match globpattern and skip file
-			esac
-		done
-
+		src="$p"
 		dst="$dst_root/$name"
 
-		link::ensure "$src" "$dst"
-		rc=$?
-		if ((rc > 3)); then
-			logger::fail "Link error - ($rc): $src $(logger:arrow) $dst"
-			shopt -u dotglob nullglob
-			return $rc
-		fi
-		logger::verbose "Link status - ($rc): $src $(logger::arrow) $dst"
+		# # create dirs as 'real' dirs, no sl.
+		# if [[ -d "$src" && ! -L "$src" ]]; then
+		# 	ensure_dir "$dst"
+		# 	continue
+		# fi
+
+		link_one "$src" "$dst"
 	done
+
 	shopt -u dotglob nullglob
+
 }
 
-# link src: wezterm/configs/{host}.lua
-# to dst: ~/.config/wezterm/wezterm.lua
-link_wezterm_for_host() {
-	local kind=$1
-	local src="$SRC_CONFIG/wezterm/configs/$kind.lua"
-	local dst="$TARGET_CONFIG/wezterm/wezterm.lua"
-
-	if [[ ! -r $src ]]; then
-		logger::fail "wezterm: missing source for host '$kind': $src"
-		return 1
-	fi
-	fs::mkparent "$dst"
-	logger::info "wezterm cfg: $src $(logger::arrow) $dst"
-	link::ensure "$src" "$dst"
-	return $?
+parse_args() {
+	while (($#)); do
+		case "$1" in
+		--dry-run) DF_DRYRUN=1 ;;
+		--verbose) DF_VERBOSE=1 ;;
+		--only)
+			shift
+			[[ $# -gt 0 ]] || exit_fail "--only requires argument"
+			DF_ONLY="${1%/}"
+			;;
+		-h | --help)
+			usage
+			exit 0
+			;;
+		*) exit_fail "unknown flag: $1" ;;
+		esac
+		shift
+	done
 }
 
-# link src: kitty/configs/${host}.conf
-# to dst: ~/.config/wezterm/kitty.conf
-link_kitty_for_host() {
-	local kind=$1
-	local src="$SRC_CONFIG/kitty/configs/$kind.conf"
-	local dst="$TARGET_CONFIG/kitty/kitty.conf"
-
-	if [[ ! -r $src ]]; then
-		logger::fail "kitty: missing source for host '$kind': $src"
-		return 1
-	fi
-	fs::mkparent "$dst"
-	logger::info "kitty cfg: $src $(logger::arrow) $dst"
-	link::ensure "$src" "$dst"
-	return $?
-}
-
-host::_infer() {
-	local hn="${HOSTNAME-}" # try use $HOSTNAME var
-	if [[ -z $hn ]]; then
-		hn="$(hostname -s 2>/dev/null || hostname 2>/dev/null || printf '')"
-	fi
-
-	hn="${hn,,}" # lowercase
-
-	case "$hn" in
-	desktop | *desk*) printf '%s' 'desktop' ;;
-	laptop | *lap*) printf '%s' 'laptop' ;;
-	*) printf '%s' '' ;;
-	esac
-}
-
-# select correct cfg from `desktop|laptop` opt (if any)
-# based on hostname user@desktop or user@laptop
-host::resolve() {
-	local kind=$1 inferred
-	if [[ $kind == "desktop" || $kind == "laptop" ]]; then
-		printf '%s' "$kind"
-		return 0
-	fi
-	inferred="$(host::_infer)"
-	if [[ -n $inferred ]]; then
-		logger::info "Detected host kind: $inferred"
-		printf '%s' "$inferred"
-		return 0
-	fi
-	logger::warn "Could not infer host kind; defaulting to 'desktop'. Use --host to override"
-	printf '%s' 'desktop'
-}
-
-fonts::_fccache() {
-	# collect possible font-dirs (current)
-	local -a dirs=()
-
-	[[ -d "$TARGET_DATA/fonts" ]] && dirs+=("$TARGET_DATA/fonts")
-	[[ -d "$TARGET_DATA/.fonts" ]] && dirs+=("$TARGET_HOME/.fonts") # fallback
-
-	if ((${#dirs[@]} == 0)); then
-		logger::verbose "No user font directories found: skipping fc-cache"
-		return 0
-	fi
-
-	local -a prefix=()
-	# installed script run as sudo?
-	if [[ ${EUID:-$(id -u)} -eq 0 && -n ${SUDO_USER-} ]]; then
-		prefix=(sudo -u "$SUDO_USER")
-	fi
-
-	if ! command -v fc-cache >/dev/null 2>&1; then
-		logger::warn "Command fc-cache not found: skipping font cache rebuild"
-	fi
-
-	#
-	if cmd::run "${prefix[@]}" fc-cache -f -- "${dirs[@]}"; then
-		logger::success "Font cache rebuilt for: ${dirs[*]}"
-	else
-		logger::fail "Failed to rebuild font cache: ${dirs[*]}"
-	fi
-}
-
-##################
-##### main() #####
-##################
 main() {
-	logger::info "DOTFILES=$DOTFILES"
-	logger::info "DRY_RUN=$DRY_RUN VERBOSE=$VERBOSE NO_BAK=$NO_BAK ICONS=$ICONS COLOR=$COLOR"
+	parse_args "$@"
 
-	local KIND
-	KIND="$(host::resolve "$HOST_KIND")" || return $?
-	logger::info "Using host kind: $KIND"
+	local script_dir df_rootdir
+	script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+	df_rootdir="${DF_ROOTDIR:-$script_dir}"
 
-	local -a CONFIG_SKIP=('wezterm/configs/**' 'kitty/configs/**' 'nvim/**') # skip values for SRC_CONFIG
-	local -a DATA_SKIP=('fonts/**' "icons/**")                               # skip values for SRC_DATA
-	local -a HOME_SKIP=('gnupg/**')                                          # skip values for SRC_HOME
+	local xdg_config xdg_data local_bin
+	xdg_config="${XDG_CONFIG_HOME:-"$HOME/.config"}"
+	xdg_data="${XDG_DATA_HOME:-"$HOME/.local/share"}"
+	local_bin="${LOCAL_BIN:-"$HOME/.local/bin"}"
 
-	case "$ONLY" in
-	all)
-		link_tree "$SRC_HOME" "$TARGET_HOME" "home" "${HOME_SKIP[@]}"
-		copy::file "$SRC_HOME/gnupg/gpg-agent.conf" "$TARGET_HOME/.gnupg/gpg-agent.conf" 0600
+	ensure_dir "$local_bin"
+	ensure_dir "$xdg_config"
+	# ensure_dir "$xdg_data"
 
-		link_tree "$SRC_CONFIG" "$TARGET_CONFIG" "config" "${CONFIG_SKIP[@]}"
-		link_children "$SRC_CONFIG/nvim" "$TARGET_CONFIG/nvim" "nvim config"
+	install_tree "$df_rootdir/home" "$HOME"
+	install_tree "$df_rootdir/bin" "$local_bin"
+	install_children "$df_rootdir/config" "$xdg_config"
+	# install_tree "$df_rootdir/data" "$xdg_data"
 
-		link_tree "$SRC_DATA" "$TARGET_DATA" "data" "${DATA_SKIP[@]}"
-		copy::tree "$SRC_DATA/fonts" "$TARGET_DATA/fonts" 0644 0755 # copy fonts to dst (no sl)
-		copy::tree "$SRC_DATA/icons" "$TARGET_DATA/icons" 0644 0755 # copy icons to dst (no sl)
-
-		link_tree "$SRC_BIN" "$TARGET_BIN" "bin"
-
-		# host-specific links (laptop|desktop)
-		link_wezterm_for_host "$KIND" || return $? # sl {desktop,laptop}.lua -> ~/.config/wezterm/wezterm.lua
-		link_kitty_for_host "$KIND" || return $?   # sl {desktop,laptop}.conf -> ~/.config/kitty/kitty.conf
-
-		fonts::_fccache # rebuild font cache
-		;;
-	home)
-		link_tree "$SRC_HOME" "$TARGET_HOME" "home" "${HOME_SKIP[@]}"
-		copy::file "$SRC_HOME/gnupg/gpg-agent.conf" "$TARGET_HOME/.gnupg/gpg-agent.conf" 0600
-		;;
-	config)
-		link_tree "$SRC_CONFIG" "$TARGET_CONFIG" "config" "${CONFIG_SKIP[@]}"
-		link_children "$SRC_CONFIG/nvim" "$TARGET_CONFIG/nvim" "nvim config"
-		link_wezterm_for_host "$KIND" || return $?
-		link_kitty_for_host "$KIND" || return $?
-		;;
-	data)
-		link_tree "$SRC_DATA" "$TARGET_DATA" "data" "${DATA_SKIP[@]}"
-		copy::tree "$SRC_DATA/fonts" "$TARGET_DATA/fonts" 0644 0755
-		copy::tree "$SRC_DATA/icons" "$TARGET_DATA/icons" 0644 0755
-		fonts::_fccache
-		;;
-	bin) link_tree "$SRC_BIN" "$TARGET_BIN" "bin" ;;
-	*)
-		logger::fail "Unknown --only set: $ONLY"
-		return 2
-		;;
-	esac
-
-	logger::success "Done."
+	log "Done."
 }
 
 main "$@"
