@@ -39,14 +39,10 @@ autocmd("FileType", {
 	desc = "close specific bufs with 'q'",
 	pattern = {
 		"checkhealth",
-		"gitsigns-blame",
 		"help",
 		"lspinfo",
 		"notify",
-		"spectre_panel",
-		"startuptime",
-		"TelescopePrompt",
-		"neo-tree",
+		-- "oil",
 	},
 	callback = function(event)
 		vim.bo[event.buf].buflisted = false
@@ -93,6 +89,15 @@ autocmd("BufWritePre", {
 		local sw = vim.bo.shiftwidth > 0 and vim.bo.shiftwidth or 2
 		local spaces = string.rep(" ", sw)
 		vim.cmd([[%s/\t/]] .. spaces .. [[/ge]])
+	end,
+})
+
+autocmd("FileType", {
+	-- pattern = { "*" },
+	pattern = { "javascript", "javascriptreact", "typescript", "typescriptreact", "bash", "yaml", "yml" },
+	callback = function()
+		vim.treesitter.start()
+		vim.wo[0][0].foldexpr = "v:lua.vim.treesitter.foldexpr()"
 	end,
 })
 

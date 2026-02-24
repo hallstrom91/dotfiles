@@ -72,7 +72,8 @@ tooltip {
 #bluetooth,
 #disk,
 #memory,
-#systemd-failed-units {
+#systemd-failed-units,
+#custom-pacman {
   color: @fg;
   margin: 5px 0;
   background: @bg;
@@ -185,10 +186,9 @@ tooltip {
 }
 
 #clock,
-  /* #custom-notification, */
-  #pulseaudio {
+#pulseaudio {
   background: @bg-widget;
-  color: @accent;
+  color: @fg;
   margin-left: 5px;
   margin-right: 5px;
   border-radius: 10px;
@@ -261,3 +261,16 @@ tooltip {
   color: @crit;
   font-weight: 900;
 }
+
+#custom-pacman {
+  margin-right: 10px;
+  border-radius: 10px;
+}
+
+/* #custom-pacman.uptodate { */
+/*   color: @fg; */
+/* } */
+/**/
+/* #custom-pacman.updates { */
+/*   color: @hint; */
+/* } */

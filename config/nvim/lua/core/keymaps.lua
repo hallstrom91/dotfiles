@@ -1,72 +1,30 @@
-local utils_keymap = require("utils.keymap")
-local last_notify = 0
+vim.keymap.set("n", "<leader>q", "<cmd>bdelete<CR>", { desc = "Delete buffer", silent = true, noremap = true })
+vim.keymap.set("n", "<C-s>", "<cmd>w<cr><esc>", { desc = "Save file", silent = true, noremap = true })
+vim.keymap.set("n", "<A-j>", "<cmd>execute 'move .+' . v:count1<cr>==", { desc = "Move row down", silent = true, noremap = true })
+vim.keymap.set("n", "<A-k>", "<cmd>execute 'move .-' . (v:count1 + 1)<cr>==", { desc = "Move row up", silent = true, noremap = true })
+vim.keymap.set("n", "<leader>bn", "<cmd>bnext<cr>", { desc = "Next buffer", silent = true, noremap = true })
+vim.keymap.set("n", "<leader>bp", "<cmd>bprevious<cr>", { desc = "Prev buffer", silent = true, noremap = true })
+vim.keymap.set("n", "<leader>bd", "<cmd>bp|bd #<CR>", { desc = "Delete buf: Keep win", silent = true, noremap = true })
+vim.keymap.set("n", "<leader>bo", "<cmd>enew<cr>", { desc = "Open new/empty buf", silent = true, noremap = true })
+vim.keymap.set("n", "<A-Up>", "<cmd>resize +2<cr>", { desc = "Increase window height", silent = true, noremap = true })
+vim.keymap.set("n", "<A-Down>", "<cmd>resize -2<cr>", { desc = "Decrease window height", silent = true, noremap = true })
+vim.keymap.set("n", "<A-Left>", "<cmd>vertical resize -2<cr>", { desc = "Decrease window width", silent = true, noremap = true })
+vim.keymap.set("n", "<A-Right>", "<cmd>vertical resize +2<cr>", { desc = "Increase window width", silent = true, noremap = true })
 
---- Notify func for arrowkeys
-local function info_arrow()
-	local now = vim.loop.now()
-	if now - last_notify < 8000 then
-		return
-	end -- 8000ms anti-spam timer
+vim.keymap.set("n", "<leader><tab>n", "<cmd>tabnext<cr>", { desc = "Next tab", silent = true, noremap = true })
+vim.keymap.set("n", "<leader><tab>p", "<cmd>tabprev<cr>", { desc = "Prev tab", silent = true, noremap = true })
+vim.keymap.set("n", "<leader><tab>o", "<cmd>tabnew<cr>", { desc = "Open new tab", silent = true, noremap = true })
 
-	last_notify = now
-	local ic = {
-		h = " ", --h
-		j = " ", --j
-		k = " ", --k
-		l = " ", --l
-	}
+vim.keymap.set("n", "n", "'Nn'[v:searchforward].'zv'", { expr = true, desc = "Next search result", silent = true, noremap = true })
+vim.keymap.set("n", "N", "'nN'[v:searchforward].'zv'", { expr = true, desc = "Prev search result", silent = true, noremap = true })
+vim.keymap.set("x", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result", silent = true, noremap = true })
+vim.keymap.set("x", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result", silent = true, noremap = true })
+vim.keymap.set("o", "n", "'Nn'[v:searchforward]", { expr = true, desc = "Next search result", silent = true, noremap = true })
+vim.keymap.set("o", "N", "'nN'[v:searchforward]", { expr = true, desc = "Prev search result", silent = true, noremap = true })
 
-	vim.notify(
-		("Use %s<h> %s<j> %s<k> %s<l> instead of arrowkeys."):format(ic.h, ic.j, ic.k, ic.l),
-		vim.log.levels.INFO,
-		{ title = "Movement Info" }
-	)
-end
+vim.keymap.set("i", "jk", "<ESC>", { desc = "Exit insert mode", silent = true, noremap = true })
 
-local base = {
-	---> Normal Mode: "n"
-	{ mode = "n", lhs = "<leader>q", rhs = "<cmd>bdelete<CR>", desc = "Delete buffer" },
-	{ mode = "n", lhs = "<C-s>", rhs = "<cmd>w<cr><esc>", desc = "Save file" },
-	---text movement
-	{ mode = "n", lhs = "<A-j>", rhs = "<cmd>execute 'move .+' . v:count1<cr>==", desc = "Move row down" },
-	{ mode = "n", lhs = "<A-k>", rhs = "<cmd>execute 'move .-' . (v:count1 + 1)<cr>==", decs = "Move row up" },
-	---buffers
-	{ mode = "n", lhs = "<leader>bn", rhs = "<cmd>bnext<cr>", desc = "Next buffer" },
-	{ mode = "n", lhs = "<leader>bp", rhs = "<cmd>bprevious<cr>", desc = "Prev buffer" },
-	{ mode = "n", lhs = "<leader>bd", rhs = "<cmd>bp|bd #<CR>", desc = "Delete buf: Keep win" },
-	{ mode = "n", lhs = "<leader>bo", rhs = "<cmd>enew<cr>", desc = "Open new/empty buf" },
-	---window-size
-	{ mode = "n", lhs = "<A-Up>", rhs = "<cmd>resize +2<cr>", desc = "Increase window height" },
-	{ mode = "n", lhs = "<A-Down>", rhs = "<cmd>resize -2<cr>", desc = "Decrease window height" },
-	{ mode = "n", lhs = "<A-Left>", rhs = "<cmd>vertical resize -2<cr>", desc = "Decrease window width" },
-	{ mode = "n", lhs = "<A-Right>", rhs = "<cmd>vertical resize +2<cr>", desc = "Increase window width" },
-
-	---tabs
-	{ mode = "n", lhs = "<leader><tab>n", rhs = "<cmd>tabnext<cr>", desc = "Next tab" },
-	{ mode = "n", lhs = "<leader><tab>p", rhs = "<cmd>tabprev<cr>", desc = "Prev tab" },
-	{ mode = "n", lhs = "<leader><tab>o", rhs = "<cmd>tabnew<cr>", desc = "Open new tab" },
-	-- { mode "n", lhs = "", rhs = "", desc = "" },
-	-- { mode "n", lhs = "", rhs = "", desc = "" },
-
-	---search
-	{ mode = "n", lhs = "n", rhs = "'Nn'[v:searchforward].'zv'", expr = true, desc = "Next search result" },
-	{ mode = "n", lhs = "N", rhs = "'nN'[v:searchforward].'zv'", expr = true, desc = "Prev search result" },
-	---> Visual Mode: "x"
-	{ mode = "x", lhs = "n", rhs = "'Nn'[v:searchforward]", expr = true, desc = "Next search result" },
-	{ mode = "x", lhs = "N", rhs = "'nN'[v:searchforward]", expr = true, desc = "Prev search result" },
-	--- Operator-pending mode: "o"
-	{ mode = "o", lhs = "n", rhs = "'Nn'[v:searchforward]", expr = true, desc = "Next search result" },
-	{ mode = "o", lhs = "N", rhs = "'nN'[v:searchforward]", expr = true, desc = "Prev search result" },
-
-	---> Insert Mode: "i"
-	{ mode = "i", lhs = "jk", rhs = "<ESC>", desc = "Exit insert mode" },
-
-	---> Multi Mode:
-	---Dont use arrowkeys for movement
-	{ mode = { "i", "x", "n", "s" }, lhs = "<Up>", rhs = info_arrow, desc = "Disabled arrowkeys movement" },
-	{ mode = { "i", "x", "n", "s" }, lhs = "<Down>", rhs = info_arrow, desc = "Disabled arrowkeys movement" },
-	{ mode = { "i", "x", "n", "s" }, lhs = "<Left>", rhs = info_arrow, desc = "Disabled arrowkeys movement" },
-	{ mode = { "i", "x", "n", "s" }, lhs = "<Right>", rhs = info_arrow, desc = "Disabled arrowkeys movement" },
-}
-
-utils_keymap.map(base)
+-- vim.keymap.set({ "i", "x", "n", "s" }, "<Up>", info_arrow, { desc = "Disabled arrowkeys movement", silent = true, noremap = true })
+-- vim.keymap.set({ "i", "x", "n", "s" }, "<Down>", info_arrow, { desc = "Disabled arrowkeys movement", silent = true, noremap = true })
+-- vim.keymap.set({ "i", "x", "n", "s" }, "<Left>", info_arrow, { desc = "Disabled arrowkeys movement", silent = true, noremap = true })
+-- vim.keymap.set({ "i", "x", "n", "s" }, "<Right>", info_arrow, { desc = "Disabled arrowkeys movement", silent = true, noremap = true })

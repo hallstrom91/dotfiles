@@ -61,13 +61,13 @@
 	// SYSD FAILED UNITS
 	"systemd-failed-units": {
 		"hide-on-ok": false, // Do not hide if there is zero failed units.
-		"format": "✗ sys:{nr_failed_system} usr:{nr_failed_user} ",
+		"format": "✗ sys:{nr_failed_system} usr:{nr_failed_user}",
 		"format-ok": " {overall_state}",
 		"system": true, // Monitor failed systemwide units.
 		"user": true // Ignore failed user units.
 	},
 	"memory": {
-		"format": " {}%",
+		"format": "  {used}/{total} GB",
 		"tooltip": true,
 		"tooltip-format": "RAM Usage: {used} / {total} ({percentage}%)"
 	},
@@ -82,19 +82,28 @@
 			"special": ""
 			// "urgent": ""
 		},
-		"tooltip": true,
-		"tooltip-format": "Workspace ${id}",
 		"disable-scroll": true,
 		"active-only": true,
 		"all-outputs": false, // default | true = show all ws-groups
 		"show-special": true,
+		"special-visible-only": true,
 		"workspace-taskbar": {
 			"enable": false,
 			"update-active-window": true,
 			"format": "{icon} {title}"
-		}
-		// "persistent-workspace": {
-		//
-		// },
+		},
 	},
+	// HYPR SUBMAP (ONLY IF ACTIVE)
+"hyprland/submap#dp1": {
+		"format": " {}",
+		"max-length": 20,
+		"tooltip": false
+	},
+	"custom/pacman": {
+		"exec-if": "which checkupdates",
+		"exec": "~/.config/hypr/scripts/pacman-update.sh",
+		"return-type": "json",
+		"interval": "once",
+		// "interval": 600,
+	}
 }

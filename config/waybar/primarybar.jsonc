@@ -12,17 +12,18 @@
 		"format": "{icon} {id}", // {windows}
 		"format-icons": {
 			"default": "",
-			"active": ""
+			"active": "",
 			// "empty": "",
 			// "persistent": "",
 			// "special": "",
-			// "urgent": ""
+			"urgent": ""
 		},
 		"tooltip": true,
 		"tooltip-format": "Workspace ${id}",
 		"disable-scroll": true,
 		"all-outputs": false, // default | true = show all ws-groups
 		"show-special": true,
+		"special-visible-only": true,
 		"workspace-taskbar": {
 			"enable": false,
 			"update-active-window": true,
@@ -96,8 +97,6 @@
 		// "on-click": "bash -c 'nmcli networking off || nmcli networking on'", // alternative
 		"on-click": "bash -c 'nmcli device disconnect enp5s0 || nmcli device connect enp5s0'",
 		"on-click-right": "nm-connection-editor",
-		// "max-length": 30,
-		// "format-icons": [], // wifi signal icons; order ==> low to high
 		"format-ethernet": "",
 		"format-disconnected": "",
 		"format-wifi": "",
@@ -117,25 +116,10 @@
 		"tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
 		"tooltip-format-disabled": "{status}",
 		"tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
-		// "on-click": "bluetoothctl show | grep Powered && off || on"
-		// "on-click": "bash -c 'bluetoothctl show | grep -q \"Powered: yes\" && bluetoothctl power off || bluetoothctl power on'"
 	},
 	"pulseaudio": {
-		"format": "{icon} {volume}%",
+		"format": "",
 		"format-muted": "",
-		"format-bluetooth": " {volume}%",
-		"format-icons": {
-			"headphone": "", // nf-fa-headset
-			"default": [
-				"" // nf-fa-music
-				// "" // nf-fa-volume_xmark
-				// "󰎇", // nf-md-music_note
-				// "󰷞" // nf-md-music_note_plus
-				// "󰎊 " // nf-md-music_note_off
-				// "", // nf-fa-volume_off
-				// " " // nf-fa-volume_up
-			]
-		},
 		"scroll-step": 5,
 		"on-click": "pavucontrol",
 		"on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle", // mute toggle!
@@ -152,18 +136,11 @@
 		"return-type": "json",
 		"on-click": "~/.config/hypr/scripts/powermenu.sh --wofi"
 	},
-	"mpris": {
-		"format": "DEFAULT: {player_icon} {dynamic}",
-		"format-paused": "DEFAULT: {status_icon} <i>{dynamic}</i>",
-		"player-icons": {
-			"default": "",
-			"mpv": ""
-		},
-		"status-icons": {
-			"paused": ""
-		},
-		"ignored-players": [
-			"firefox"
-		]
+	"custom/pacman": {
+		"exec-if": "which checkupdates",
+		"exec": "~/.config/hypr/scripts/pacman-update.sh",
+		"return-type": "json",
+		// "interval": "once",
+		"interval": 600,
 	}
 }

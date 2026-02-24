@@ -1,6 +1,6 @@
 return {
 	"ibhagwan/fzf-lua",
-	dependencies = { "nvim-tree/nvim-web-devicons" }, -- or: "nvim-mini/mini.icons"
+	dependencies = { "nvim-tree/nvim-web-devicons" },
 	keys = function()
 		return {
 			--- Fzf-lua: Search pickers

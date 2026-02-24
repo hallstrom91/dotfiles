@@ -218,10 +218,10 @@ main() {
 	script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 	df_rootdir="${DF_ROOTDIR:-$script_dir}"
 
-	local xdg_config xdg_data local_bin
+	local xdg_config local_bin # xdg_data
 	xdg_config="${XDG_CONFIG_HOME:-"$HOME/.config"}"
-	xdg_data="${XDG_DATA_HOME:-"$HOME/.local/share"}"
 	local_bin="${LOCAL_BIN:-"$HOME/.local/bin"}"
+	# xdg_data="${XDG_DATA_HOME:-"$HOME/.local/share"}"
 
 	ensure_dir "$local_bin"
 	ensure_dir "$xdg_config"

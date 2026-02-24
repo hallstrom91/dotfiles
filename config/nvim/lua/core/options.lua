@@ -1,43 +1,21 @@
----> print current value from cmdline, use:
----> `:lua =vim.*.value` OR `:lua print(vim.*.value)`
-
---> vim.o.value, e.g. : vim.o.cursorlineopt = "screenline,number"
---> vim.opt.value/table, e.g. : vim.opt.cursorlineopt = { "screenline", "number" }
-
---> `:help list` | `:help listchars` | `:help lua-options` | `:help lua-options-guide`
---> or just `:options`
-
---------------------------------------
---> vim globals
---------------------------------------
-vim.g.mapleader = " " --> Spacebar | "<leader>"
-vim.g.maplocalleader = "\\" --> backslash | "<localleader>"
-vim.g.have_nerd_font = true --> Nerd fonts --> https://www.nerdfonts.com/
+vim.g.mapleader = " "
+vim.g.localleader = "\\"
+vim.g.have_nerd_font = true
 vim.g.editorconfig = true
 
---> disable external providers
 vim.g.loaded_node_provider = 0
 vim.g.loaded_python3_provider = 0
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_ruby_provider = 0
 
---> internal plugins
-vim.g.loaded_matchparens = 0 -- match/highlight {} () []
+vim.o.startofline = true
+vim.o.ignorecase = true
+vim.o.smartcase = true
+vim.o.incsearch = true
 
---------------------------------------
---> vim options
---------------------------------------
---> :options >> 2) moving around, searching and patterns
-vim.o.startofline = true -- move cursor to start-of-line pos
-vim.o.ignorecase = true -- ignore search case
-vim.o.smartcase = true -- dont ignore search case, IF: Capital letter
-vim.o.incsearch = true -- show match for partly typed search cmds
-
--- transparency on popup
 vim.o.winblend = 3
 vim.o.pumblend = 3
 
---> :options >> no.4) displaying text
 vim.o.scroll = 12 -- lines to go up(CTRL+U)/down(CTRL+D)
 vim.o.smoothscroll = true
 vim.o.scrolloff = 12 -- lines to go down/up @ scroll-action
@@ -53,7 +31,6 @@ vim.o.relativenumber = true -- relative numbers
 vim.o.mouse = "" -- disable mouse || to enable 'all' == "a"
 vim.o.conceallevel = 2 -- hide text in some cases. ':help conceallevel'
 
---> :options >> 5) syntax, hl and spell
 vim.o.hlsearch = true
 vim.o.termguicolors = true -- term supports color
 vim.opt.spelllang = { "en" } -- in combo with 'vim.o.spell'
@@ -69,34 +46,17 @@ vim.o.splitright = true
 vim.o.splitkeep = "screen"
 -- vim.o.equalalways = false -- dont resize windows
 
---> :options >> 10) messages and info
--- vim.o.visualbell = true
--- vim.opt.cmdwinheight = 10 -- default: 7
-vim.o.showcmd = false
-vim.o.showmode = false -- already shown in plugin lualine
-
-vim.opt.shortmess:append({ -- :h shortmess
-	W = true, -- no 'written'-msg
-	A = true, -- no 'ATTENTION' when swap-file exists
-	I = true, -- no 'intro'-msg on startup
-	T = true, -- truncate file msg if to long to fit cmd-line.
-	c = true, -- no 'ins-cmp-menu', 'pattern not found'-msg etc
-})
-
---> 11) Selecting text
--- vim.o.selectmode = "cmd"
 vim.schedule(function()
 	vim.o.clipboard = "unnamedplus" -- :help clipboard - value based on OS
 end)
 
---> 12) Editing text
 vim.o.undofile = true
 vim.o.completeopt = "menu,menuone,noinsert,preview"
 
---> 13) Tabs and indenting
 vim.o.expandtab = true
 vim.o.shiftwidth = 4
 vim.o.tabstop = 4
+
 
 --> 14) Folding
 vim.o.foldmethod = "expr"
@@ -115,8 +75,8 @@ vim.o.autoread = true -- check if file has changed outside nvim, reload in case.
 vim.o.autowrite = true -- autosave when leaving modified buf
 
 --- 24) Various
-vim.o.exrc = true
-vim.o.secure = true
+-- vim.o.exrc = true
+-- vim.o.secure = true
 
 vim.opt.guicursor = { -- cursor shape in different modes
 	"n-v-c:hor25",
@@ -125,8 +85,39 @@ vim.opt.guicursor = { -- cursor shape in different modes
 	-- "n:blinkwait1000-blinkoff600-blinkon300-Cursor/lCursor",
 }
 
+vim.filetype.add({
+	pattern = { [".*/%.bash/.*"] = "bash" },
+})
+
+-- https://github.com/tree-sitter-grammars/tree-sitter-hyprlang
+vim.filetype.add({
+	pattern = { [".*/hypr/.*%.conf"] = "hyprlang" },
+})
+
+-- vim.filetype.add({
+-- 	pattern = { [".*/waybar/.*%.css"] = "scss" },
+-- })
+
+
+
+
+
 --- add custom fold UI
-vim.schedule(function()
-	require("utils.folds")
-	vim.opt.foldtext = "v:lua.custom_foldtext()"
-end)
+-- vim.schedule(function()
+-- 	require("utils.folds")
+-- 	vim.opt.foldtext = "v:lua.custom_foldtext()"
+-- end)
+
+-- UNKOWNN
+-- vim.o.showcmd = false
+-- vim.o.showmode = false -- already shown in plugin lualine
+--
+-- vim.opt.shortmess:append({ -- :h shortmess
+-- 	W = true, -- no 'written'-msg
+-- 	A = true, -- no 'ATTENTION' when swap-file exists
+-- 	I = true, -- no 'intro'-msg on startup
+-- 	T = true, -- truncate file msg if to long to fit cmd-line.
+-- 	c = true, -- no 'ins-cmp-menu', 'pattern not found'-msg etc
+-- })
+--
+

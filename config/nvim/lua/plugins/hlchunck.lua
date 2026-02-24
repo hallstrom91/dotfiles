@@ -22,7 +22,6 @@ return
 	"shellRaining/hlchunk.nvim",
 	event = { "BufReadPost", "BufReadPre", "BufNewFile" },
 	opts = function()
-		local utils = require("utils.highlight")
 
 		local FALLBACK_HL = {
 			"#AD5E5E",
@@ -33,6 +32,7 @@ return
 			"#AD73A9",
 			"#3293C7",
 		}
+
 		local RAINBOW_GROUPS = {
 			"RainbowDelimiterRed",
 			"RainbowDelimiterOrange",
@@ -43,16 +43,16 @@ return
 			"RainbowDelimiterCyan",
 		}
 
-		local chunck_hl = utils.get_hl_fg("Visual")
-		local chunck_hl_err = utils.get_hl_fg("Removed")
+		-- local chunck_hl = utils.get_hl_fg("Visual")
+		-- local chunck_hl_err = utils.get_hl_fg("Removed")
 
-		local function indent_rainbow()
-			local style = {}
-			for i, group in ipairs(RAINBOW_GROUPS) do
-				style[i] = utils.get_hl_fg(group) or FALLBACK_HL[i]
-			end
-			return style
-		end
+		-- local function indent_rainbow()
+		-- 	local style = {}
+		-- 	for i, group in ipairs(RAINBOW_GROUPS) do
+		-- 		style[i] = utils.get_hl_fg(group) or FALLBACK_HL[i]
+		-- 	end
+		-- 	return style
+		-- end
 
 		return {
 			-- chunck settings
@@ -64,10 +64,10 @@ return
 				chars = chars_bold,
 				duration = 300,
 				delay = 200,
-				style = {
-					{ fg = chunck_hl }, -- same as "Visual"
-					{ fg = chunck_hl_err }, -- same as "Removed"
-				},
+				-- style = {
+				-- 	{ fg = chunck_hl }, -- same as "Visual"
+				-- 	{ fg = chunck_hl_err }, -- same as "Removed"
+				-- },
 			},
 			-- indent settings
 			indent = {
@@ -77,17 +77,8 @@ return
 					"│",
 				},
 				delay = 50,
-				style = indent_rainbow(),
+				-- style = indent_rainbow(),
 			},
 		}
 	end,
 }
-
--- chars = {
--- 	horizontal_line = "─",
--- 	vertical_line = "│",
--- 	left_top = "╭",
--- 	left_bottom = "╰",
--- 	--right_arrow = ">",
--- 	right_arrow = "",
--- },

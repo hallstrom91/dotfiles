@@ -1,15 +1,12 @@
 # ---- Terminal ---- #
 alias ls='ls --color=auto'
+alias la='ls -la --color=auto'
 alias grep='grep --color=auto'
-
-# ---- alias for script / func---- #
 alias wsx='~/.bin/wsx.sh'
 
-# ---- git: worktrees ---- #
 alias gwl='git worktree list'
 alias gwa='git worktree add'
 alias gwr='git worktree remove'
 
-# ---- custom ---- #
 alias llnvm='LOAD_NVM=1 && source ~/.bashrc'
 command -v nvim >/dev/null 2>&1 && alias vim="nvim"

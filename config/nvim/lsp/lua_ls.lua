@@ -1,4 +1,5 @@
-local root = require("utils.root")
+-- local root = require("config.utils")
+local find_root = require("config.utils").find_root
 
 -- https://github.com/neovim/nvim-lspconfig/blob/master/lua/lspconfig/configs/lua_ls.lua
 -- https://github.com/luals/lua-language-server
@@ -6,7 +7,7 @@ local root = require("utils.root")
 return {
 	cmd = { "lua-language-server" },
 	filetypes = { "lua" },
-	root_dir = root({
+	root_dir = find_root({
 		".luarc.json",
 		".luarc.jsonc",
 		".luacheckrc",

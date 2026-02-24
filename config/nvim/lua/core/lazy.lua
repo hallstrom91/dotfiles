@@ -1,10 +1,6 @@
 require("lazy").setup({
 	spec = {
-
-		{ import = "plugins.init" },
-		-- { import = "plugins.lsp" },
-		{ import = "plugins.code" },
-		{ import = "plugins.editor" },
+		{ import = "plugins" },
 	},
 	install = { colorscheme = { "habamax" } },
 	-- automatically check for plugin updates

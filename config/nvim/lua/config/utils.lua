@@ -1,12 +1,14 @@
 local M = {}
 
--- local uv = vim.uv
-local fs = vim.fs
-local P = require("utils.path")
+--- LSP ROOT DIR
+-- root_dir = function(bufnr, on_dir)
+-- 		local fname = vim.api.nvim_buf_get_name(bufnr)
+-- 		local root = vim.fs.root(fname, { ".git" })
+-- 		if root then
+-- 			on_dir(root) -- lsp active: time 2 fight errors
+-- 		end
+-- 	end,
 
--- Find root_dir based on markers (files/dirs or match-fn)
--- No match -> fallback to CWD
--- `source` can be bufnr (number) or filepath (string)
 ---@param source string|nil
 ---@param markers string|string[]|table|fun(name: string, path:string):boolean
 ---@return string
@@ -27,9 +29,6 @@ function M.find_root(source, markers)
 	return P.cwd()
 end
 
----Root_dir-func for new `native nvim lsp-API`
----Usage in server-config:
---	root_dir = root.get_lsp_root({'.git', 'package.json'})
 ---@param markers string|string[]|table|fun(name: string, path:string):boolean
 ---@return fun(bufnr:integer, on_dir:fun(dir?:string))
 function M.get_lsp_rootdir(markers)
@@ -46,11 +45,20 @@ function M.get_lsp_rootdir(markers)
 	end
 end
 
--- Make main module `callable`
-setmetatable(M, {
-	__call = function(_, ...)
-		return M.get_lsp_rootdir(...)
-	end,
-})
+
+function M.find_root(markers)
+    return function(bufnr, on_dir)
+        local name = vim.api.nvim_buf_get_name(bufnr)
+        if name == "" then
+            return end
+
+            local root = vim.fs.root(name, markers)
+            if root then
+                on_dir(vim.fs.normalize(root))
+            end
+        end
+    end
+
+
 
 return M

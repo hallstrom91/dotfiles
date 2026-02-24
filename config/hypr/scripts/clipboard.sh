@@ -49,21 +49,3 @@ case "${1:-}" in
 	exit 1
 	;;
 esac
-
-### FIRST DRAFT
-# case "${1:-}" in
-# --cliphist-img)
-# 	cliphist list |
-# 		wofi --dmenu --prompt "Clipboard (img)" --pre-display-cmd "echo '%s' | cut -f2-" |
-# 		cliphist decode |
-# 		wl-copy
-# 	;;
-# --cliphist-txt)
-# 	cliphist list |
-# 		wofi --dmenu --prompt "Clipboard (txt)" --pre-display-cmd "echo '%s' | cut -f2-" |
-# 		cliphist decode |
-# 		wl-copy
-# 	;;
-# --cliphist-wipe) cliphist wipe ;;
-# *) notify-send "clipboard.sh" "Failed to execute selected '${1:-}' option" ;;
-# esac

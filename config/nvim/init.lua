@@ -15,24 +15,23 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-local sreq = require("utils.req")
-require("utils.path").mason_bin_path()
+require("core.options")
+require("core.keymaps")
+require("core.lazy")
+require("core.lsp")
+require("core.autocmds")
 
-sreq("core.options", { desc = "core.options" })
-sreq("core.keymaps", { desc = "core.keymaps" })
-sreq("core.lazy", { desc = "core.lazy" })
-sreq("core.lsp", { desc = "core.lsp" })
-sreq("core.autocmds", { desc = "core.autocmds" })
 
-vim.filetype.add({
-	pattern = { [".*/%.bash/.*"] = "bash" },
-})
-
--- https://github.com/tree-sitter-grammars/tree-sitter-hyprlang
-vim.filetype.add({
-	pattern = { [".*/hypr/.*%.conf"] = "hyprlang" },
-})
 
 -- vim.filetype.add({
--- 	pattern = { [".*/waybar/.*%.css"] = "scss" },
+-- 	pattern = { [".*/%.bash/.*"] = "bash" },
 -- })
+--
+-- -- https://github.com/tree-sitter-grammars/tree-sitter-hyprlang
+-- vim.filetype.add({
+-- 	pattern = { [".*/hypr/.*%.conf"] = "hyprlang" },
+-- })
+--
+-- -- vim.filetype.add({
+-- -- 	pattern = { [".*/waybar/.*%.css"] = "scss" },
+-- -- })

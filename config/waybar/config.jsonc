@@ -18,14 +18,13 @@
 			"hyprland/submap"
 		],
 		"modules-center": [
-			"custom/notification",
 			"clock",
-			"pulseaudio"
+			"custom/notification",
 		],
 		"modules-right": [
+			"pulseaudio",
 			"network",
 			"bluetooth",
-			// "pulseaudio",
 			"custom/powermenu"
 		]
 	},
@@ -41,6 +40,7 @@
 		"modules-left": [
 			"systemd-failed-units",
 			"hyprland/workspaces#dp1",
+			"hyprland/submap#dp1",
 			"memory"
 		],
 		"modules-center": [
@@ -51,6 +51,8 @@
 			"disk#nvme1",
 			"temperature#nvme2"
 		],
-		"modules-right": []
+		"modules-right": [
+			"custom/pacman"
+		]
 	}
 ]

@@ -16,7 +16,7 @@ return {
 	opts = function()
 		local float_size = { width = 0.5, height = 0.6 }
 		local confirm_size = { width = 0.4, height = 0.25 }
-		local utils_screen = require("utils.screen")
+		local utils_screen = require("config.screensize")
 		local float = utils_screen.scale_size(float_size)
 		local prompt = utils_screen.scale_size(confirm_size)
 
